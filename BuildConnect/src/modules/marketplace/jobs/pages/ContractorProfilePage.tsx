@@ -1,37 +1,54 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Paper, Box, Rating, Divider, Card, Button, Avatar } from '@mui/material';
-import { useStore } from '@/stores/RootStore';
+import { Typography, Paper, Box, Grid, Rating, Divider, Card, Avatar, alpha } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VerifiedIcon from '@mui/icons-material/Verified';
 
+// Atomi
+import BaseButton from '@/components/common/atoms/buttons/BaseButton';
+import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
+import { useRootStore } from '@/hooks/useRootStore';
+
 const ContractorProfilePage: React.FC = observer(() => {
   const { id } = useParams<{ id: string }>();
-  const { reviewStore } = useStore();
+  const { reviewStore } = useRootStore();
   const navigate = useNavigate();
 
-  // Filtriramo sve recenzije koje je ovaj izvođač dobio
   const contractorReviews = reviewStore.reviews.filter(r => r.revieweeId === id);
-  
-  // Računamo prosječnu ocjenu
   const averageRating = contractorReviews.length > 0 
     ? contractorReviews.reduce((sum, r) => sum + r.rating, 0) / contractorReviews.length 
     : 0;
 
   return (
-    <Container maxWidth="md">
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)} sx={{ mb: 3 }}>
+    <BaseContainer maxWidth="md">
+      <BaseButton 
+        variant="text" 
+        color="secondary" 
+        startIcon={<ArrowBackIcon />} 
+        onClick={() => navigate(-1)} 
+        sx={{ mb: 4 }}
+      >
         Povratak
-      </Button>
+      </BaseButton>
 
-      <Paper sx={{ p: 4, borderRadius: 4, mb: 4, textAlign: 'center' }}>
+      <Paper sx={{ p: 4, borderRadius: 4, mb: 4, textAlign: 'center', border: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ width: 100, height: 100, bgcolor: 'secondary.main', fontSize: '2.5rem' }}>
+          <Avatar 
+            sx={{ 
+              width: 100, 
+              height: 100, 
+              bgcolor: 'primary.main', 
+              color: 'primary.contrastText',
+              fontSize: '2.5rem',
+              fontWeight: 800,
+              boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
+            }}
+          >
             {id === 'izvodjac-1' ? 'M' : 'I'}
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
               {id === 'izvodjac-1' ? 'Marko Majstor' : 'Izvođač'} <VerifiedIcon color="primary" />
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
@@ -39,44 +56,50 @@ const ContractorProfilePage: React.FC = observer(() => {
             </Typography>
           </Box>
           
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Rating value={averageRating} readOnly precision={0.5} size="large" />
-            <Typography variant="h6">({averageRating.toFixed(1)})</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.light', px: 3, py: 1, borderRadius: 10 }}>
+            <Rating value={averageRating} readOnly precision={0.5} />
+            <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.dark' }}>
+              {averageRating.toFixed(1)}
+            </Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
             Ukupno recenzija: {contractorReviews.length}
           </Typography>
         </Box>
       </Paper>
 
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
-        Povratne informacije klijenata
+      <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
+        Što klijenti kažu
       </Typography>
 
       {contractorReviews.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-          <Typography color="text.secondary">Ovaj izvođač još nema recenzija.</Typography>
+        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 4, bgcolor: 'action.hover', border: '2px dashed', borderColor: 'divider' }}>
+          <Typography color="text.secondary">Ovaj izvođač još nema ocjena.</Typography>
         </Paper>
       ) : (
-        contractorReviews.map(review => (
-          <Card key={review.id} sx={{ mb: 2, p: 3, borderRadius: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Rating value={review.rating} readOnly size="small" />
-              <Typography variant="caption" color="text.secondary">
-                {new Date(review.createdAt).toLocaleDateString('hr-HR')}
-              </Typography>
-            </Box>
-            <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-              "{review.comment}"
-            </Typography>
-            <Divider sx={{ my: 1.5 }} />
-            <Typography variant="caption" sx={{ fontWeight: 700 }}>
-              Investitor ID: {review.reviewerId}
-            </Typography>
-          </Card>
-        ))
+        <Grid container spacing={2}>
+          {contractorReviews.map(review => (
+            <Grid key={review.id} size={{ xs: 12 }}>
+              <Card sx={{ p: 3, borderRadius: 3, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                  <Rating value={review.rating} readOnly size="small" />
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    {new Date(review.createdAt).toLocaleDateString('hr-HR')}
+                  </Typography>
+                </Box>
+                <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 2, color: 'text.primary' }}>
+                  "{review.comment}"
+                </Typography>
+                <Divider sx={{ mb: 1.5, opacity: 0.5 }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.dark' }}>
+                  KLIJENT: {review.reviewerId}
+                </Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
-    </Container>
+    </BaseContainer>
   );
 });
 

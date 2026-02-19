@@ -11,7 +11,7 @@ export interface Review {
   createdAt: Date;
 }
 
-export class ReviewStore {
+export default class ReviewStore {
   rootStore: RootStore;
   reviews: Review[] = [];
   isLoading: boolean = false;

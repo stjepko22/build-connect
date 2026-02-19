@@ -2,54 +2,34 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
     primary: {
-      main: '#FFB300', // Građevinska žuta
-      dark: '#E6A100',
-      light: '#FFC233',
-      contrastText: '#1A1A1A',
+      main: '#FFB300', // Topla žuta/amber
+      light: '#FFF8E1',
+      dark: '#FFA000',
+      contrastText: '#000', // Crni tekst na žutoj pozadini radi čitljivosti
     },
     secondary: {
-      main: '#2C3E50', // Čelik siva
-      dark: '#1A252F',
-      light: '#3D566E',
-      contrastText: '#FFFFFF',
+      main: '#212121',
+      light: '#484848',
+      dark: '#000000',
     },
     background: {
-      default: '#F8F9FA',
+      default: '#FAFAFA',
       paper: '#FFFFFF',
     },
-    text: {
-      primary: '#1A1A1A',
-      secondary: '#636E72',
-    },
+  },
+  shape: {
+    borderRadius: 12,
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontWeight: 800, fontSize: '2.5rem' },
-    h2: { fontWeight: 700, fontSize: '2rem' },
-    h3: { fontWeight: 700, fontSize: '1.75rem' },
-    button: { textTransform: 'none', fontWeight: 600 },
-  },
-  shape: {
-    borderRadius: 12, // Zaobljeniji, moderniji izgled
+    button: { textTransform: 'none', fontWeight: 700 },
   },
   components: {
     MuiButton: {
+      defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: {
-          padding: '10px 24px',
-          borderRadius: 8,
-          transition: 'all 0.2s ease-in-out',
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0px 10px 30px rgba(0,0,0,0.04)',
-          border: '1px solid #E0E0E0',
-        },
+        root: { borderRadius: 8 },
       },
     },
   },

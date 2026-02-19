@@ -11,11 +11,11 @@ export interface Bid {
   amount: number;
   daysToComplete: number;
   message: string;
-  status: BidStatus; // Novi field
+  status: BidStatus;
   createdAt: Date;
 }
 
-export class BidStore {
+export default class BidStore {
   rootStore: RootStore;
   bids: Bid[] = [];
   isLoading: boolean = false;

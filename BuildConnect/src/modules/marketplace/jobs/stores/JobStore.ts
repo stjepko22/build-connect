@@ -7,15 +7,14 @@ export interface Job {
   description: string;
   category: string;
   location: string;
-  budget: string;
+  budget?: number; 
   deadline: string;
   investitorId: string;
   createdAt: Date;
 }
 
-export class JobStore {
+export default class JobStore {
   rootStore: RootStore;
-  // Dodajemo inicijalne podatke direktno u niz
   jobs: Job[] = [
     {
       id: 'posao-1',
@@ -23,7 +22,7 @@ export class JobStore {
       description: 'Potrebna izrada termo fasade (stiropor 10cm) na objektu od 200m2. Materijal osiguran, traže se samo ruke.',
       category: 'Fasada',
       location: 'Zagreb',
-      budget: '3500',
+      budget: 3500,
       deadline: '2026-05-01',
       investitorId: 'investitor-1',
       createdAt: new Date()
@@ -34,7 +33,7 @@ export class JobStore {
       description: 'Potrebno postaviti 40m2 pločica u novogradnji. Podloga je spremna, ljepilo i pločice su na lokaciji.',
       category: 'Keramika',
       location: 'Split',
-      budget: '800',
+      budget: 800,
       deadline: '2026-03-15',
       investitorId: 'investitor-2',
       createdAt: new Date()
@@ -47,7 +46,7 @@ export class JobStore {
     makeAutoObservable(this);
   }
 
-  addJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'investitorId'>) => {
+  createJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'investitorId'>) => {
     this.isLoading = true;
     return new Promise<void>((resolve) => {
       setTimeout(() => {

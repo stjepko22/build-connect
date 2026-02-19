@@ -1,151 +1,217 @@
 import React, { useState } from 'react';
-import { Container, Paper, Typography, TextField, Button, Box, MenuItem, Grid } from '@mui/material';
+import { 
+  Typography, 
+  Paper, 
+  Box, 
+  Grid, 
+  MenuItem, 
+  alpha, 
+  useTheme,
+  Divider,
+  InputAdornment
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '@/stores/RootStore';
 import { observer } from 'mobx-react-lite';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import EuroIcon from '@mui/icons-material/Euro';
+import PlaceIcon from '@mui/icons-material/Place';
+import EventIcon from '@mui/icons-material/Event';
 
-const categories = [
-  'Zidarski radovi',
-  'Limarija',
-  'Rigips / Suha gradnja',
-  'Vodoinstalacije',
-  'Elektroinstalacije',
-  'Keramika',
-  'Fasada',
-  'Ostalo'
-];
+// Atomi
+import BaseButton from '@/components/common/atoms/buttons/BaseButton';
+import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
+import BaseInput from '@/components/common/atoms/inputs/BaseInput';
+import { useRootStore } from '@/hooks/useRootStore';
+
+const CATEGORIES = ['Gradnja', 'Renovacija', 'Struja', 'Voda', 'Grijanje', 'Fasade', 'Krovovi', 'Ostalo'];
 
 const CreateJobPage: React.FC = observer(() => {
-  const { jobStore } = useStore();
+  const { jobStore } = useRootStore();
+  const theme = useTheme();
   const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    location: '',
-    budget: '',
-    deadline: ''
-  });
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [budget, setBudget] = useState('');
+  const [category, setCategory] = useState('');
+  const [deadline, setDeadline] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await jobStore.addJob(formData);
-    navigate('/');
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    await jobStore.createJob({
+      title,
+      description,
+      location,
+      budget: budget ? Number(budget) : undefined,
+      category,
+      deadline
+    });
+    navigate('/marketplace');
   };
 
   return (
-    <Container maxWidth="md">
-      <Paper elevation={3} sx={{ p: 4, mt: 4, borderRadius: 3 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 800 }}>
-          Objavi novi posao
+    <BaseContainer maxWidth="md" sx={{ py: 6 }}>
+      <BaseButton 
+        variant="text" 
+        color="secondary" 
+        startIcon={<ArrowBackIcon />} 
+        onClick={() => navigate(-1)} 
+        sx={{ mb: 4, fontWeight: 700, px: 0 }}
+      >
+        Odustani
+      </BaseButton>
+
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: { xs: 4, md: 7 }, 
+          borderRadius: 8, 
+          border: '1px solid', 
+          borderColor: alpha(theme.palette.divider, 0.1),
+          boxShadow: '0 20px 60px rgba(0,0,0,0.03)',
+          position: 'relative'
+        }}
+      >
+        <Box sx={{ 
+          position: 'absolute', 
+          top: 0, 
+          right: 0, 
+          p: 3, 
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          borderRadius: '0 0 0 30px'
+        }}>
+          <PostAddIcon color="primary" />
+        </Box>
+
+        <Typography variant="h3" sx={{ fontWeight: 900, mb: 1.5, letterSpacing: '-1.5px' }}>
+          Objavi novi projekt
         </Typography>
-        <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
-          Unesite detalje o projektu kako bi izvođači mogli poslati svoje ponude.
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 6, maxWidth: 500 }}>
+          Ispunite detalje projekta kako biste privukli najbolje izvođače.
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          {/* U MUI v7, Grid container se koristi bez 'item' propova na djeci */}
           <Grid container spacing={3}>
-            <Grid size={12}>
-              <TextField
+            {/* Naslov */}
+            <Grid size={{ xs: 12 }}>
+              <BaseInput
                 fullWidth
                 label="Naslov oglasa"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
+                placeholder="npr. Izrada termofasade na obiteljskoj kući"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </Grid>
-            
+
+            {/* Kategorija */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <BaseInput
                 fullWidth
                 select
-                label="Kategorija"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
+                label="Kategorija radova"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 required
               >
-                {categories.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
+                {CATEGORIES.map((cat) => (
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                 ))}
-              </TextField>
+              </BaseInput>
             </Grid>
 
+            {/* Lokacija */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <BaseInput
                 fullWidth
                 label="Lokacija"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
+                placeholder="npr. Zagreb, Jarun"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PlaceIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
 
+            {/* Budžet */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <BaseInput
                 fullWidth
-                label="Okvirni budžet (EUR)"
-                name="budget"
-                value={formData.budget}
-                onChange={handleChange}
+                label="Budžet (EUR)"
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                placeholder="Ostavite prazno za dogovor"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EuroIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
 
+            {/* Rok */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
+              <BaseInput
                 fullWidth
-                label="Rok za završetak"
-                name="deadline"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={formData.deadline}
-                onChange={handleChange}
+                label="Rok završetka"
+                placeholder="npr. Lipanj 2026."
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EventIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
 
-            <Grid size={12}>
-              <TextField
+            {/* Opis */}
+            <Grid size={{ xs: 12 }}>
+              <BaseInput
                 fullWidth
-                multiline
-                rows={4}
                 label="Detaljan opis posla"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
+                multiline
+                rows={6}
+                placeholder="Opišite što je potrebno napraviti..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </Grid>
 
-            <Grid size={12}>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button variant="outlined" onClick={() => navigate('/')}>
-                  Odustani
-                </Button>
-                <Button 
-                  type="submit" 
-                  variant="contained" 
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                <BaseButton
+                  type="submit"
+                  variant="contained"
                   color="primary"
-                  disabled={jobStore.isLoading}
+                  size="large"
+                  sx={{ px: 8, py: 1.5, borderRadius: 3, fontWeight: 900 }}
+                  loading={jobStore.isLoading}
                 >
-                  {jobStore.isLoading ? 'Objavljivanje...' : 'Objavi posao'}
-                </Button>
+                  Objavi oglas
+                </BaseButton>
               </Box>
             </Grid>
           </Grid>
         </form>
       </Paper>
-    </Container>
+    </BaseContainer>
   );
 });
 
