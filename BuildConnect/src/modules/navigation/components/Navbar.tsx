@@ -25,13 +25,22 @@ const Navbar: React.FC = observer(() => {
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Gumb koji je dostupan svima za pregled Marketplace-a */}
+            <Button color="secondary" onClick={() => navigate('/marketplace')}>
+              Marketplace
+            </Button>
+
             {authenticationStore.isAuthenticated ? (
               <>
                 {authenticationStore.user?.role === 'INVESTITOR' && (
-                  <Button color="secondary" onClick={() => navigate('/objavi-posao')}>Objavi Posao</Button>
+                  <Button color="secondary" onClick={() => navigate('/objavi-posao')}>
+                    Objavi Posao
+                  </Button>
                 )}
                 {authenticationStore.user?.role === 'IZVODJAC' && (
-                  <Button color="secondary" onClick={() => navigate('/pretraga-poslova')}>Traži Posao</Button>
+                  <Button color="secondary" onClick={() => navigate('/pretraga-poslova')}>
+                    Moji Poslovi
+                  </Button>
                 )}
                 <Button 
                   variant="outlined" 
