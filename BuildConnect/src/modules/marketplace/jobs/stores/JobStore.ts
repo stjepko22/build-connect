@@ -15,7 +15,31 @@ export interface Job {
 
 export class JobStore {
   rootStore: RootStore;
-  jobs: Job[] = [];
+  // Dodajemo inicijalne podatke direktno u niz
+  jobs: Job[] = [
+    {
+      id: 'posao-1',
+      title: 'Izrada fasade na obiteljskoj kući',
+      description: 'Potrebna izrada termo fasade (stiropor 10cm) na objektu od 200m2. Materijal osiguran, traže se samo ruke.',
+      category: 'Fasada',
+      location: 'Zagreb',
+      budget: '3500',
+      deadline: '2026-05-01',
+      investitorId: 'investitor-1',
+      createdAt: new Date()
+    },
+    {
+      id: 'posao-2',
+      title: 'Postavljanje keramike u kupaonici',
+      description: 'Potrebno postaviti 40m2 pločica u novogradnji. Podloga je spremna, ljepilo i pločice su na lokaciji.',
+      category: 'Keramika',
+      location: 'Split',
+      budget: '800',
+      deadline: '2026-03-15',
+      investitorId: 'investitor-2',
+      createdAt: new Date()
+    }
+  ];
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {

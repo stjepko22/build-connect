@@ -9,6 +9,7 @@ import RegisterPage from '@/modules/authentication/pages/RegisterPage';
 import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
 import JobListPage from '@/modules/marketplace/jobs/pages/JobListPage';
 import JobDetailsPage from '@/modules/marketplace/jobs/pages/JobDetailsPage';
+import MyJobsPage from '@/modules/marketplace/jobs/pages/MyJobsPage';
 import MainLayout from '@/layouts/MainLayout';
 
 const HomePage = observer(() => {
@@ -40,6 +41,7 @@ const App: React.FC = () => {
               <Route path="/marketplace" element={<JobListPage />} />
               <Route path="/marketplace/:id" element={<JobDetailsPage />} />
               <Route path="/objavi-posao" element={<CreateJobPage />} />
+              <Route path="/moji-poslovi" element={<MyJobsPage />} />
             </Route>
 
             <Route path="/login" element={<LoginPage />} />

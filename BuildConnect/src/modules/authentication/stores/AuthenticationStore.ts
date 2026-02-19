@@ -1,13 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 import { RootStore } from '@/stores/RootStore';
 
-export type UserRole = 'INVESTITOR' | 'IZVODJAC' | null;
-
-interface User {
+export interface User {
   id: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  role: 'INVESTITOR' | 'IZVODJAC';
 }
 
 export class AuthenticationStore {
@@ -20,28 +18,29 @@ export class AuthenticationStore {
     makeAutoObservable(this);
   }
 
-  login = async (email: string, role: UserRole) => {
+  get isAuthenticated() {
+    return !!this.user;
+  }
+
+  login = async (email: string, _password: string, role: 'INVESTITOR' | 'IZVODJAC') => {
     this.isLoading = true;
-    setTimeout(() => {
-      this.user = {
-        id: '1',
-        email: email,
-        displayName: email.split('@')[0],
-        role: role
-      };
-      this.isLoading = false;
-    }, 1000);
+    
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        this.user = {
+          id: role === 'INVESTITOR' ? 'investitor-1' : 'izvodjac-1', // Matchamo mock ID-ove
+          email,
+          displayName: role === 'INVESTITOR' ? 'Ivan Investitor' : 'Marko Majstor',
+          role: role
+        };
+        this.isLoading = false;
+        console.log("Korisnik prijavljen:", this.user);
+        resolve();
+      }, 500);
+    });
   };
 
   logout = () => {
     this.user = null;
   };
-
-  get isAuthenticated() {
-    return !!this.user;
-  }
-
-  get userRole() {
-    return this.user?.role;
-  }
 }

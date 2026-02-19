@@ -25,28 +25,30 @@ const Navbar: React.FC = observer(() => {
           </Typography>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* Gumb koji je dostupan svima za pregled Marketplace-a */}
             <Button color="secondary" onClick={() => navigate('/marketplace')}>
               Marketplace
             </Button>
 
             {authenticationStore.isAuthenticated ? (
               <>
+                <Button color="secondary" onClick={() => navigate('/moji-poslovi')}>
+                  Moji Poslovi
+                </Button>
+                
                 {authenticationStore.user?.role === 'INVESTITOR' && (
-                  <Button color="secondary" onClick={() => navigate('/objavi-posao')}>
+                  <Button variant="contained" color="primary" onClick={() => navigate('/objavi-posao')}>
                     Objavi Posao
                   </Button>
                 )}
-                {authenticationStore.user?.role === 'IZVODJAC' && (
-                  <Button color="secondary" onClick={() => navigate('/pretraga-poslova')}>
-                    Moji Poslovi
-                  </Button>
-                )}
+                
                 <Button 
                   variant="outlined" 
                   color="secondary" 
                   size="small"
-                  onClick={() => authenticationStore.logout()}
+                  onClick={() => {
+                    authenticationStore.logout();
+                    navigate('/');
+                  }}
                 >
                   Odjava ({authenticationStore.user?.displayName})
                 </Button>

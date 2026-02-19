@@ -1,17 +1,24 @@
 import React from 'react';
-import { Card, CardContent, Typography, Button, Box, Chip, Divider } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Chip, Divider, Badge } from '@mui/material';
 import { Job } from '../stores/JobStore';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '@/stores/RootStore';
+import { observer } from 'mobx-react-lite';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PaymentsIcon from '@mui/icons-material/Payments';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 
 interface JobCardProps {
   job: Job;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job }) => {
+const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
   const navigate = useNavigate();
+  const { bidStore, authenticationStore } = useStore();
+  
+  const bidsCount = bidStore.getBidsByJobId(job.id).length;
+  const isOwner = authenticationStore.user?.id === job.investitorId;
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -24,7 +31,7 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
             sx={{ fontWeight: 600, borderRadius: 1 }} 
           />
           <Typography variant="caption" color="text.secondary">
-            Objavljeno: {new Date(job.createdAt).toLocaleDateString('hr-HR')}
+            {new Date(job.createdAt).toLocaleDateString('hr-HR')}
           </Typography>
         </Box>
 
@@ -66,18 +73,31 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
         </Box>
       </CardContent>
       
-      <Box sx={{ p: 2, pt: 0 }}>
+      <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1, alignItems: 'center' }}>
         <Button 
           fullWidth 
           variant="contained" 
           color="secondary"
           onClick={() => navigate(`/marketplace/${job.id}`)}
         >
-          Pogledaj detalje
+          Detalji
         </Button>
+        
+        {isOwner && (
+          <Badge badgeContent={bidsCount} color="error" showZero={false}>
+            <Button 
+              variant="outlined" 
+              color="secondary"
+              onClick={() => navigate(`/marketplace/${job.id}`)}
+              sx={{ minWidth: 'auto', px: 2 }}
+            >
+              <ChatBubbleOutlineIcon />
+            </Button>
+          </Badge>
+        )}
       </Box>
     </Card>
   );
-};
+});
 
 export default JobCard;
