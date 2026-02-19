@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, Button, Box, Chip, Divider } from '@mui/material';
 import { Job } from '../stores/JobStore';
+import { useNavigate } from 'react-router-dom';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PaymentsIcon from '@mui/icons-material/Payments';
@@ -10,6 +11,8 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ job }) => {
+  const navigate = useNavigate();
+
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <CardContent sx={{ flexGrow: 1 }}>
@@ -64,7 +67,12 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
       </CardContent>
       
       <Box sx={{ p: 2, pt: 0 }}>
-        <Button fullWidth variant="contained" color="secondary">
+        <Button 
+          fullWidth 
+          variant="contained" 
+          color="secondary"
+          onClick={() => navigate(`/marketplace/${job.id}`)}
+        >
           Pogledaj detalje
         </Button>
       </Box>

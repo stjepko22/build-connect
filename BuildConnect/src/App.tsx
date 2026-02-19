@@ -8,6 +8,7 @@ import LoginPage from '@/modules/authentication/pages/LoginPage';
 import RegisterPage from '@/modules/authentication/pages/RegisterPage';
 import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
 import JobListPage from '@/modules/marketplace/jobs/pages/JobListPage';
+import JobDetailsPage from '@/modules/marketplace/jobs/pages/JobDetailsPage';
 import MainLayout from '@/layouts/MainLayout';
 
 const HomePage = observer(() => {
@@ -37,6 +38,7 @@ const App: React.FC = () => {
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/marketplace" element={<JobListPage />} />
+              <Route path="/marketplace/:id" element={<JobDetailsPage />} />
               <Route path="/objavi-posao" element={<CreateJobPage />} />
             </Route>
 
