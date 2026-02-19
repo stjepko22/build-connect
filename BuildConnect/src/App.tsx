@@ -8,7 +8,7 @@ import LoginPage from '@/modules/authentication/pages/LoginPage';
 import RegisterPage from '@/modules/authentication/pages/RegisterPage';
 
 const HomeContent = observer(() => {
-  const { authStore, appTitle } = useStore();
+  const { authenticationStore, appTitle } = useStore();
   const navigate = useNavigate();
   
   return (
@@ -18,15 +18,15 @@ const HomeContent = observer(() => {
           {appTitle}
         </Typography>
         
-        {authStore.isAuthenticated ? (
+        {authenticationStore.isAuthenticated ? (
           <Box>
             <Typography variant="h5" sx={{ mb: 2 }}>
-              Dobrodošli, {authStore.user?.displayName}!
+              Dobrodošli, {authenticationStore.user?.displayName}!
             </Typography>
             <Typography variant="h6" color="secondary" sx={{ mb: 4 }}>
-              Prijavljeni ste kao: <strong>{authStore.user?.role}</strong>
+              Prijavljeni ste kao: <strong>{authenticationStore.user?.role}</strong>
             </Typography>
-            <Button variant="outlined" color="secondary" onClick={() => authStore.logout()}>
+            <Button variant="outlined" color="secondary" onClick={() => authenticationStore.logout()}>
               Odjavi se
             </Button>
           </Box>
