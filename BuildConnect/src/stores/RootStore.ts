@@ -3,11 +3,13 @@ import { makeAutoObservable } from 'mobx';
 import { AuthenticationStore } from '@/modules/authentication/stores/AuthenticationStore';
 import { JobStore } from '@/modules/marketplace/jobs/stores/JobStore';
 import { BidStore } from '@/modules/marketplace/bids/stores/BidStore';
+import { ReviewStore } from '@/modules/marketplace/reviews/stores/ReviewStore';
 
 export class RootStore {
   authenticationStore: AuthenticationStore;
   jobStore: JobStore;
   bidStore: BidStore;
+  reviewStore: ReviewStore;
   appTitle: string = "BuildConnect";
 
   constructor() {
@@ -15,7 +17,8 @@ export class RootStore {
     this.authenticationStore = new AuthenticationStore(this);
     this.jobStore = new JobStore(this);
     this.bidStore = new BidStore(this);
-    console.log("RootStore initialized with Auth, Job and Bid stores");
+    this.reviewStore = new ReviewStore(this);
+    console.log("RootStore initialized with all modules");
   }
 
   setAppTitle(newTitle: string) {
