@@ -8,9 +8,8 @@ export class RootStore {
 
   constructor() {
     makeAutoObservable(this);
-    // Povezivanje modula s root-om
     this.authenticationStore = new AuthenticationStore(this);
-    console.log("RootStore & AuthStore initialized");
+    console.log("RootStore & AuthenticationStore initialized");
   }
 
   setAppTitle(newTitle: string) {

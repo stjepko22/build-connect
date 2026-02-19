@@ -22,7 +22,6 @@ export class AuthenticationStore {
 
   login = async (email: string, role: UserRole) => {
     this.isLoading = true;
-    // Simulacija API poziva
     setTimeout(() => {
       this.user = {
         id: '1',
@@ -31,7 +30,6 @@ export class AuthenticationStore {
         role: role
       };
       this.isLoading = false;
-      console.log(`Korisnik prijavljen kao: ${role}`);
     }, 1000);
   };
 
@@ -41,5 +39,9 @@ export class AuthenticationStore {
 
   get isAuthenticated() {
     return !!this.user;
+  }
+
+  get userRole() {
+    return this.user?.role;
   }
 }
