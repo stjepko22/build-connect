@@ -6,6 +6,7 @@ import theme from './theme/theme';
 import { StoreContext, rootStore, useStore } from './stores/RootStore';
 import LoginPage from '@/modules/authentication/pages/LoginPage';
 import RegisterPage from '@/modules/authentication/pages/RegisterPage';
+import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
 import MainLayout from '@/layouts/MainLayout';
 
 const HomePage = observer(() => {
@@ -18,7 +19,7 @@ const HomePage = observer(() => {
           {appTitle}
         </Typography>
         <Typography variant="h5" color="secondary">
-          Dobrodošli na centralno mjesto za građevinske usluge.
+          Povezujemo investitore i vrhunske izvođače radova.
         </Typography>
       </Paper>
     </Container>
@@ -32,17 +33,14 @@ const App: React.FC = () => {
         <CssBaseline />
         <BrowserRouter>
           <Routes>
-            {/* Rute koje koriste MainLayout (Navbar je vidljiv) */}
             <Route element={<MainLayout />}>
               <Route path="/" element={<HomePage />} />
-              {/* Buduće rute idu ovdje */}
+              <Route path="/objavi-posao" element={<CreateJobPage />} />
             </Route>
 
-            {/* Rute bez Navbara (opcionalno, ali login često volimo bez) */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Fallback na home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
