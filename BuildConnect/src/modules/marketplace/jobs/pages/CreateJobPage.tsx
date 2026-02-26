@@ -195,13 +195,14 @@ const CreateJobPage: React.FC = observer(() => {
 
             <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
                 <BaseButton
                   type="submit"
                   variant="contained"
                   color="primary"
                   size="large"
-                  sx={{ px: 8, py: 1.5, borderRadius: 3, fontWeight: 900 }}
+                  fullWidth={true}
+                  sx={{ px: { xs: 2, sm: 6, md: 8 }, py: 1.5, borderRadius: 3, fontWeight: 900, maxWidth: { xs: '100%', sm: 360 } }}
                   loading={jobStore.isLoading}
                 >
                   Objavi oglas

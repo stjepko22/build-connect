@@ -26,7 +26,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, authentication
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'text.disabled' }}>
+        <IconButton onClick={onClose} sx={{ color: 'text.disabled', p: 1.25 }}>
           <CloseIcon />
         </IconButton>
       </Box>

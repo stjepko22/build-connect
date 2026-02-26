@@ -36,20 +36,17 @@ const Footer: React.FC = () => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <IconButton 
-                size="small" 
-                sx={{ color: 'grey.500', '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
+                sx={{ color: 'grey.500', p: 1.25, '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
               >
                 <FacebookIcon />
               </IconButton>
               <IconButton 
-                size="small" 
-                sx={{ color: 'grey.500', '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
+                sx={{ color: 'grey.500', p: 1.25, '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
               >
                 <InstagramIcon />
               </IconButton>
               <IconButton 
-                size="small" 
-                sx={{ color: 'grey.500', '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
+                sx={{ color: 'grey.500', p: 1.25, '&:hover': { color: 'primary.main', bgcolor: alpha('#FFF', 0.05) } }}
               >
                 <LinkedInIcon />
               </IconButton>

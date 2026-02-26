@@ -122,7 +122,9 @@ const JobListPage: React.FC = observer(() => {
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center', 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          flexWrap: 'wrap',
+          gap: 1.5,
           mb: 6 
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -150,7 +152,7 @@ const JobListPage: React.FC = observer(() => {
         {filteredJobs.length === 0 ? (
           <Fade in timeout={500}>
             <Paper sx={{ 
-              p: 12, 
+              p: { xs: 4, sm: 8, md: 12 }, 
               textAlign: 'center', 
               borderRadius: 6, 
               bgcolor: 'background.paper',

@@ -62,17 +62,19 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
         <BaseInput 
           label="Ime"
           value={registrationStore.firstName}
           onChange={(e) => registrationStore.setFirstName(e.target.value)}
+          sx={{ flex: 1 }}
           slotProps={{ input: { startAdornment: <PersonTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
         />
         <BaseInput 
           label="Prezime"
           value={registrationStore.lastName}
           onChange={(e) => registrationStore.setLastName(e.target.value)}
+          sx={{ flex: 1 }}
         />
       </Box>
 

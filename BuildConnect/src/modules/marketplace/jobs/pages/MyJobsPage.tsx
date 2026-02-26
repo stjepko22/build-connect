@@ -104,10 +104,12 @@ const MyJobsPage: React.FC = observer(() => {
             onChange={handleTabChange} 
             textColor="primary"
             indicatorColor="primary"
+            variant="scrollable"
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': {
                 fontWeight: 800,
-                fontSize: '1rem',
+                fontSize: { xs: '0.85rem', sm: '1rem' },
                 textTransform: 'none',
                 minHeight: 64,
               }

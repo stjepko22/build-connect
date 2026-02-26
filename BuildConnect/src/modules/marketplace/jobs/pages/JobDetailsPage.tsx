@@ -150,6 +150,7 @@ const JobDetailsPage: React.FC = observer(() => {
                     color: 'secondary.main',
                     letterSpacing: '-1.5px',
                     lineHeight: 1.1,
+                    fontSize: { xs: '1.8rem', sm: '2.2rem', md: '3rem' },
                   }}
                 >
                   {job.title}
@@ -354,7 +355,7 @@ const JobDetailsPage: React.FC = observer(() => {
 
         {/* Desna strana: Sidebar */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Box sx={{ position: 'sticky', top: 24 }}>
+          <Box sx={{ position: { xs: 'static', md: 'sticky' }, top: { md: 24 } }}>
             {isOwner && acceptedBid && !existingReview && (
               <Paper
                 sx={{
