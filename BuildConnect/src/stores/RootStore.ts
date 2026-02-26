@@ -3,6 +3,7 @@ import RegistrationStore from '@/modules/authentication/stores/RegistrationStore
 import BidStore from '@/modules/marketplace/bids/stores/BidStore';
 import JobStore from '@/modules/marketplace/jobs/stores/JobStore';
 import ReviewStore  from '@/modules/marketplace/reviews/stores/ReviewStore';
+import UserStore from '@/modules/user/stores/UserStore';
 
 export class RootStore {
     constructor() {
@@ -11,6 +12,7 @@ export class RootStore {
         this.bidStore = new BidStore(this);
         this.reviewStore = new ReviewStore(this);
         this.registrationStore = new RegistrationStore(this);
+        this.userStore = new UserStore(this);
   }
   
   authenticationStore: AuthenticationStore;
@@ -18,4 +20,5 @@ export class RootStore {
   bidStore: BidStore;
   reviewStore: ReviewStore;
   registrationStore: RegistrationStore
+  userStore: UserStore;
 }

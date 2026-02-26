@@ -42,7 +42,8 @@ const UserAvatarMenu: React.FC = observer(() => {
 
   const handleProfile = () => {
     handleClose();
-    navigate('/moji-poslovi');
+    if (!user) return;
+    navigate(`/profil/${user.id}`);
   };
 
   if (!user) return null;

@@ -1,55 +1,78 @@
+import React, { useState, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+import {
+  Box,
+  Fade,
+  Grid, // MUI v7 koristi Grid2
+  InputAdornment,
+  Paper,
+  TextField,
+  Typography,
+  alpha,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import debounce from 'lodash/debounce';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
+
 import BaseButton from '@/components/common/atoms/buttons/BaseButton';
 import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
 import JobCard from '@/components/common/molecules/cards/JobCard';
 import { useRootStore } from '@/hooks/useRootStore';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
-import {
-    Box,
-    Fade,
-    Grid,
-    InputAdornment,
-    Paper,
-    TextField,
-    Typography,
-    alpha,
-    useTheme
-} from '@mui/material';
-import { observer } from 'mobx-react-lite';
-import React, { useState } from 'react';
 
 const JobListPage: React.FC = observer(() => {
   const { jobStore } = useRootStore();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // Lokalni state za trenutni input (brza promjena na ekranu)
+  const [inputValue, setInputValue] = useState('');
+  // State koji zapravo filtrira listu (debounced)
   const [searchQuery, setSearchQuery] = useState('');
 
-  const query = searchQuery.toLowerCase().trim();
-  const filteredJobs = !query
-    ? jobStore.allJobs
-    : jobStore.allJobs.filter(
-        (job) =>
-          job.title.toLowerCase().includes(query) ||
-          job.description.toLowerCase().includes(query) ||
-          job.location.toLowerCase().includes(query) ||
-          job.category.toLowerCase().includes(query)
-      );
+  // Debounce funkcija - čeka 300ms nakon zadnjeg typing-a
+  const debouncedSearch = useMemo(
+    () => debounce((val: string) => setSearchQuery(val), 300),
+    []
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+    debouncedSearch(val);
+  };
+
+  const filteredJobs = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return jobStore.allJobs;
+    
+    return jobStore.allJobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(query) ||
+        job.description.toLowerCase().includes(query) ||
+        job.location.toLowerCase().includes(query) ||
+        job.category.toLowerCase().includes(query)
+    );
+  }, [searchQuery, jobStore.allJobs]);
 
   return (
-    <Box sx={{ pb: 8, mt: -4 }}> {/* mt: -4 poništava layout padding za hero efekt */}
-      {/* Hero Section */}
+    <Box sx={{ pb: 12 }}>
+      {/* Hero Section - Responzivna prilagodba */}
       <Box sx={{ 
         bgcolor: 'primary.main', 
         color: 'primary.contrastText', 
-        pt: 8, 
-        pb: 12, 
-        mb: 6,
-        borderRadius: '0 0 60px 60px',
-        boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.2)}`,
+        pt: { xs: 4, md: 8 }, 
+        pb: { xs: 6, md: 12 }, 
+        mb: { xs: 4, md: 6 },
+        borderRadius: { xs: '0 0 30px 30px', md: '0 0 60px 60px' },
+        boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.15)}`,
         position: 'relative',
-        zIndex: 1
+        zIndex: 1,
+        mx: { xs: -2, sm: 0 } // Proteže se do rubova na mobitelu
       }}>
-        <BaseContainer maxWidth="lg" withPadding={false}>
+        <BaseContainer maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid size={{ xs: 12, md: 8 }}>
               <Typography 
@@ -57,38 +80,50 @@ const JobListPage: React.FC = observer(() => {
                 sx={{ 
                   fontWeight: 900, 
                   mb: 2, 
-                  letterSpacing: '-1.5px',
-                  fontSize: { xs: '2.5rem', md: '3.75rem' } 
+                  letterSpacing: '-0.03em',
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3.75rem' },
+                  textAlign: { xs: 'center', md: 'left' }
                 }}
               >
                 Pronađite sljedeći projekt
               </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9, mb: 5, fontWeight: 500, maxWidth: '90%' }}>
-                Najveća baza građevinskih oglasa. Povežite se s investitorima direktno i bez posrednika.
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  opacity: 0.8, 
+                  mb: 4, 
+                  fontWeight: 400, 
+                  maxWidth: { xs: '100%', md: '90%' },
+                  textAlign: { xs: 'center', md: 'left' },
+                  fontSize: { xs: '1rem', md: '1.25rem' }
+                }}
+              >
+                Povežite se s investitorima direktno i bez posrednika.
               </Typography>
               
               <Paper 
                 elevation={0}
                 sx={{ 
-                  p: 1, 
-                  borderRadius: 4, 
+                  p: 0.5, 
+                  borderRadius: 3, 
                   display: 'flex', 
                   alignItems: 'center',
-                  gap: 1, 
+                  gap: 0.5, 
                   maxWidth: 650, 
                   bgcolor: 'background.paper',
-                  boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                  mx: { xs: 'auto', md: '0' }
                 }}
               >
                 <TextField 
                   fullWidth 
-                  placeholder="Pretražite po zanimanju, gradu ili usluzi..." 
+                  placeholder={isMobile ? "Pretraži..." : "Pretražite po zanimanju, gradu..."} 
                   variant="outlined"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={inputValue}
+                  onChange={handleSearchChange}
                   sx={{ 
                     '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                    '& .MuiInputBase-input': { fontWeight: 500 }
+                    '& .MuiInputBase-input': { fontWeight: 500, py: 1.5 }
                   }}
                   InputProps={{
                     startAdornment: (
@@ -98,19 +133,15 @@ const JobListPage: React.FC = observer(() => {
                     ),
                   }}
                 />
-                <BaseButton 
-                  variant="contained" 
-                  color="secondary" 
-                  size="large" 
-                  sx={{ 
-                    px: 4, 
-                    borderRadius: 3,
-                    height: 54,
-                    display: { xs: 'none', sm: 'inline-flex' } 
-                  }}
-                >
-                  Pretraži
-                </BaseButton>
+                {!isMobile && (
+                  <BaseButton 
+                    variant="contained" 
+                    color="secondary" 
+                    sx={{ px: 4, borderRadius: 2.5, height: 48 }}
+                  >
+                    Pretraži
+                  </BaseButton>
+                )}
               </Paper>
             </Grid>
           </Grid>
@@ -118,80 +149,52 @@ const JobListPage: React.FC = observer(() => {
       </Box>
 
       {/* Main Content */}
-      <BaseContainer maxWidth="lg" withPadding={false}>
+      <BaseContainer maxWidth="lg">
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          flexWrap: 'wrap',
-          gap: 1.5,
-          mb: 6 
+          alignItems: 'center', 
+          mb: 4 
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box 
-              sx={{ 
-                bgcolor: 'secondary.main', 
-                width: 8, 
-                height: 32, 
-                borderRadius: 1 
-              }} 
-            />
-            <Typography variant="h4" sx={{ fontWeight: 900, color: 'secondary.main' }}>
-              Dostupni poslovi
-            </Typography>
-          </Box>
+          <Typography variant="h5" sx={{ fontWeight: 900, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ width: 6, height: 24, bgcolor: 'secondary.main', borderRadius: 1 }} />
+            Dostupni poslovi
+          </Typography>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FilterListIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
-              Rezultati: {filteredJobs.length}
+            <FilterListIcon fontSize="small" sx={{ color: 'text.disabled' }} />
+            <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+              {filteredJobs.length} oglasa
             </Typography>
           </Box>
         </Box>
 
         {filteredJobs.length === 0 ? (
-          <Fade in timeout={500}>
+          <Fade in>
             <Paper sx={{ 
-              p: { xs: 4, sm: 8, md: 12 }, 
+              p: { xs: 6, md: 10 }, 
               textAlign: 'center', 
-              borderRadius: 6, 
-              bgcolor: 'background.paper',
+              borderRadius: 5, 
               border: '2px dashed',
-              borderColor: alpha(theme.palette.divider, 0.5),
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
+              borderColor: 'divider',
+              bgcolor: alpha(theme.palette.background.paper, 0.5)
             }}>
-              <Box 
-                sx={{ 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                  p: 3, 
-                  borderRadius: '50%', 
-                  mb: 3 
-                }}
-              >
-                <ConstructionIcon sx={{ fontSize: 60, color: 'primary.main' }} />
-              </Box>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 900 }}>
-                Nismo pronašli ono što tražite
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
-                Pokušajte s drugim ključnim riječima ili očistite filtre.
-              </Typography>
+              <ConstructionIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>Nema rezultata</Typography>
               <BaseButton 
-                variant="outlined" 
-                color="primary"
-                onClick={() => setSearchQuery('')}
+                variant="text" 
+                onClick={() => { setInputValue(''); setSearchQuery(''); }}
+                sx={{ mt: 1 }}
               >
-                Očisti pretragu
+                Prikaži sve poslove
               </BaseButton>
             </Paper>
           </Fade>
         ) : (
-          <Grid container spacing={4}>
+          <Grid container spacing={{ xs: 2, md: 3 }}>
             {filteredJobs.map((job, index) => (
               <Grid key={job.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Fade in timeout={(index % 6) * 100}>
+                <Fade in timeout={index * 50}>
                   <Box sx={{ height: '100%' }}>
                     <JobCard job={job} />
                   </Box>

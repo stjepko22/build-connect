@@ -1,15 +1,25 @@
-import { Job } from '@/modules/marketplace/jobs/stores/JobStore';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
+import { 
+  Badge, 
+  Box, 
+  Card, 
+  CardContent, 
+  Chip, 
+  Divider, 
+  Stack,
+  Typography, 
+  alpha, 
+  useTheme 
+} from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Badge, Box, Card, CardContent, Chip, Divider, Typography, alpha, useTheme } from '@mui/material';
-import { observer } from 'mobx-react-lite';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
-// Atomi
 import BaseButton from '@/components/common/atoms/buttons/BaseButton';
 import { useRootStore } from '@/hooks/useRootStore';
+import { Job } from '@/modules/marketplace/jobs/stores/JobStore';
 
 interface JobCardProps {
   job: Job;
@@ -25,65 +35,58 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
 
   return (
     <Card 
+      onClick={() => navigate(`/marketplace/${job.id}`)}
       sx={{ 
         height: '100%', 
         display: 'flex', 
         flexDirection: 'column', 
-        borderRadius: 6, // Još malo zaobljenije za moderniji look
+        borderRadius: 4,
         border: '1px solid',
-        borderColor: alpha(theme.palette.divider, 0.08),
+        borderColor: alpha(theme.palette.divider, 0.1),
         bgcolor: 'background.paper',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        position: 'relative',
-        overflow: 'visible',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-10px)',
-          borderColor: 'primary.main',
-          boxShadow: `0 20px 40px ${alpha(theme.palette.primary.main, 0.08)}`,
-          '& .job-card-icon': {
-            transform: 'scale(1.2)',
-            color: 'primary.main'
-          }
+          transform: { md: 'translateY(-4px)' }, // Bez transformacije na mobitelu radi boljeg UX-a
+          boxShadow: theme.shadows[4],
+          borderColor: alpha(theme.palette.primary.main, 0.3),
         }
       }}
     >
       <CardContent sx={{ flexGrow: 1, p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Chip 
             label={job.category} 
             size="small" 
             sx={{ 
               fontWeight: 800, 
-              borderRadius: 2, 
-              bgcolor: alpha(theme.palette.primary.main, 0.08),
+              borderRadius: 1.5, 
+              bgcolor: alpha(theme.palette.primary.main, 0.05),
               color: 'primary.main',
-              fontSize: '0.65rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              border: 'none'
+              fontSize: '0.7rem'
             }} 
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.disabled' }}>
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'text.disabled' }}>
             <AccessTimeIcon sx={{ fontSize: 14 }} />
             <Typography variant="caption" sx={{ fontWeight: 600 }}>
               {new Date(job.createdAt).toLocaleDateString('hr-HR')}
             </Typography>
-          </Box>
+          </Stack>
         </Box>
 
         <Typography 
           variant="h6" 
           sx={{ 
-            fontWeight: 900, 
-            mb: 1.5, 
+            fontWeight: 800, 
+            mb: 1, 
             lineHeight: 1.3, 
-            minHeight: '3.4rem', 
-            color: 'secondary.main',
-            display: '-webkit-box', 
-            WebkitLineClamp: 2, 
-            WebkitBoxOrient: 'vertical', 
-            overflow: 'hidden'
+            color: 'primary.main',
+            // Ograničavanje na 2 reda
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            minHeight: '3.1rem'
           }}
         >
           {job.title}
@@ -93,90 +96,52 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
           variant="body2" 
           color="text.secondary" 
           sx={{ 
-            mb: 3, 
-            display: '-webkit-box', 
-            WebkitLineClamp: 2, 
-            WebkitBoxOrient: 'vertical', 
+            mb: 2,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            lineHeight: 1.6,
-            fontSize: '0.925rem'
+            fontSize: '0.875rem'
           }}
         >
           {job.description}
         </Typography>
 
-        <Divider sx={{ mb: 2.5, opacity: 0.6 }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+          <LocationOnIcon sx={{ fontSize: 16, color: 'secondary.main' }} />
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {job.location}
+          </Typography>
+        </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <LocationOnIcon 
-              className="job-card-icon" 
-              sx={{ 
-                fontSize: 18, 
-                color: 'text.disabled', 
-                transition: '0.3s ease' 
-              }} 
-            />
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-              {job.location}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled', fontWeight: 700, lineHeight: 1 }}>
+        <Divider sx={{ mb: 2, opacity: 0.5 }} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <Box>
+            <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled', fontWeight: 800 }}>
               BUDŽET
             </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 900, color: 'success.dark' }}>
-              {job.budget ? `${job.budget.toLocaleString()}€` : 'Dogovor'}
+            <Typography variant="h6" sx={{ fontWeight: 900, color: 'success.dark', lineHeight: 1 }}>
+              {job.budget ? `${job.budget.toLocaleString()}€` : 'Po dogovoru'}
             </Typography>
           </Box>
+
+          {isOwner && (
+            <Badge badgeContent={bidsCount} color="error" sx={{ mr: 1 }}>
+              <ChatBubbleOutlineIcon color="action" />
+            </Badge>
+          )}
         </Box>
       </CardContent>
       
-      <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1.5 }}>
+      <Box sx={{ p: 2, pt: 0 }}>
         <BaseButton 
           fullWidth 
-          variant="contained" 
-          size="medium"
-          onClick={() => navigate(`/marketplace/${job.id}`)}
-          sx={{ 
-            borderRadius: 3,
-            py: 1.2,
-            boxShadow: 'none',
-            '&:hover': { boxShadow: 'none' }
-          }}
+          color="primary"
+          sx={{ borderRadius: 2, fontWeight: 700 }}
         >
-          Detalji
+          Pogledaj detalje
         </BaseButton>
-        
-        {isOwner && (
-          <Badge 
-            badgeContent={bidsCount} 
-            color="error" 
-            sx={{ 
-              '& .MuiBadge-badge': { 
-                fontWeight: 900,
-                top: 4,
-                right: 4,
-                border: `2px solid ${theme.palette.background.paper}` 
-              } 
-            }}
-          >
-            <BaseButton 
-              variant="outlined" 
-              color="secondary"
-              onClick={() => navigate(`/marketplace/${job.id}`)}
-              sx={{ 
-                minWidth: 50, 
-                p: 0, 
-                borderRadius: 3,
-                borderColor: alpha(theme.palette.divider, 0.2) 
-              }}
-            >
-              <ChatBubbleOutlineIcon fontSize="small" />
-            </BaseButton>
-          </Badge>
-        )}
       </Box>
     </Card>
   );

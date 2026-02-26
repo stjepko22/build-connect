@@ -9,7 +9,8 @@ import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
 import JobListPage from '@/modules/marketplace/jobs/pages/JobListPage';
 import JobDetailsPage from '@/modules/marketplace/jobs/pages/JobDetailsPage';
 import MyJobsPage from '@/modules/marketplace/jobs/pages/MyJobsPage';
-import ContractorProfilePage from '@/modules/marketplace/jobs/pages/ContractorProfilePage';
+import ProfilePage from '@/modules/user/pages/ProfilePage';
+import DashboardPage from '@/modules/dashboard/pages/DashboardPage'; // NOVO
 import LandingPage from '@/modules/landing/pages/LandingPage';
 import MainLayout from '@/layouts/MainLayout';
 import RootStoreContext from './context/RootStoreContext';
@@ -51,14 +52,19 @@ const App: React.FC = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/marketplace" element={<JobListPage />} />
               <Route path="/marketplace/:id" element={<JobDetailsPage />} />
-              <Route path="/profil/:id" element={<ContractorProfilePage />} />
+              {/* Posao detalji dostupni i preko /posao/:id ako želiš konzistentnost */}
+              <Route path="/posao/:id" element={<JobDetailsPage />} /> 
+              <Route path="/profil/:id" element={<ProfilePage />} />
 
-              <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
-                <Route path="/objavi-posao" element={<CreateJobPage />} />
+              {/* Rute za prijavljene korisnike */}
+              <Route element={<RequireAuth />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/moji-poslovi" element={<MyJobsPage />} />
               </Route>
 
-              <Route element={<RequireAuth />}>
-                <Route path="/moji-poslovi" element={<MyJobsPage />} />
+              {/* Rute specifične za uloge */}
+              <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
+                <Route path="/objavi-posao" element={<CreateJobPage />} />
               </Route>
             </Route>
 

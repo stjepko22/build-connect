@@ -1,11 +1,12 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { Paper, alpha, useTheme } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
 import { useRootStore } from '@/hooks/useRootStore';
 import Login from '../components/Login';
 
-const LoginPage: React.FC = () => {
+const LoginPage: React.FC = observer(() => {
   const theme = useTheme();
   const { authenticationStore } = useRootStore();
 
@@ -30,6 +31,6 @@ const LoginPage: React.FC = () => {
       </Paper>
     </BaseContainer>
   );
-};
+});
 
 export default LoginPage;

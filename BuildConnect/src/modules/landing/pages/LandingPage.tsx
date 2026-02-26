@@ -1,187 +1,380 @@
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import GroupIcon from '@mui/icons-material/Group';
-import { Box, Grid, Paper, Typography, alpha } from '@mui/material';
-import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Grid,
+  Paper,
+  Typography,
+  alpha,
+  Stack,
+  Chip,
+  Divider,
+} from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import EngineeringIcon from '@mui/icons-material/Engineering';
+import BusinessIcon from '@mui/icons-material/Business';
+import GroupIcon from '@mui/icons-material/Group';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ShieldIcon from '@mui/icons-material/Shield';
 
-const LandingPage: React.FC = observer(() => {
+import BaseButton from '@/components/common/atoms/buttons/BaseButton';
+import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
+
+const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ overflow: 'hidden' }}>
-      {/* Hero Section */}
-      <Box 
-        sx={{ 
-          pt: { xs: 8, md: 15 }, 
-          pb: { xs: 10, md: 20 }, 
-          background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.light, 0.3)} 100%)`,
-          position: 'relative'
+    <Box
+      sx={{
+        overflow: 'hidden',
+        bgcolor: 'background.default',
+        // Cancel MainLayout mobile paddings for full-bleed landing sections.
+        mx: { xs: -2, sm: 0 },
+        mt: { xs: -2, sm: 0 },
+      }}
+    >
+      <Box
+        sx={{
+          pt: { xs: 7, md: 11 },
+          pb: { xs: 8, md: 12 },
+          color: 'white',
+          position: 'relative',
+          borderRadius: { xs: '0 0 36px 36px', md: '0 0 72px 72px' },
+          background:
+            'linear-gradient(145deg, #0f0f0f 0%, #1b1b1b 45%, #2b2b2b 100%)',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background:
+              'radial-gradient(circle at 15% 18%, rgba(255,179,0,0.16), transparent 36%), radial-gradient(circle at 80% 70%, rgba(255,179,0,0.14), transparent 35%)',
+          },
         }}
       >
         <BaseContainer maxWidth="lg">
-          <Grid container spacing={6} alignItems="center">
-            <Grid size={{ xs: 12, md: 7 }}>
-              <Typography 
-                variant="h1" 
-                sx={{ 
-                  fontWeight: 900, 
-                  fontSize: { xs: '3rem', md: '4.5rem' }, 
-                  lineHeight: 1.1, 
-                  mb: 3,
-                  color: 'secondary.main'
+          <Grid container spacing={{ xs: 5, md: 8 }} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
+            <Grid size={{ xs: 12, md: 7 }} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  maxWidth: { xs: 360, sm: 520, md: 'none' },
+                  mx: { xs: 'auto', md: 0 },
+                  textAlign: { xs: 'center', md: 'left' },
                 }}
               >
-                Pronađite majstora kojeg ćete <span style={{ color: '#FFB300' }}>preporučiti.</span>
-              </Typography>
-              <Typography 
-                variant="h5" 
-                color="text.secondary" 
-                sx={{ mb: 6, maxWidth: '600px', lineHeight: 1.6, fontWeight: 500 }}
-              >
-                BuildConnect povezuje vlasnike nekretnina s provjerenim izvođačima građevinskih radova. Brzo, sigurno i bez skrivenih troškova.
-              </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <BaseButton 
-                  variant="contained" 
-                  size="large" 
-                  onClick={() => navigate('/register')}
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{ px: 4, py: 2, fontSize: '1.1rem' }}
-                >
-                  Trebam majstora
-                </BaseButton>
-                <BaseButton 
-                  variant="outlined" 
-                  color="secondary"
-                  size="large" 
-                  onClick={() => navigate('/marketplace')}
-                  sx={{ px: 4, py: 2, fontSize: '1.1rem' }}
-                >
-                  Tražim posao
-                </BaseButton>
-              </Box>
-            </Grid>
-            
-            <Grid size={{ xs: 12, md: 5 }} sx={{ display: { xs: 'none', md: 'block' } }}>
-              <Box 
-                sx={{ 
-                  position: 'relative',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '10%',
-                    left: '10%',
-                    width: '100%',
-                    height: '100%',
-                    bgcolor: 'primary.main',
-                    borderRadius: 8,
-                    zIndex: 1,
-                    opacity: 0.1
-                  }
-                }}
-              >
-                <Paper 
-                  elevation={0}
-                  sx={{ 
-                    p: 4, 
-                    borderRadius: 8, 
-                    bgcolor: 'white', 
-                    border: '1px solid', 
-                    borderColor: 'divider',
-                    position: 'relative',
-                    zIndex: 2,
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
+                <Chip
+                  label="Pro mreza za gradjevinu"
+                  icon={<ShieldIcon sx={{ color: 'primary.main !important', fontSize: 16 }} />}
+                  sx={{
+                    display: 'inline-flex',
+                    mb: 2.5,
+                    px: 0.6,
+                    py: 0.2,
+                    bgcolor: alpha('#ffffff', 0.1),
+                    border: '1px solid',
+                    borderColor: alpha('#fff', 0.18),
+                    color: 'primary.main',
+                    fontWeight: 800,
+                    fontSize: '0.76rem',
+                    letterSpacing: '0.03em',
+                    textTransform: 'uppercase',
+                    borderRadius: 2,
+                    mx: { xs: 'auto', md: 0 },
+                  }}
+                />
+
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontWeight: 900,
+                    lineHeight: 1.04,
+                    letterSpacing: '-0.035em',
+                    mb: 2,
+                    fontSize: { xs: '2.2rem', sm: '2.9rem', md: '4.4rem' },
+                    textAlign: { xs: 'center', md: 'left' },
                   }}
                 >
-                  <ConstructionIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 900, mb: 1 }}>Započnite projekt</Typography>
-                  <Typography color="text.secondary">Postavite oglas besplatno i primite ponude u roku od 24 sata.</Typography>
-                </Paper>
+                  Posao i majstori
+                  <Box component="span" sx={{ color: 'primary.main', display: 'block' }}>
+                    bez improvizacije
+                  </Box>
+                </Typography>
+
+                <Typography
+                  sx={{
+                    maxWidth: 600,
+                    mb: 4,
+                    lineHeight: 1.65,
+                    color: alpha('#fff', 0.82),
+                    fontSize: { xs: '1rem', md: '1.15rem' },
+                    textAlign: { xs: 'center', md: 'left' },
+                  }}
+                >
+                  BuildConnect povezuje investitore i izvodjace kroz strukturirane
+                  oglase, ponude i recenzije. Odluke donosis na temelju podataka,
+                  ne dojma.
+                </Typography>
+
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={2.2}
+                  sx={{
+                    maxWidth: { xs: 360, sm: 520 },
+                    mx: { xs: 'auto', md: 0 },
+                    alignItems: { xs: 'center', sm: 'stretch' },
+                  }}
+                >
+                  <BaseButton
+                    variant="contained"
+                    size="large"
+                    endIcon={<ArrowForwardIcon />}
+                    onClick={() => navigate('/marketplace')}
+                    fullWidth={false}
+                    sx={{
+                      py: 1.6,
+                      borderRadius: 3,
+                      fontWeight: 900,
+                      width: { xs: '100%', sm: '100%' },
+                      maxWidth: { xs: 340, sm: 'none' },
+                      mx: { xs: 'auto', sm: 0 },
+                    }}
+                  >
+                    Otvori marketplace
+                  </BaseButton>
+                  <BaseButton
+                    variant="outlined"
+                    onClick={() => navigate('/register')}
+                    fullWidth={false}
+                    sx={{
+                      py: 1.6,
+                      borderRadius: 3,
+                      fontWeight: 800,
+                      width: { xs: '100%', sm: '100%' },
+                      maxWidth: { xs: 340, sm: 'none' },
+                      mx: { xs: 'auto', sm: 0 },
+                      color: 'white',
+                      borderColor: alpha('#fff', 0.38),
+                      '&:hover': { borderColor: alpha('#fff', 0.9) },
+                    }}
+                  >
+                    Kreiraj racun
+                  </BaseButton>
+                </Stack>
               </Box>
             </Grid>
+
+            <Grid size={{ xs: 12, md: 5 }} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  width: '100%',
+                  maxWidth: { xs: 360, sm: 'none' },
+                  p: { xs: 3, md: 4 },
+                  borderRadius: 5.5,
+                  border: '1px solid',
+                  borderColor: alpha('#fff', 0.22),
+                  bgcolor: alpha('#fff', 0.08),
+                  backdropFilter: 'blur(14px)',
+                  boxShadow: `inset 0 1px 0 ${alpha('#fff', 0.18)}, 0 24px 44px ${alpha(
+                    '#000',
+                    0.28
+                  )}`,
+                }}
+              >
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                  <Chip
+                    label="Provjereno"
+                    size="small"
+                    sx={{
+                      bgcolor: alpha('#fff', 0.12),
+                      color: 'white',
+                      borderRadius: 1.5,
+                      fontWeight: 700,
+                    }}
+                  />
+                  <Typography sx={{ color: alpha('#fff', 0.7), fontSize: '0.8rem', fontWeight: 700 }}>
+                    odgovor unutar 24h
+                  </Typography>
+                </Stack>
+
+                <Typography variant="h5" sx={{ fontWeight: 900, color: 'primary.main', mb: 1.2 }}>
+                  Sto dobivas odmah
+                </Typography>
+                <Typography sx={{ color: alpha('#fff', 0.72), mb: 3, fontSize: '0.95rem' }}>
+                  Jedinstven tijek rada: od objave posla do potvrde izvodjaca.
+                </Typography>
+
+                <Stack spacing={1.2}>
+                  {[
+                    { icon: <VerifiedIcon sx={{ color: 'primary.main', fontSize: 19 }} />, text: 'Auditabilne recenzije i povijest izvedbi' },
+                    { icon: <HandshakeIcon sx={{ color: 'primary.main', fontSize: 19 }} />, text: 'Direktan kontakt s odgovornom osobom' },
+                    { icon: <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 19 }} />, text: 'Jasna usporedba cijena, rokova i opsega' },
+                  ].map((item) => (
+                    <Stack
+                      key={item.text}
+                      direction="row"
+                      alignItems="center"
+                      spacing={1.2}
+                      sx={{
+                        px: 1.2,
+                        py: 1,
+                        borderRadius: 2,
+                        bgcolor: alpha('#fff', 0.05),
+                        border: '1px solid',
+                        borderColor: alpha('#fff', 0.08),
+                      }}
+                    >
+                      {item.icon}
+                      <Typography sx={{ color: 'white', fontSize: '0.92rem' }}>{item.text}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Paper>
+            </Grid>
           </Grid>
         </BaseContainer>
       </Box>
 
-      {/* Stats Section */}
-      <Box sx={{ py: 10, bgcolor: 'secondary.main', color: 'white' }}>
+      <Box sx={{ py: { xs: 6, md: 10 } }}>
         <BaseContainer maxWidth="lg">
-          <Grid container spacing={4} sx={{ textAlign: 'center' }}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main' }}>500+</Typography>
-              <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>Aktivnih oglasa</Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main' }}>1.2k</Typography>
-              <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>Provjerenih majstora</Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main' }}>98%</Typography>
-              <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>Zadovoljnih korisnika</Typography>
-            </Grid>
-          </Grid>
-        </BaseContainer>
-      </Box>
+          <Typography
+            textAlign="center"
+            sx={{
+              fontWeight: 900,
+              color: 'secondary.main',
+              mb: { xs: 4, md: 6 },
+              fontSize: { xs: '1.7rem', md: '2.35rem' },
+            }}
+          >
+            Jedna platforma, cetiri kljucne uloge
+          </Typography>
 
-      {/* Features Section */}
-      <Box sx={{ py: 15, bgcolor: 'background.default' }}>
-        <BaseContainer maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 10 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2 }}>Zašto odabrati BuildConnect?</Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400 }}>Jednostavan put do kvalitetno odrađenog posla.</Typography>
-          </Box>
-
-          <Grid container spacing={4}>
+          <Grid container spacing={{ xs: 2, md: 3 }}>
             {[
-              { 
-                icon: <AssignmentTurnedInIcon sx={{ fontSize: 40 }} />, 
-                title: "Provjerene recenzije", 
-                desc: "Svi majstori imaju ocjene stvarnih klijenata nakon završenog posla." 
+              {
+                title: 'Majstor',
+                icon: <EngineeringIcon sx={{ fontSize: 34 }} />,
+                desc: 'Grade reputaciju kroz stvarne projekte i recenzije.',
               },
-              { 
-                icon: <GroupIcon sx={{ fontSize: 40 }} />, 
-                title: "Direktna komunikacija", 
-                desc: "Razgovarajte s izvođačima direktno i dogovorite sve detalje bez posrednika." 
+              {
+                title: 'Firma',
+                icon: <BusinessIcon sx={{ fontSize: 34 }} />,
+                desc: 'Prate vise projekata i timova na jednom mjestu.',
               },
-              { 
-                icon: <ConstructionIcon sx={{ fontSize: 40 }} />, 
-                title: "Stručna podrška", 
-                desc: "Naš tim je tu da vam pomogne u svakom koraku procesa gradnje ili renovacije." 
-              }
-            ].map((feature, index) => (
-              <Grid key={index} size={{ xs: 12, md: 4 }}>
-                <Paper 
-                  sx={{ 
-                    p: 5, 
-                    height: '100%', 
-                    borderRadius: 4, 
-                    border: '1px solid', 
+              {
+                title: 'Investitor',
+                icon: <GroupIcon sx={{ fontSize: 34 }} />,
+                desc: 'Usporeduju ponude i biraju izvedbu bez rizika.',
+              },
+              {
+                title: 'Dobavljac',
+                icon: <InventoryIcon sx={{ fontSize: 34 }} />,
+                desc: 'Povezuju proizvode s aktivnim izvodacima.',
+              },
+            ].map((item) => (
+              <Grid key={item.title} size={{ xs: 12, sm: 6, md: 3 }}>
+                <Paper
+                  sx={{
+                    p: { xs: 3, md: 3.5 },
+                    borderRadius: 4,
+                    border: '1px solid',
                     borderColor: 'divider',
-                    transition: '0.3s',
+                    height: '100%',
+                    textAlign: 'center',
+                    transition: 'all 0.2s ease',
                     '&:hover': {
-                      transform: 'translateY(-10px)',
-                      boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-                      borderColor: 'primary.main'
-                    }
+                      borderColor: 'primary.main',
+                      transform: { md: 'translateY(-4px)' },
+                      boxShadow: 4,
+                    },
                   }}
                 >
-                  <Box sx={{ color: 'primary.main', mb: 2 }}>{feature.icon}</Box>
-                  <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>{feature.title}</Typography>
-                  <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>{feature.desc}</Typography>
+                  <Box sx={{ color: 'primary.main', mb: 1.3 }}>{item.icon}</Box>
+                  <Typography sx={{ fontWeight: 900, mb: 1, fontSize: '1.05rem' }}>{item.title}</Typography>
+                  <Typography sx={{ color: 'text.secondary', lineHeight: 1.6, fontSize: '0.92rem' }}>
+                    {item.desc}
+                  </Typography>
                 </Paper>
               </Grid>
             ))}
           </Grid>
         </BaseContainer>
       </Box>
+
+      <Box sx={{ py: { xs: 6, md: 9 }, bgcolor: alpha('#000', 0.02) }}>
+        <BaseContainer maxWidth="lg">
+          <Grid container spacing={{ xs: 2, md: 3 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                <Typography sx={{ fontWeight: 900, color: 'error.main', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CancelIcon /> Klasicni kanali
+                </Typography>
+                <Stack spacing={1.2}>
+                  {[
+                    'Nepouzdani profili i oglasi',
+                    'Puno gubljenja vremena na provjere',
+                    'Nema jasnog traga kvalitete rada',
+                  ].map((line) => (
+                    <Typography key={line} sx={{ color: 'text.secondary', fontSize: '0.95rem' }}>
+                      - {line}
+                    </Typography>
+                  ))}
+                </Stack>
+              </Paper>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Paper
+                sx={{
+                  p: { xs: 3, md: 4 },
+                  borderRadius: 4,
+                  bgcolor: 'secondary.main',
+                  color: 'white',
+                  height: '100%',
+                }}
+              >
+                <Typography sx={{ fontWeight: 900, color: 'primary.main', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ShieldIcon /> BuildConnect
+                </Typography>
+                <Stack spacing={1.2}>
+                  {[
+                    'Provjerljivi profili i recenzije',
+                    'Pregled ponuda i rokova na jednom ekranu',
+                    'Brzi odabir i manje rizicnih odluka',
+                  ].map((line) => (
+                    <Stack key={line} direction="row" spacing={1} alignItems="center">
+                      <CheckCircleIcon sx={{ color: 'primary.main', fontSize: 18 }} />
+                      <Typography sx={{ color: alpha('#fff', 0.92), fontSize: '0.95rem' }}>{line}</Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: { xs: 4, md: 5 } }} />
+
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Spremni za sljedeci projekt?</Typography>
+            <BaseButton
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/register')}
+              endIcon={<ArrowForwardIcon />}
+              sx={{ px: { xs: 3, md: 5 }, py: 1.4, borderRadius: 3, fontWeight: 900 }}
+            >
+              Pokreni racun
+            </BaseButton>
+          </Box>
+        </BaseContainer>
+      </Box>
     </Box>
   );
-});
+};
 
 export default LandingPage;
