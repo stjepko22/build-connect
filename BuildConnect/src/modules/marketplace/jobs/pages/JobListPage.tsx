@@ -17,24 +17,23 @@ import {
     useTheme
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 const JobListPage: React.FC = observer(() => {
   const { jobStore } = useRootStore();
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredJobs = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return jobStore.allJobs;
-
-    return jobStore.allJobs.filter(job => 
-      job.title.toLowerCase().includes(query) ||
-      job.description.toLowerCase().includes(query) ||
-      job.location.toLowerCase().includes(query) ||
-      job.category.toLowerCase().includes(query)
-    );
-  }, [searchQuery, jobStore.allJobs]);
+  const query = searchQuery.toLowerCase().trim();
+  const filteredJobs = !query
+    ? jobStore.allJobs
+    : jobStore.allJobs.filter(
+        (job) =>
+          job.title.toLowerCase().includes(query) ||
+          job.description.toLowerCase().includes(query) ||
+          job.location.toLowerCase().includes(query) ||
+          job.category.toLowerCase().includes(query)
+      );
 
   return (
     <Box sx={{ pb: 8, mt: -4 }}> {/* mt: -4 poništava layout padding za hero efekt */}

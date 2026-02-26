@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme/theme';
 import LoginPage from '@/modules/authentication/pages/LoginPage';
@@ -14,8 +15,31 @@ import MainLayout from '@/layouts/MainLayout';
 import RootStoreContext from './context/RootStoreContext';
 import { RootStore } from './stores/RootStore';
 import RegistrationPage from './modules/authentication/pages/RegistrationPage';
+import { useRootStore } from './hooks/useRootStore';
 
 const rootStore = new RootStore();
+
+type Role = 'INVESTITOR' | 'IZVODJAC';
+
+interface RequireAuthProps {
+  allowedRoles?: Role[];
+}
+
+const RequireAuth: React.FC<RequireAuthProps> = observer(({ allowedRoles }) => {
+  const { authenticationStore } = useRootStore();
+  const user = authenticationStore.user;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/marketplace" replace />;
+  }
+
+  return <Outlet />;
+});
+
 const App: React.FC = () => {
   return (
     <RootStoreContext.Provider value={rootStore}>
@@ -27,9 +51,15 @@ const App: React.FC = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/marketplace" element={<JobListPage />} />
               <Route path="/marketplace/:id" element={<JobDetailsPage />} />
-              <Route path="/objavi-posao" element={<CreateJobPage />} />
-              <Route path="/moji-poslovi" element={<MyJobsPage />} />
               <Route path="/profil/:id" element={<ContractorProfilePage />} />
+
+              <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
+                <Route path="/objavi-posao" element={<CreateJobPage />} />
+              </Route>
+
+              <Route element={<RequireAuth />}>
+                <Route path="/moji-poslovi" element={<MyJobsPage />} />
+              </Route>
             </Route>
 
             <Route path="/login" element={<LoginPage />} />

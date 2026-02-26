@@ -78,14 +78,14 @@ const Footer: React.FC = () => {
               Podrška
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Link component={RouterLink} to="/kontakt" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
-                Kontakt
+              <Link component={RouterLink} to="/login" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
+                Prijava
               </Link>
-              <Link component={RouterLink} to="/uvjeti" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
-                Uvjeti korištenja
+              <Link component={RouterLink} to="/register" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
+                Registracija
               </Link>
-              <Link component={RouterLink} to="/privatnost" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
-                Privatnost
+              <Link component={RouterLink} to="/marketplace" color="inherit" underline="none" sx={{ fontSize: '0.9rem', '&:hover': { color: 'primary.main' } }}>
+                Marketplace
               </Link>
             </Box>
           </Grid>

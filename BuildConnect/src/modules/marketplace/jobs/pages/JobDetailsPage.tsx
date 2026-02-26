@@ -42,9 +42,11 @@ const JobDetailsPage: React.FC = observer(() => {
   const [bidAmount, setBidAmount] = useState('');
   const [bidDays, setBidDays] = useState('');
   const [bidMessage, setBidMessage] = useState('');
+  const [bidError, setBidError] = useState<string | null>(null);
 
   const [rating, setRating] = useState<number | null>(5);
   const [reviewComment, setReviewComment] = useState('');
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   if (!job) {
     return (
@@ -68,15 +70,20 @@ const JobDetailsPage: React.FC = observer(() => {
 
   const handleSendBid = async (e: React.FormEvent) => {
     e.preventDefault();
-    await bidStore.addBid({
-      jobId: job.id,
-      amount: Number(bidAmount),
-      daysToComplete: Number(bidDays),
-      message: bidMessage,
-    });
-    setBidAmount('');
-    setBidDays('');
-    setBidMessage('');
+    setBidError(null);
+    try {
+      await bidStore.addBid({
+        jobId: job.id,
+        amount: Number(bidAmount),
+        daysToComplete: Number(bidDays),
+        message: bidMessage,
+      });
+      setBidAmount('');
+      setBidDays('');
+      setBidMessage('');
+    } catch (error) {
+      setBidError(error instanceof Error ? error.message : 'Slanje ponude nije uspjelo.');
+    }
   };
 
   const handleAcceptBid = async (bidId: string) => {
@@ -87,13 +94,19 @@ const JobDetailsPage: React.FC = observer(() => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    setReviewError(null);
     if (acceptedBid) {
-      await reviewStore.addReview({
-        jobId: job.id,
-        revieweeId: acceptedBid.contractorId,
-        rating: rating || 5,
-        comment: reviewComment,
-      });
+      try {
+        await reviewStore.addReview({
+          jobId: job.id,
+          revieweeId: acceptedBid.contractorId,
+          rating: rating || 5,
+          comment: reviewComment,
+        });
+        setReviewComment('');
+      } catch (error) {
+        setReviewError(error instanceof Error ? error.message : 'Objava recenzije nije uspjela.');
+      }
     }
   };
 
@@ -387,6 +400,11 @@ const JobDetailsPage: React.FC = observer(() => {
                     required
                     sx={{ mb: 3, '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
                   />
+                  {reviewError && (
+                    <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+                      {reviewError}
+                    </Alert>
+                  )}
                   <BaseButton
                     fullWidth
                     variant="contained"
@@ -415,11 +433,17 @@ const JobDetailsPage: React.FC = observer(() => {
                       Investitor će primiti vašu ponudu odmah.
                     </Typography>
                     <form onSubmit={handleSendBid}>
+                      {bidError && (
+                        <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
+                          {bidError}
+                        </Alert>
+                      )}
                       <BaseInput
                         label="Cijena (EUR)"
                         type="number"
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
+                        inputProps={{ min: 1, step: 1 }}
                         required
                         sx={{ mb: 2 }}
                       />
@@ -428,6 +452,7 @@ const JobDetailsPage: React.FC = observer(() => {
                         type="number"
                         value={bidDays}
                         onChange={(e) => setBidDays(e.target.value)}
+                        inputProps={{ min: 1, step: 1 }}
                         required
                         sx={{ mb: 2 }}
                       />

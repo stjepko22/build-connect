@@ -1,7 +1,12 @@
-
 import RootStoreContext from '@/context/RootStoreContext';
-import {useContext} from 'react';
+import { useContext } from 'react';
 
 export const useRootStore = () => {
-    return useContext(RootStoreContext);
-}
+  const rootStore = useContext(RootStoreContext);
+
+  if (!rootStore) {
+    throw new Error('useRootStore must be used within RootStoreContext.Provider');
+  }
+
+  return rootStore;
+};
