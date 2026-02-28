@@ -6,8 +6,8 @@ import { Box, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material'
 import RegistrationStore from '../stores/RegistrationStore';
 
 // Atomi
-import BaseInput from '@/components/common/atoms/inputs/BaseInput';
-import BaseLoadingButton from '@/components/common/atoms/buttons/BaseLoadingButton';
+import BaseInput from '@/core/components/atoms/inputs/BaseInput';
+import BaseLoadingButton from '@/core/components/atoms/buttons/BaseLoadingButton';
 
 // Ikone
 import KeyTwoToneIcon from '@mui/icons-material/KeyTwoTone';
@@ -117,3 +117,4 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
 });
 
 export default Registration;
+

@@ -19,10 +19,10 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import { useRootStore } from '@/hooks/useRootStore';
-import JobCard from '@/components/common/molecules/cards/JobCard';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import { useRootStore } from '@/core/hooks/useRootStore';
+import JobCard from '@/core/components/molecules/cards/JobCard';
 
 const ProfilePage: React.FC = observer(() => {
   const { id } = useParams<{ id: string }>();
@@ -225,3 +225,4 @@ const ProfilePage: React.FC = observer(() => {
 });
 
 export default ProfilePage;
+

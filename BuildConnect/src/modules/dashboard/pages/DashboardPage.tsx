@@ -18,9 +18,9 @@ import StarRateIcon from '@mui/icons-material/StarRate';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import { useRootStore } from '@/hooks/useRootStore';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import { useRootStore } from '@/core/hooks/useRootStore';
 import StatCard from '../components/StatCard';
 import { useNavigate } from 'react-router-dom';
 

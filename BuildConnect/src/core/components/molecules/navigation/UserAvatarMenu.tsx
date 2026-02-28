@@ -16,7 +16,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import { useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { useRootStore } from '@/hooks/useRootStore';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 const UserAvatarMenu: React.FC = observer(() => {
   const { authenticationStore } = useRootStore();
@@ -151,3 +151,4 @@ const UserAvatarMenu: React.FC = observer(() => {
 });
 
 export default UserAvatarMenu;
+

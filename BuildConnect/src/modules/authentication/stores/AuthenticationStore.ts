@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { RootStore } from '@/stores/RootStore';
+import { RootStore } from '@/core/stores/RootStore';
 
 export interface User {
   id: string;

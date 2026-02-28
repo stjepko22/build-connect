@@ -1,6 +1,29 @@
 # AI Agent Guidelines
 
 Act as a senior full-stack engineer working on a React + MobX frontend and .NET backend.
+## Terminal App Mode (Touch/Kiosk)
+Treat the product as a kiosk/terminal application (touch-first), NOT a general web or mobile app.
+- Prioritize touch usability:
+  - Large tap targets (buttons, list items, controls)
+  - Comfortable spacing, minimal dense UI
+  - Avoid hover-only interactions and hover-dependent UX
+- Avoid patterns that assume a mouse/keyboard:
+  - No "hover to reveal actions"
+  - Avoid tiny icon-only buttons unless paired with clear labels or large hit areas
+- Prefer terminal-friendly navigation:
+  - Clear back actions
+  - Big primary actions
+  - Shallow navigation depth where possible
+- Consider kiosk constraints:
+  - Full-screen layouts
+  - No reliance on browser chrome features
+  - Avoid opening new tabs/windows unless explicitly required
+- Ensure accessibility and readability at distance:
+  - Clear typography, strong contrast via theme tokens
+  - Avoid overly small font sizes
+- Performance matters:
+  - Prefer responsive, low-latency UI updates
+  - Avoid heavy animations and unnecessary re-renders
 
 ## Core Principles
 - Follow existing architecture and project structure.
@@ -8,101 +31,187 @@ Act as a senior full-stack engineer working on a React + MobX frontend and .NET 
 - Do not introduce new patterns if an existing one is used.
 - Prefer clarity and maintainability over clever solutions.
 - Avoid large refactors unless explicitly requested.
+- Maintain consistency with existing naming and structure.
+- Write code that clearly expresses intent.
+- Do not introduce abstractions unless they already exist in the project.
+- Prefer simple solutions over premature optimization.
 
----
+## Pattern Consistency Rule
+- Always follow existing project patterns before introducing new solutions.
+- If multiple patterns exist, follow the one used in the nearest file/module.
+
+## General Naming Principles
+- Names must clearly describe what something is, not how it is calculated.
+- Avoid vague names like data, temp, value, flag, list2.
+
+✅ Good: selectedSportId, isLoadingOffers, offersByTournamentId
+❌ Bad: data, tempVar, flag, arr
+
+## Component Naming
+- Use PascalCase with descriptive context.
+- Examples: SportBettingPage, SportBettingPageSegment, TournamentList, OfferCard
+- Required suffix conventions
+Pages → Page
+Segments → Segment
+Dialogs → Dialog
+Drawers → Drawer
+Stores → Store
+- Examples: PrematchOfferStore, OfferFilterDialog, SportSidebarDrawer
+
+## Interface Naming
+- All interfaces must use the I prefix for consistency.
+
+## Domain Language
+- Use consistent domain terminology.
+- Do not invent new domain terms.
+- Examples: offer, market, outcome, odds, betslip, tournament, sport
+
+## Variables & Properties
+- Boolean naming always use: is, has, can, should
+- Example: isOpen, hasError, canSubmit, shouldRefetch
+- Collections must be plural: offers, tournaments, selectedIds
+
+## Export Rules (IMPORTANT)
+- Use default export for: components, pages, segments, MobX stores, models / interfaces
+- Example: export default SportBettingPage;
+- Use named exports only for: utility functions, constants, helper types grouped together
 
 ## Frontend (React + MobX)
-
 ### State Management
 - Use MobX stores for global/shared state.
 - Keep UI state local when possible.
 - Do not introduce prop drilling when MobX store is appropriate.
+- Store is the single source of truth for shared data.
+- Store methods must be verbs: fetchOffers, loadTournaments, setSelectedSportId, resetFilters
+- Observables = state
+- Actions = state mutations
+- Computed values must never trigger side effects.
+- Side effects belong in actions.
 
 ### Components
 - Keep components small and reusable.
 - Avoid unnecessary re-renders.
 - Use `observer` only when component consumes observable data.
 - Memoize expensive computations when needed.
+- Do not perform data fetching inside render logic.
+- Avoid creating new object/array literals inside JSX props.
+- Avoid inline functions inside render when avoidable.
+- Prefer stable references for performance.
 
 ### UI & Styling
 - Use MUI components.
 - Follow existing layout and styling patterns.
 - Maintain visual consistency.
 
+## Theme & Colors (MUI)
+- Always use colors from the MUI theme (theme.palette, theme.typography, theme.spacing, etc.).
+- Do NOT hardcode colors (e.g., "#fff", "red", "rgba(...)") unless the project already uses a specific token/constant.
+- If a new color or design token is required, add it to Theme.ts (or the existing theme extension file) and use it from there.
+- Prefer semantic theme tokens (e.g., primary, secondary, background, text, divider) over ad-hoc colors.
+- When styling, prefer theme spacing (theme.spacing) and MUI system props over custom CSS.
+
 ### Data Fetching
 - Use the existing axios/API service layer.
 - Avoid duplicate API requests.
 - Handle loading and error states properly.
-
+- Fetch data in store methods or useEffect.
 ---
+## Error Handling
+- Always handle API errors.
+- Provide safe fallbacks for UI rendering.
+- Do not swallow exceptions silently.
 
-## Backend (.NET)
+Ovo je struktura foldera koju bi trebao pratiti 
+\SRC
++---@types
++---api
+|   +---clients
+|   \---models
++---core
+|   +---components
+|   |   +---atoms
+|   |   |   +---button
+|   |   |   +---containers
+|   |   |   +---display
+|   |   |   +---icons
+|   |   |   \---loader
+|   |   \---molecules
+|   |       +---buttons
+|   |       +---dialog
+|   |       |   +---components
+|   |       |   +---models
+|   |       |   \---stores
+|   |       +---loader
+|   |       +---pagination
+|   |       \---toast
+|   |           +---components
+|   |           +---models
+|   |           \---stores
+|   +---context
+|   +---hoc
+|   +---hooks
+|   +---models
+|   +---stores
+|   \---utils
+|       \---language
++---modules
+|   +---betslip
+|   |   \---components
+|   +---check-betslip
+|   |   +---pages
+|   |   \---segments
+|   +---home
+|   |   +---components
+|   |   +---constants
+|   |   +---layout
+|   |   +---models
+|   |   +---pages
+|   |   \---segments
+|   +---info
+|   |   +---pages
+|   |   \---segments
+|   +---live
+|   |   +---pages
+|   |   \---segments
+|   +---login
+|   |   +---pages
+|   |   \---segments
+|   +---offer
+|   |   +---components
+|   |   |   +---additional-betting-type-offer
+|   |   |   +---betting-type-offer
+|   |   |   +---common
+|   |   |   +---match
+|   |   |   +---sport
+|   |   |   +---sport-category
+|   |   |   \---tournament
+|   |   +---constants
+|   |   +---enums
+|   |   +---models
+|   |   |   \---ui
+|   |   +---pages
+|   |   +---segments
+|   |   +---services
+|   |   \---stores
+|   +---quick-bet
+|   |   +---pages
+|   |   \---segments
+|   +---results
+|   |   +---pages
+|   |   \---segments
+|   \---today-offer
+|       +---pages
+|       \---segments
+\---ui
+    +---layout
+    +---mui
+    \---themes
+        +---default
+        |   \---layout
+        \---zz
+            \---layout
+                \---components
+                    +---footer
+                    \---header
 
-### Architecture
-- Follow existing layering (Controller → Service → Repository).
-- Keep business logic out of controllers.
-- Do not bypass service layer.
-
-### API Design
-- Maintain existing route patterns.
-- Preserve DTO usage and validation.
-- Do not break backward compatibility.
-
-### Data Access
-- Use existing repositories and EF patterns.
-- Avoid unnecessary database calls.
-- Ensure queries are efficient.
-
----
-
-## Performance & Reliability
-- Avoid unnecessary re-renders and heavy computations.
-- Prevent redundant API calls.
-- Ensure async operations are properly awaited.
-- Consider edge cases and error handling.
-
----
-
-## When Implementing Changes
-
-1. Understand existing patterns before writing new code.
-2. Modify only necessary files.
-3. Keep changes minimal and consistent with the project.
-4. Explain important decisions when they are not obvious.
-
----
-
-## Avoid
-
-- Introducing new state management solutions.
-- Large architectural changes.
-- Renaming or restructuring files without need.
-- Breaking existing UI or API contracts.
-
----
-
-## Output Expectations
-
-When making changes:
-- Provide clean and readable code.
-- Maintain consistency with the codebase.
-- Suggest verification steps when appropriate.
-
----
-
-## Responsive & Mobile-First Design
-
-- Follow a mobile-first approach when building UI.
-- Ensure layouts work on mobile, tablet, and desktop.
-- Use responsive breakpoints instead of fixed widths.
-- Prefer flexible layouts (flexbox, grid) over absolute positioning.
-- Avoid overflow and horizontal scrolling on small screens.
-- Ensure touch-friendly spacing and controls on mobile devices.
-- Maintain usability and readability across screen sizes.
-
-When modifying UI:
-- do not break responsiveness
-- test layout behavior for small screens
-- ensure components adapt gracefully
-
-Odgovaraj na HRVATSKOM JEZIKU
+ODGOVARAJ NA HRVATSKOM JEZIKU

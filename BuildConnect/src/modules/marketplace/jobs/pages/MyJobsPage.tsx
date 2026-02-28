@@ -9,12 +9,12 @@ import {
   useTheme 
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import JobCard from '@/components/common/molecules/cards/JobCard';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
+import JobCard from '@/core/components/molecules/cards/JobCard';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import { useRootStore } from '@/hooks/useRootStore';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -226,3 +226,4 @@ const MyJobsPage: React.FC = observer(() => {
 });
 
 export default MyJobsPage;
+

@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { RootStore } from '@/stores/RootStore';
+import { RootStore } from '@/core/stores/RootStore';
 
 export type BidStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
@@ -123,3 +123,4 @@ export default class BidStore {
     return this.bids.filter(bid => bid.jobId === jobId);
   }
 }
+

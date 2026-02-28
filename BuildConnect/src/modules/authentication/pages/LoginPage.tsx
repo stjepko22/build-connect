@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { Paper, alpha, useTheme } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import { useRootStore } from '@/hooks/useRootStore';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import { useRootStore } from '@/core/hooks/useRootStore';
 import Login from '../components/Login';
 
 const LoginPage: React.FC = observer(() => {
@@ -34,3 +34,4 @@ const LoginPage: React.FC = observer(() => {
 });
 
 export default LoginPage;
+

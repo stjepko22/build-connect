@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { RootStore } from '@/stores/RootStore';
+import { RootStore } from '@/core/stores/RootStore';
 
 export default class RegistrationStore {
   rootStore: RootStore;

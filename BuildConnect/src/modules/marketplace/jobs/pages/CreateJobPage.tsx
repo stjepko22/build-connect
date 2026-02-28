@@ -19,10 +19,10 @@ import PlaceIcon from '@mui/icons-material/Place';
 import EventIcon from '@mui/icons-material/Event';
 
 // Atomi
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import BaseInput from '@/components/common/atoms/inputs/BaseInput';
-import { useRootStore } from '@/hooks/useRootStore';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import BaseInput from '@/core/components/atoms/inputs/BaseInput';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 const CATEGORIES = ['Gradnja', 'Renovacija', 'Struja', 'Voda', 'Grijanje', 'Fasade', 'Krovovi', 'Ostalo'];
 
@@ -217,3 +217,4 @@ const CreateJobPage: React.FC = observer(() => {
 });
 
 export default CreateJobPage;
+

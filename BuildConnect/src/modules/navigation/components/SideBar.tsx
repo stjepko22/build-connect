@@ -6,7 +6,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useRootStore } from '@/hooks/useRootStore';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 interface SidebarProps {
   onClose?: () => void;

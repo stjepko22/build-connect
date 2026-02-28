@@ -3,8 +3,8 @@ import KeyIcon from '@mui/icons-material/Key';
 import { Box, Grid, MenuItem, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import BaseLoadingButton from '../../../components/common/atoms/buttons/BaseLoadingButton';
-import BaseInput from '../../../components/common/atoms/inputs/BaseInput';
+import BaseLoadingButton from '@/core/components/atoms/buttons/BaseLoadingButton';
+import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import AuthenticationStore from '../stores/AuthenticationStore';
 
 interface LoginProps {

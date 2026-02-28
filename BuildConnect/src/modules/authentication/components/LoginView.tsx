@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useRootStore } from '../../../hooks/useRootStore';
+import { useRootStore } from '../../../core/hooks/useRootStore';
 // PAŽNJA: Uvoziš LoginDialog, on je taj koji prima 'open' i 'onClose'
 import LoginDialog from '../components/LoginDialog';
 

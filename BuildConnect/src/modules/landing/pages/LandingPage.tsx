@@ -22,8 +22,8 @@ import HandshakeIcon from '@mui/icons-material/Handshake';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ShieldIcon from '@mui/icons-material/Shield';
 
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -378,3 +378,4 @@ const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+

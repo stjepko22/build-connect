@@ -13,7 +13,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useRootStore } from '@/hooks/useRootStore';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 const AppBottomNavigation: React.FC = observer(() => {
   const theme = useTheme();

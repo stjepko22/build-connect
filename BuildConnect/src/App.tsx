@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from './theme/theme';
+import theme from './ui/themes/default/theme';
 import LoginPage from '@/modules/authentication/pages/LoginPage';
 
 import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
@@ -12,11 +12,11 @@ import MyJobsPage from '@/modules/marketplace/jobs/pages/MyJobsPage';
 import ProfilePage from '@/modules/user/pages/ProfilePage';
 import DashboardPage from '@/modules/dashboard/pages/DashboardPage'; // NOVO
 import LandingPage from '@/modules/landing/pages/LandingPage';
-import MainLayout from '@/layouts/MainLayout';
-import RootStoreContext from './context/RootStoreContext';
-import { RootStore } from './stores/RootStore';
+import MainLayout from '@/ui/layout/MainLayout';
+import RootStoreContext from './core/context/RootStoreContext';
+import { RootStore } from './core/stores/RootStore';
 import RegistrationPage from './modules/authentication/pages/RegistrationPage';
-import { useRootStore } from './hooks/useRootStore';
+import { useRootStore } from './core/hooks/useRootStore';
 
 const rootStore = new RootStore();
 

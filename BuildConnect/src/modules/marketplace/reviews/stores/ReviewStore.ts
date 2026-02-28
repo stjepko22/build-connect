@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { RootStore } from '@/stores/RootStore';
+import { RootStore } from '@/core/stores/RootStore';
 
 export interface Review {
   id: string;
@@ -86,3 +86,4 @@ export default class ReviewStore {
     return this.reviews.find(r => r.jobId === jobId);
   }
 }
+

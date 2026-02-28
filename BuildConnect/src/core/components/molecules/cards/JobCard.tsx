@@ -17,8 +17,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import { useRootStore } from '@/hooks/useRootStore';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import { useRootStore } from '@/core/hooks/useRootStore';
 import { Job } from '@/modules/marketplace/jobs/stores/JobStore';
 
 interface JobCardProps {
@@ -148,3 +148,4 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
 });
 
 export default JobCard;
+

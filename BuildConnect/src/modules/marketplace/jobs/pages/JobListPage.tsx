@@ -17,10 +17,10 @@ import ConstructionIcon from '@mui/icons-material/Construction';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 
-import BaseButton from '@/components/common/atoms/buttons/BaseButton';
-import BaseContainer from '@/components/common/atoms/containers/BaseContainer';
-import JobCard from '@/components/common/molecules/cards/JobCard';
-import { useRootStore } from '@/hooks/useRootStore';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import JobCard from '@/core/components/molecules/cards/JobCard';
+import { useRootStore } from '@/core/hooks/useRootStore';
 
 const JobListPage: React.FC = observer(() => {
   const { jobStore } = useRootStore();

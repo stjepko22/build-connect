@@ -1,4 +1,4 @@
-import RootStoreContext from '@/context/RootStoreContext';
+import RootStoreContext from '@/core/context/RootStoreContext';
 import { useContext } from 'react';
 
 export const useRootStore = () => {
@@ -10,3 +10,4 @@ export const useRootStore = () => {
 
   return rootStore;
 };
+
