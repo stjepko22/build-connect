@@ -32,3 +32,4 @@ const BaseContainer: React.FC<BaseContainerProps> = ({
 };
 
 export default BaseContainer;
+

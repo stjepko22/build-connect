@@ -81,7 +81,7 @@ const MainLayout: React.FC = () => {
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: { xs: '64px', md: 0 }, // Razmak za AppBar na mobitelu
           mb: { xs: '80px', md: 0 }, // Razmak za BottomNav na mobitelu (VAŽNO!)
-          bgcolor: '#fafafa'
+          bgcolor: 'background.default'
         }}
       >
         <Outlet />
@@ -95,3 +95,4 @@ const MainLayout: React.FC = () => {
 };
 
 export default MainLayout;
+

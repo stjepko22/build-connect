@@ -1,21 +1,10 @@
 import { makeAutoObservable } from 'mobx';
-import { RootStore } from '@/core/stores/RootStore';
-
-export interface Job {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  budget?: number; 
-  deadline: string;
-  investitorId: string;
-  createdAt: Date;
-}
+import RootStore from '@/core/stores/RootStore';
+import { IJob } from '@/modules/marketplace/jobs/models/IJob';
 
 export default class JobStore {
   rootStore: RootStore;
-  jobs: Job[] = [
+  jobs: IJob[] = [
     {
       id: 'posao-1',
       title: 'Izrada fasade na obiteljskoj kući',
@@ -46,11 +35,11 @@ export default class JobStore {
     makeAutoObservable(this);
   }
 
-  createJob = async (jobData: Omit<Job, 'id' | 'createdAt' | 'investitorId'>) => {
+  createJob = async (jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId'>) => {
     this.isLoading = true;
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        const newJob: Job = {
+        const newJob: IJob = {
           ...jobData,
           id: Math.random().toString(36).substring(2, 9),
           createdAt: new Date(),
@@ -67,3 +56,4 @@ export default class JobStore {
     return this.jobs;
   }
 }
+

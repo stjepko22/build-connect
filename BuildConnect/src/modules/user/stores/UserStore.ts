@@ -1,22 +1,12 @@
 import { makeAutoObservable } from 'mobx';
-import { RootStore } from '@/core/stores/RootStore';
-
-export interface UserProfile {
-  id: string;
-  displayName: string;
-  role: 'INVESTITOR' | 'IZVODJAC';
-  email: string;
-  bio: string;
-  location: string;
-  joinedAt: Date;
-  skills?: string[];
-}
+import RootStore from '@/core/stores/RootStore';
+import { IUserProfile } from '@/modules/user/models/IUserProfile';
 
 export default class UserStore {
   rootStore: RootStore;
   
   // Mock baza korisnika
-  users: UserProfile[] = [
+  users: IUserProfile[] = [
     {
       id: 'investitor-1',
       displayName: 'Marko Marković',
@@ -56,3 +46,4 @@ export default class UserStore {
     return this.users.find(u => u.id === id);
   }
 }
+

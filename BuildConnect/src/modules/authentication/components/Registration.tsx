@@ -118,3 +118,5 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
 
 export default Registration;
 
+
+

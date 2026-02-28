@@ -1,23 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { RootStore } from '@/core/stores/RootStore';
-
-export type BidStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
-
-export interface Bid {
-  id: string;
-  jobId: string;
-  contractorId: string;
-  contractorName: string;
-  amount: number;
-  daysToComplete: number;
-  message: string;
-  status: BidStatus;
-  createdAt: Date;
-}
+import RootStore from '@/core/stores/RootStore';
+import { IBid } from '@/modules/marketplace/bids/models/IBid';
 
 export default class BidStore {
   rootStore: RootStore;
-  bids: Bid[] = [];
+  bids: IBid[] = [];
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {
@@ -26,7 +13,7 @@ export default class BidStore {
   }
 
   private validateBidInput(
-    bidData: Omit<Bid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>
+    bidData: Omit<IBid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>
   ): string | null {
     const user = this.rootStore.authenticationStore.user;
 
@@ -67,7 +54,7 @@ export default class BidStore {
     return null;
   }
 
-  addBid = async (bidData: Omit<Bid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>) => {
+  addBid = async (bidData: Omit<IBid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>) => {
     const validationError = this.validateBidInput(bidData);
     if (validationError) {
       throw new Error(validationError);
@@ -78,7 +65,7 @@ export default class BidStore {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         const user = this.rootStore.authenticationStore.user!;
-        const newBid: Bid = {
+        const newBid: IBid = {
           ...bidData,
           id: Math.random().toString(36).substring(2, 9),
           contractorId: user.id,
@@ -123,4 +110,5 @@ export default class BidStore {
     return this.bids.filter(bid => bid.jobId === jobId);
   }
 }
+
 

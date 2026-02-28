@@ -1,19 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { RootStore } from '@/core/stores/RootStore';
-
-export interface Review {
-  id: string;
-  jobId: string;
-  reviewerId: string; // Investitor
-  revieweeId: string; // Izvođač
-  rating: number; // 1-5
-  comment: string;
-  createdAt: Date;
-}
+import RootStore from '@/core/stores/RootStore';
+import { IReview } from '@/modules/marketplace/reviews/models/IReview';
 
 export default class ReviewStore {
   rootStore: RootStore;
-  reviews: Review[] = [];
+  reviews: IReview[] = [];
   isLoading: boolean = false;
 
   constructor(rootStore: RootStore) {
@@ -21,7 +12,7 @@ export default class ReviewStore {
     makeAutoObservable(this);
   }
 
-  private validateReviewInput(reviewData: Omit<Review, 'id' | 'createdAt' | 'reviewerId'>): string | null {
+  private validateReviewInput(reviewData: Omit<IReview, 'id' | 'createdAt' | 'reviewerId'>): string | null {
     const user = this.rootStore.authenticationStore.user;
 
     if (!user) return 'Morate biti prijavljeni za ostavljanje recenzije.';
@@ -53,7 +44,7 @@ export default class ReviewStore {
     return null;
   }
 
-  addReview = async (reviewData: Omit<Review, 'id' | 'createdAt' | 'reviewerId'>) => {
+  addReview = async (reviewData: Omit<IReview, 'id' | 'createdAt' | 'reviewerId'>) => {
     const validationError = this.validateReviewInput(reviewData);
     if (validationError) {
       throw new Error(validationError);
@@ -64,7 +55,7 @@ export default class ReviewStore {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         const user = this.rootStore.authenticationStore.user!;
-        const newReview: Review = {
+        const newReview: IReview = {
           ...reviewData,
           id: Math.random().toString(36).substring(2, 9),
           reviewerId: user.id,
@@ -86,4 +77,6 @@ export default class ReviewStore {
     return this.reviews.find(r => r.jobId === jobId);
   }
 }
+
+
 

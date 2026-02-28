@@ -1,24 +1,23 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box, CircularProgress } from '@mui/material';
 import theme from './ui/themes/default/theme';
-import LoginPage from '@/modules/authentication/pages/LoginPage';
-
-import CreateJobPage from '@/modules/marketplace/jobs/pages/CreateJobPage';
-import JobListPage from '@/modules/marketplace/jobs/pages/JobListPage';
-import JobDetailsPage from '@/modules/marketplace/jobs/pages/JobDetailsPage';
-import MyJobsPage from '@/modules/marketplace/jobs/pages/MyJobsPage';
-import ProfilePage from '@/modules/user/pages/ProfilePage';
-import DashboardPage from '@/modules/dashboard/pages/DashboardPage'; // NOVO
-import LandingPage from '@/modules/landing/pages/LandingPage';
-import MainLayout from '@/ui/layout/MainLayout';
 import RootStoreContext from './core/context/RootStoreContext';
-import { RootStore } from './core/stores/RootStore';
-import RegistrationPage from './modules/authentication/pages/RegistrationPage';
+import RootStore from './core/stores/RootStore';
 import { useRootStore } from './core/hooks/useRootStore';
 
 const rootStore = new RootStore();
+const MainLayout = React.lazy(() => import('@/ui/layout/MainLayout'));
+const LandingPage = React.lazy(() => import('@/modules/landing/pages/LandingPage'));
+const JobListPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/JobListPage'));
+const JobDetailsPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/JobDetailsPage'));
+const ProfilePage = React.lazy(() => import('@/modules/user/pages/ProfilePage'));
+const DashboardPage = React.lazy(() => import('@/modules/dashboard/pages/DashboardPage'));
+const MyJobsPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/MyJobsPage'));
+const CreateJobPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/CreateJobPage'));
+const LoginPage = React.lazy(() => import('@/modules/authentication/pages/LoginPage'));
+const RegistrationPage = React.lazy(() => import('@/modules/authentication/pages/RegistrationPage'));
 
 type Role = 'INVESTITOR' | 'IZVODJAC';
 
@@ -42,37 +41,50 @@ const RequireAuth: React.FC<RequireAuthProps> = observer(({ allowedRoles }) => {
 });
 
 const App: React.FC = () => {
+  const loadingFallback = (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
+      <CircularProgress color="primary" />
+    </Box>
+  );
+
   return (
     <RootStoreContext.Provider value={rootStore}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/marketplace" element={<JobListPage />} />
-              <Route path="/marketplace/:id" element={<JobDetailsPage />} />
-              {/* Posao detalji dostupni i preko /posao/:id ako želiš konzistentnost */}
-              <Route path="/posao/:id" element={<JobDetailsPage />} /> 
-              <Route path="/profil/:id" element={<ProfilePage />} />
+          <Suspense fallback={loadingFallback}>
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/marketplace" element={<JobListPage />} />
+                <Route path="/marketplace/:id" element={<JobDetailsPage />} />
+                <Route path="/posao/:id" element={<JobDetailsPage />} />
+                <Route path="/profil/:id" element={<ProfilePage />} />
 
-              {/* Rute za prijavljene korisnike */}
-              <Route element={<RequireAuth />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/moji-poslovi" element={<MyJobsPage />} />
+                <Route element={<RequireAuth />}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/moji-poslovi" element={<MyJobsPage />} />
+                </Route>
+
+                <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
+                  <Route path="/objavi-posao" element={<CreateJobPage />} />
+                </Route>
               </Route>
 
-              {/* Rute specifične za uloge */}
-              <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
-                <Route path="/objavi-posao" element={<CreateJobPage />} />
-              </Route>
-            </Route>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegistrationPage />} />
 
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegistrationPage />} />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </ThemeProvider>
     </RootStoreContext.Provider>
@@ -80,3 +92,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

@@ -19,10 +19,10 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import { useRootStore } from '@/core/hooks/useRootStore';
-import { Job } from '@/modules/marketplace/jobs/stores/JobStore';
+import { IJob } from '@/modules/marketplace/jobs/models/IJob';
 
 interface JobCardProps {
-  job: Job;
+  job: IJob;
 }
 
 const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
@@ -148,4 +148,6 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
 });
 
 export default JobCard;
+
+
 

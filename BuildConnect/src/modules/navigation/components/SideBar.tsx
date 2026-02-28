@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, alpha } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, alpha, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -15,6 +15,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = observer(({ onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
   const { authenticationStore } = useRootStore();
   const user = authenticationStore.user;
 
@@ -59,9 +60,9 @@ const Sidebar: React.FC<SidebarProps> = observer(({ onClose }) => {
                 onClick={() => handleNav(item.path)}
                 sx={{
                   borderRadius: '12px',
-                  bgcolor: active ? alpha('#001a33', 0.05) : 'transparent',
+                  bgcolor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
                   color: active ? 'primary.main' : 'text.secondary',
-                  '&:hover': { bgcolor: alpha('#001a33', 0.08) }
+                  '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.12) }
                 }}
               >
                 <ListItemIcon sx={{ color: active ? 'primary.main' : 'inherit', minWidth: '40px' }}>
@@ -93,3 +94,5 @@ const Sidebar: React.FC<SidebarProps> = observer(({ onClose }) => {
 });
 
 export default Sidebar;
+
+

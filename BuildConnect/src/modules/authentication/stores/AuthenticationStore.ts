@@ -1,16 +1,10 @@
 import { makeAutoObservable } from 'mobx';
-import { RootStore } from '@/core/stores/RootStore';
-
-export interface User {
-  id: string;
-  email: string;
-  displayName: string;
-  role: 'INVESTITOR' | 'IZVODJAC';
-}
+import RootStore from '@/core/stores/RootStore';
+import { IUser } from '@/modules/authentication/models/IUser';
 
 export default class AuthenticationStore {
   rootStore: RootStore;
-  user: User | null = null;
+  user: IUser | null = null;
   isLoading: boolean = false;
 
   // Novo polje za globalno upravljanje dijalogom
@@ -93,3 +87,4 @@ export default class AuthenticationStore {
     this.user = null;
   };
 }
+

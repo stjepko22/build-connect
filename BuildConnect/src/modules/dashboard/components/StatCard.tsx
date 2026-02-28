@@ -49,3 +49,4 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => {
 };
 
 export default StatCard;
+

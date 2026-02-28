@@ -5,7 +5,7 @@ import JobStore from '@/modules/marketplace/jobs/stores/JobStore';
 import ReviewStore  from '@/modules/marketplace/reviews/stores/ReviewStore';
 import UserStore from '@/modules/user/stores/UserStore';
 
-export class RootStore {
+export default class RootStore {
     constructor() {
         this.authenticationStore = new AuthenticationStore(this);
         this.jobStore = new JobStore(this);
