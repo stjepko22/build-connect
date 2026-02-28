@@ -1,29 +1,13 @@
 # AI Agent Guidelines
 
 Act as a senior full-stack engineer working on a React + MobX frontend and .NET backend.
-## Terminal App Mode (Touch/Kiosk)
-Treat the product as a kiosk/terminal application (touch-first), NOT a general web or mobile app.
-- Prioritize touch usability:
-  - Large tap targets (buttons, list items, controls)
-  - Comfortable spacing, minimal dense UI
-  - Avoid hover-only interactions and hover-dependent UX
-- Avoid patterns that assume a mouse/keyboard:
-  - No "hover to reveal actions"
-  - Avoid tiny icon-only buttons unless paired with clear labels or large hit areas
-- Prefer terminal-friendly navigation:
-  - Clear back actions
-  - Big primary actions
-  - Shallow navigation depth where possible
-- Consider kiosk constraints:
-  - Full-screen layouts
-  - No reliance on browser chrome features
-  - Avoid opening new tabs/windows unless explicitly required
-- Ensure accessibility and readability at distance:
-  - Clear typography, strong contrast via theme tokens
-  - Avoid overly small font sizes
-- Performance matters:
-  - Prefer responsive, low-latency UI updates
-  - Avoid heavy animations and unnecessary re-renders
+
+## Product Context (IMPORTANT)
+- This project is a **web application** with a **mobile-first** frontend approach.
+- Do **not** treat this project as a kiosk/terminal app.
+- Prioritize responsive behavior for common web breakpoints (mobile, tablet, desktop).
+- Keep desktop UX complete, but design and implement from mobile constraints first.
+
 
 ## Core Principles
 - Follow existing architecture and project structure.
@@ -59,7 +43,8 @@ Stores → Store
 - Examples: PrematchOfferStore, OfferFilterDialog, SportSidebarDrawer
 
 ## Interface Naming
-- All interfaces must use the I prefix for consistency.
+- Use the `I` prefix only for domain/model interfaces (DTOs, API models, store models).
+- Do not use the `I` prefix for component/page props; use clear names like `LoginProps`, `SidebarProps`.
 
 ## Domain Language
 - Use consistent domain terminology.
