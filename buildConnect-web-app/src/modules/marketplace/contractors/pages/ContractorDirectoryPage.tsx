@@ -1,0 +1,238 @@
+import React, { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import {
+  Box,
+  Chip,
+  Grid,
+  MenuItem,
+  Paper,
+  Rating,
+  Stack,
+  Typography,
+  alpha,
+  useTheme,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import BusinessIcon from '@mui/icons-material/Business';
+import PersonIcon from '@mui/icons-material/Person';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
+import BaseInput from '@/core/components/atoms/inputs/BaseInput';
+import { useRootStore } from '@/core/hooks/useRootStore';
+import { BRAND_COLORS } from '@/ui/themes/default/theme';
+
+const ContractorDirectoryPage: React.FC = observer(() => {
+  const theme = useTheme();
+  const { userStore } = useRootStore();
+
+  useEffect(() => {
+    userStore.initializeContractorFiltersForCurrentUser();
+  }, [userStore]);
+
+  return (
+    <BaseContainer maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+      <Stack spacing={3}>
+        <Box
+          sx={{
+            p: { xs: 3, md: 4 },
+            borderRadius: 5,
+            color: 'common.white',
+            position: 'relative',
+            overflow: 'hidden',
+            background: BRAND_COLORS.heroGradient,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 42%)`,
+            },
+          }}
+        >
+          <Stack spacing={1} sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main', letterSpacing: '-1px' }}>
+              Directory izvodaca
+            </Typography>
+            <Typography sx={{ color: alpha(theme.palette.common.white, 0.82) }}>
+              Brzo pronadite majstore i firme po kategoriji, lokaciji, tipu i ocjeni.
+            </Typography>
+          </Stack>
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, md: 3 },
+            borderRadius: 4,
+            border: '1px solid',
+            borderColor: alpha(theme.palette.divider, 0.1),
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Stack spacing={2.5}>
+            <BaseInput
+              fullWidth
+              placeholder="Pretrazite po imenu, usluzi ili lokaciji"
+              value={userStore.contractorSearchQuery}
+              onChange={(e) => userStore.setContractorSearchQuery(e.target.value)}
+              slotProps={{ input: { startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.disabled' }} /> } }}
+            />
+
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {userStore.availableServiceCategories.map((category) => {
+                const selected = userStore.selectedContractorCategories.includes(category);
+                return (
+                  <Chip
+                    key={category}
+                    clickable
+                    label={category}
+                    color={selected ? 'primary' : 'default'}
+                    variant={selected ? 'filled' : 'outlined'}
+                    onClick={() => userStore.toggleSelectedContractorCategory(category)}
+                    sx={{ fontWeight: 700 }}
+                  />
+                );
+              })}
+            </Box>
+
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <BaseInput
+                  select
+                  fullWidth
+                  label="Lokacija"
+                  value={userStore.selectedContractorLocation}
+                  onChange={(e) => userStore.setSelectedContractorLocation(e.target.value)}
+                >
+                  <MenuItem value="">Sve lokacije</MenuItem>
+                  {userStore.contractorLocations.map((location) => (
+                    <MenuItem key={location} value={location}>
+                      {location}
+                    </MenuItem>
+                  ))}
+                </BaseInput>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <BaseInput
+                  select
+                  fullWidth
+                  label="Tip izvodaca"
+                  value={userStore.selectedContractorLegalType}
+                  onChange={(e) => userStore.setSelectedContractorLegalType(e.target.value as 'ALL' | 'FIZICKA_OSOBA' | 'FIRMA')}
+                >
+                  <MenuItem value="ALL">Svi</MenuItem>
+                  <MenuItem value="FIZICKA_OSOBA">Fizicka osoba</MenuItem>
+                  <MenuItem value="FIRMA">Firma</MenuItem>
+                </BaseInput>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <BaseInput
+                  select
+                  fullWidth
+                  label="Minimalna ocjena"
+                  value={String(userStore.minContractorRating)}
+                  onChange={(e) => userStore.setMinContractorRating(Number(e.target.value))}
+                >
+                  <MenuItem value="0">Bez ogranicenja</MenuItem>
+                  <MenuItem value="3">3.0+</MenuItem>
+                  <MenuItem value="4">4.0+</MenuItem>
+                  <MenuItem value="4.5">4.5+</MenuItem>
+                </BaseInput>
+              </Grid>
+            </Grid>
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+              <BaseButton
+                variant="contained"
+                color="primary"
+                onClick={() => userStore.saveCurrentContractorFiltersAsDefault()}
+                sx={{ fontWeight: 800 }}
+              >
+                Spremi kao zadano
+              </BaseButton>
+              <BaseButton
+                variant="outlined"
+                color="secondary"
+                onClick={() => userStore.resetContractorFilters()}
+                sx={{ fontWeight: 700 }}
+              >
+                Resetiraj filtere
+              </BaseButton>
+            </Stack>
+          </Stack>
+        </Paper>
+
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+          Pronadeno izvodaca: {userStore.filteredContractors.length}
+        </Typography>
+
+        <Grid container spacing={2.5}>
+          {userStore.filteredContractors.map((contractor) => {
+            const averageRating = userStore.getContractorAverageRating(contractor.id);
+            const reviewCount = userStore.getContractorReviewCount(contractor.id);
+
+            return (
+              <Grid key={contractor.id} size={{ xs: 12, md: 6 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    height: '100%',
+                    borderRadius: 4,
+                    border: '1px solid',
+                    borderColor: alpha(theme.palette.divider, 0.12),
+                    bgcolor: 'background.paper',
+                    transition: 'transform 0.2s ease',
+                    '&:hover': { transform: { md: 'translateY(-2px)' } },
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                        {contractor.displayName}
+                      </Typography>
+                      <Chip
+                        icon={contractor.legalType === 'FIRMA' ? <BusinessIcon /> : <PersonIcon />}
+                        label={contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                        size="small"
+                        sx={{ fontWeight: 700 }}
+                      />
+                    </Stack>
+
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      {contractor.bio}
+                    </Typography>
+
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Rating value={averageRating} precision={0.1} readOnly size="small" />
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                        {averageRating.toFixed(1)} ({reviewCount} recenzija)
+                      </Typography>
+                    </Stack>
+
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <VerifiedUserIcon sx={{ fontSize: 18, color: 'success.main' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                        Lokacija: {contractor.location}
+                      </Typography>
+                    </Stack>
+
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                      {(contractor.serviceCategories || []).map((category) => (
+                        <Chip key={category} label={category} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                      ))}
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Stack>
+    </BaseContainer>
+  );
+});
+
+export default ContractorDirectoryPage;
