@@ -18,21 +18,45 @@ import SearchIcon from '@mui/icons-material/Search';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
+import { useSearchParams } from 'react-router-dom';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import { useRootStore } from '@/core/hooks/useRootStore';
+import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const ContractorDirectoryPage: React.FC = observer(() => {
   const theme = useTheme();
   const { userStore, reviewStore } = useRootStore();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    const categoryFilters = Array.from(
+      new Set(
+        searchParams
+          .getAll('category')
+          .filter((value): value is JobCategory => JOB_CATEGORIES.includes(value as JobCategory))
+      )
+    );
+    const queryFilter = searchParams.get('q')?.trim() ?? '';
+    const legalTypeFilter = searchParams.get('legalType');
+    const hasRouteFilters = searchParams.has('q') || searchParams.has('category') || searchParams.has('legalType');
+
+    userStore.resetContractorFilters();
     userStore.initializeContractorFiltersForCurrentUser();
+
+    if (hasRouteFilters) {
+      userStore.setContractorSearchQuery(queryFilter);
+      userStore.setSelectedContractorCategories(categoryFilters);
+      userStore.setSelectedContractorLegalType(
+        legalTypeFilter === 'FIRMA' || legalTypeFilter === 'FIZICKA_OSOBA' ? legalTypeFilter : 'ALL'
+      );
+    }
+
     void userStore.loadContractors();
     void reviewStore.loadReviews();
-  }, [reviewStore, userStore]);
+  }, [reviewStore, searchParams, userStore]);
 
   return (
     <BaseContainer maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>

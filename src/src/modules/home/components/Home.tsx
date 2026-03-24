@@ -1,386 +1,399 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
+  IconButton,
+  InputAdornment,
   Paper,
+  Stack,
   Typography,
   alpha,
-  Stack,
-  Chip,
-  Divider,
   useTheme,
 } from '@mui/material';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import BusinessIcon from '@mui/icons-material/Business';
-import GroupIcon from '@mui/icons-material/Group';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import HandshakeIcon from '@mui/icons-material/Handshake';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ShieldIcon from '@mui/icons-material/Shield';
+import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
+import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
+import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedInRounded';
+import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
+import ElectricBoltRoundedIcon from '@mui/icons-material/ElectricBoltRounded';
+import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import PlumbingRoundedIcon from '@mui/icons-material/PlumbingRounded';
+import RoofingRoundedIcon from '@mui/icons-material/RoofingRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ViewInArRoundedIcon from '@mui/icons-material/ViewInArRounded';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
+import BaseInput from '@/core/components/atoms/inputs/BaseInput';
+import { useRootStore } from '@/core/hooks/useRootStore';
+import { JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 
-const Home: React.FC = () => {
+type QuickAction = {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+};
+
+type ContractorShortcut = {
+  label: string;
+  category: JobCategory;
+  icon: React.ReactNode;
+};
+
+const HOME_PRIMARY_WIDTH = { xs: 320, sm: 390, md: 450 };
+
+const contractorShortcuts: ContractorShortcut[] = [
+  { label: 'Gradnja', category: 'Gradnja', icon: <EngineeringRoundedIcon /> },
+  { label: 'Fasade', category: 'Fasade', icon: <ApartmentRoundedIcon /> },
+  { label: 'Krovovi', category: 'Krovovi', icon: <RoofingRoundedIcon /> },
+  { label: 'Keramika', category: 'Keramika', icon: <ViewInArRoundedIcon /> },
+  { label: 'Elektro', category: 'Elektro', icon: <ElectricBoltRoundedIcon /> },
+  { label: 'Voda', category: 'Vodoinstalacije', icon: <PlumbingRoundedIcon /> },
+];
+
+const Home: React.FC = observer(() => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { authenticationStore } = useRootStore();
+  const user = authenticationStore.user;
+  const [searchValue, setSearchValue] = useState('');
+
+  const openLogin = () => {
+    authenticationStore.setLoginDialogOpen(true);
+  };
+
+  const navigateWithScroll = (path: string) => {
+    navigate(path);
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  };
+
+  const buildPathWithParams = (basePath: string, params: Record<string, string | undefined>) => {
+    const query = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value.trim().length > 0) {
+        query.set(key, value);
+      }
+    });
+
+    const queryString = query.toString();
+    return queryString ? `${basePath}?${queryString}` : basePath;
+  };
+
+  const handleSearch = (target: 'jobs' | 'contractors') => {
+    const query = searchValue.trim();
+    const path = target === 'jobs'
+      ? buildPathWithParams('/marketplace', { q: query })
+      : buildPathWithParams('/izvodjaci', { q: query });
+
+    navigateWithScroll(path);
+  };
+
+  const quickActions = useMemo<QuickAction[]>(() => {
+    const profilePath = user ? `/profil/${user.id}` : '';
+
+    return [
+      {
+        label: 'Glavni izvodjaci',
+        icon: <BusinessRoundedIcon />,
+        onClick: () => navigateWithScroll('/izvodjaci'),
+      },
+      {
+        label: 'Trazim kooperanta',
+        icon: <ApartmentRoundedIcon />,
+        onClick: () => navigateWithScroll('/izvodjaci?legalType=FIRMA'),
+      },
+      {
+        label: 'Pronadji posao',
+        icon: <SearchRoundedIcon />,
+        onClick: () => navigateWithScroll('/marketplace'),
+      },
+      {
+        label: 'Projekti u toku',
+        icon: <AssignmentTurnedInRoundedIcon />,
+        onClick: () => {
+          if (!user) {
+            openLogin();
+            return;
+          }
+
+          navigateWithScroll('/dashboard');
+        },
+      },
+      {
+        label: user?.role === 'INVESTITOR' ? 'Objavi posao' : 'Moj panel',
+        icon: <EngineeringRoundedIcon />,
+        onClick: () => {
+          if (!user) {
+            openLogin();
+            return;
+          }
+
+          navigateWithScroll(user.role === 'INVESTITOR' ? '/objavi-posao' : '/dashboard');
+        },
+      },
+      {
+        label: user ? 'Moj profil' : 'Prijava',
+        icon: <PersonRoundedIcon />,
+        onClick: () => {
+          if (!user) {
+            openLogin();
+            return;
+          }
+
+          navigateWithScroll(profilePath);
+        },
+      },
+    ];
+  }, [user]);
 
   return (
     <Box
       sx={{
-        overflow: 'hidden',
+        minHeight: '100%',
         bgcolor: 'background.default',
         mx: { xs: -2, sm: 0 },
         mt: { xs: -2, sm: 0 },
+        pb: { xs: 12, md: 8 },
+        background: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.7)} 0%, ${theme.palette.background.default} 28%)`,
       }}
     >
-      <Box
-        sx={{
-          pt: { xs: 7, md: 11 },
-          pb: { xs: 8, md: 12 },
-          color: 'white',
-          position: 'relative',
-          borderRadius: { xs: '0 0 36px 36px', md: '0 0 72px 72px' },
-          background: BRAND_COLORS.heroGradient,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            background: `radial-gradient(circle at 15% 18%, ${alpha(theme.palette.primary.main, 0.16)}, transparent 36%), radial-gradient(circle at 80% 70%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 35%)`,
-          },
-        }}
-      >
-        <BaseContainer maxWidth="lg">
-          <Grid container spacing={{ xs: 5, md: 8 }} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
-            <Grid size={{ xs: 12, md: 7 }} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
-              <Box
-                sx={{
-                  width: '100%',
-                  maxWidth: { xs: 360, sm: 520, md: 'none' },
-                  mx: { xs: 'auto', md: 0 },
-                  textAlign: { xs: 'center', md: 'left' },
-                }}
-              >
-                <Chip
-                  label="Pro mreza za gradjevinu"
-                  icon={<ShieldIcon sx={{ color: 'primary.main !important', fontSize: 16 }} />}
-                  sx={{
-                    display: 'inline-flex',
-                    mb: 2.5,
-                    px: 0.6,
-                    py: 0.2,
-                    bgcolor: alpha(theme.palette.common.white, 0.1),
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.common.white, 0.18),
-                    color: 'primary.main',
-                    fontWeight: 800,
-                    fontSize: '0.76rem',
-                    letterSpacing: '0.03em',
-                    textTransform: 'uppercase',
-                    borderRadius: 2,
-                    mx: { xs: 'auto', md: 0 },
-                  }}
-                />
-
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontWeight: 900,
-                    lineHeight: 1.04,
-                    letterSpacing: '-0.035em',
-                    mb: 2,
-                    fontSize: { xs: '2.2rem', sm: '2.9rem', md: '4.4rem' },
-                    textAlign: { xs: 'center', md: 'left' },
-                  }}
-                >
-                  Posao i majstori
-                  <Box component="span" sx={{ color: 'primary.main', display: 'block' }}>
-                    bez improvizacije
-                  </Box>
-                </Typography>
-
-                <Typography
-                  sx={{
-                    maxWidth: 600,
-                    mb: 4,
-                    lineHeight: 1.65,
-                    color: alpha(theme.palette.common.white, 0.82),
-                    fontSize: { xs: '1rem', md: '1.15rem' },
-                    textAlign: { xs: 'center', md: 'left' },
-                  }}
-                >
-                  BuildConnect povezuje investitore i izvodjace kroz strukturirane oglase, ponude i recenzije. Odluke
-                  donosis na temelju podataka, ne dojma.
-                </Typography>
-
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={2.2}
-                  sx={{
-                    maxWidth: { xs: 360, sm: 520 },
-                    mx: { xs: 'auto', md: 0 },
-                    alignItems: { xs: 'center', sm: 'stretch' },
-                  }}
-                >
-                  <BaseButton
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForwardIcon />}
-                    onClick={() => navigate('/marketplace')}
-                    fullWidth={false}
-                    sx={{
-                      py: 1.6,
-                      borderRadius: 3,
-                      fontWeight: 900,
-                      width: { xs: '100%', sm: '100%' },
-                      maxWidth: { xs: 340, sm: 'none' },
-                      mx: { xs: 'auto', sm: 0 },
-                    }}
-                  >
-                    Otvori marketplace
-                  </BaseButton>
-                  <BaseButton
-                    variant="outlined"
-                    onClick={() => navigate('/register')}
-                    fullWidth={false}
-                    sx={{
-                      py: 1.6,
-                      borderRadius: 3,
-                      fontWeight: 800,
-                      width: { xs: '100%', sm: '100%' },
-                      maxWidth: { xs: 340, sm: 'none' },
-                      mx: { xs: 'auto', sm: 0 },
-                      color: 'common.white',
-                      borderColor: alpha(theme.palette.common.white, 0.38),
-                      '&:hover': { borderColor: alpha(theme.palette.common.white, 0.9) },
-                    }}
-                  >
-                    Kreiraj racun
-                  </BaseButton>
-                </Stack>
-              </Box>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 5 }} sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+      <BaseContainer maxWidth="md" sx={{ pt: { xs: 0.75, md: 1.5 } }}>
+        <Stack spacing={{ xs: 3, md: 4 }} alignItems="center">
+          <Box
+            sx={{
+              pt: 0,
+              width: '100%',
+              maxWidth: HOME_PRIMARY_WIDTH,
+              mx: 'auto',
+            }}
+          >
+            <Stack spacing={2}>
               <Paper
                 elevation={0}
                 sx={{
-                  width: '100%',
-                  maxWidth: { xs: 360, sm: 'none' },
-                  p: { xs: 3, md: 4 },
-                  borderRadius: 5.5,
+                  p: 0.35,
+                  borderRadius: 4,
+                  bgcolor: 'background.paper',
                   border: '1px solid',
-                  borderColor: alpha(theme.palette.common.white, 0.22),
-                  bgcolor: alpha(theme.palette.common.white, 0.08),
-                  backdropFilter: 'blur(14px)',
-                  boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.18)}, 0 24px 44px ${alpha(theme.palette.common.black, 0.28)}`,
+                  borderColor: alpha(theme.palette.divider, 0.14),
+                  boxShadow: `0 10px 24px ${alpha(theme.palette.common.black, 0.06)}`,
                 }}
               >
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                  <Chip
-                    label="Provjereno"
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(theme.palette.common.white, 0.12),
-                      color: 'common.white',
-                      borderRadius: 1.5,
-                      fontWeight: 700,
-                    }}
-                  />
-                  <Typography sx={{ color: alpha(theme.palette.common.white, 0.7), fontSize: '0.8rem', fontWeight: 700 }}>
-                    odgovor unutar 24h
-                  </Typography>
-                </Stack>
-
-                <Typography variant="h5" sx={{ fontWeight: 900, color: 'primary.main', mb: 1.2 }}>
-                  Sto dobivas odmah
-                </Typography>
-                <Typography sx={{ color: alpha(theme.palette.common.white, 0.72), mb: 3, fontSize: '0.95rem' }}>
-                  Jedinstven tijek rada: od objave posla do potvrde izvodjaca.
-                </Typography>
-
-                <Stack spacing={1.2}>
-                  {[
-                    {
-                      icon: <VerifiedIcon sx={{ color: 'primary.main', fontSize: 19 }} />,
-                      text: 'Auditabilne recenzije i povijest izvedbi',
-                    },
-                    {
-                      icon: <HandshakeIcon sx={{ color: 'primary.main', fontSize: 19 }} />,
-                      text: 'Direktan kontakt s odgovornom osobom',
-                    },
-                    {
-                      icon: <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 19 }} />,
-                      text: 'Jasna usporedba cijena, rokova i opsega',
-                    },
-                  ].map((item) => (
-                    <Stack
-                      key={item.text}
-                      direction="row"
-                      alignItems="center"
-                      spacing={1.2}
-                      sx={{
-                        px: 1.2,
-                        py: 1,
-                        borderRadius: 2,
-                        bgcolor: alpha(theme.palette.common.white, 0.05),
-                        border: '1px solid',
-                        borderColor: alpha(theme.palette.common.white, 0.08),
-                      }}
-                    >
-                      {item.icon}
-                      <Typography sx={{ color: 'common.white', fontSize: '0.92rem' }}>{item.text}</Typography>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Paper>
-            </Grid>
-          </Grid>
-        </BaseContainer>
-      </Box>
-
-      <Box sx={{ py: { xs: 6, md: 10 } }}>
-        <BaseContainer maxWidth="lg">
-          <Typography
-            textAlign="center"
-            sx={{
-              fontWeight: 900,
-              color: 'secondary.main',
-              mb: { xs: 4, md: 6 },
-              fontSize: { xs: '1.7rem', md: '2.35rem' },
-            }}
-          >
-            Jedna platforma, cetiri kljucne uloge
-          </Typography>
-
-          <Grid container spacing={{ xs: 2, md: 3 }}>
-            {[
-              {
-                title: 'Majstor',
-                icon: <EngineeringIcon sx={{ fontSize: 34 }} />,
-                desc: 'Grade reputaciju kroz stvarne projekte i recenzije.',
-              },
-              {
-                title: 'Firma',
-                icon: <BusinessIcon sx={{ fontSize: 34 }} />,
-                desc: 'Prate vise projekata i timova na jednom mjestu.',
-              },
-              {
-                title: 'Investitor',
-                icon: <GroupIcon sx={{ fontSize: 34 }} />,
-                desc: 'Usporeduju ponude i biraju izvedbu bez rizika.',
-              },
-              {
-                title: 'Dobavljac',
-                icon: <InventoryIcon sx={{ fontSize: 34 }} />,
-                desc: 'Povezuju proizvode s aktivnim izvodacima.',
-              },
-            ].map((item) => (
-              <Grid key={item.title} size={{ xs: 12, sm: 6, md: 3 }}>
-                <Paper
+                <BaseInput
+                  placeholder="Pretrazi firme, projekte ili usluge..."
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      handleSearch('jobs');
+                    }
+                  }}
                   sx={{
-                    p: { xs: 3, md: 3.5 },
-                    borderRadius: 4,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    height: '100%',
-                    textAlign: 'center',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      transform: { md: 'translateY(-4px)' },
-                      boxShadow: 4,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      bgcolor: 'transparent',
+                      minHeight: { xs: 54, md: 58 },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'transparent',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      py: { xs: 1.05, md: 1.2 },
+                      fontSize: { xs: '0.95rem', md: '1rem' },
                     },
                   }}
-                >
-                  <Box sx={{ color: 'primary.main', mb: 1.3 }}>{item.icon}</Box>
-                  <Typography sx={{ fontWeight: 900, mb: 1, fontSize: '1.05rem' }}>{item.title}</Typography>
-                  <Typography sx={{ color: 'text.secondary', lineHeight: 1.6, fontSize: '0.92rem' }}>{item.desc}</Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </BaseContainer>
-      </Box>
-
-      <Box sx={{ py: { xs: 6, md: 9 }, bgcolor: alpha(theme.palette.common.black, 0.02) }}>
-        <BaseContainer maxWidth="lg">
-          <Grid container spacing={{ xs: 2, md: 3 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
-                <Typography
-                  sx={{ fontWeight: 900, color: 'error.main', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-                >
-                  <CancelIcon /> Klasicni kanali
-                </Typography>
-                <Stack spacing={1.2}>
-                  {[
-                    'Nepouzdani profili i oglasi',
-                    'Puno gubljenja vremena na provjere',
-                    'Nema jasnog traga kvalitete rada',
-                  ].map((line) => (
-                    <Typography key={line} sx={{ color: 'text.secondary', fontSize: '0.95rem' }}>
-                      - {line}
-                    </Typography>
-                  ))}
-                </Stack>
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchRoundedIcon sx={{ color: 'text.secondary', ml: 0.5 }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => handleSearch('jobs')}
+                            sx={{
+                              width: 38,
+                              height: 38,
+                              bgcolor: 'primary.main',
+                              color: 'primary.contrastText',
+                              '&:hover': { bgcolor: 'primary.dark' },
+                            }}
+                          >
+                            <ArrowForwardIosRoundedIcon sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
               </Paper>
-            </Grid>
+            </Stack>
+          </Box>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper
+          <Box>
+            <Grid
+              container
+              spacing={{ xs: 1.2, md: 1.8 }}
+              sx={{
+                width: '100%',
+                maxWidth: HOME_PRIMARY_WIDTH,
+                mx: 'auto',
+                justifyContent: 'center',
+              }}
+            >
+              {quickActions.map((action) => (
+                <Grid key={action.label} size={{ xs: 4, md: 4 }}>
+                  <Paper
+                    elevation={0}
+                    onClick={action.onClick}
+                    sx={{
+                      p: { xs: 1, md: 1.3 },
+                      aspectRatio: '1 / 1',
+                      minHeight: { xs: 92, md: 110 },
+                      borderRadius: 2.5,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.divider, 0.12),
+                      bgcolor: 'background.paper',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                      '&:hover': {
+                        transform: { md: 'translateY(-3px)' },
+                        boxShadow: `0 18px 32px ${alpha(theme.palette.common.black, 0.08)}`,
+                        borderColor: alpha(theme.palette.primary.main, 0.4),
+                      },
+                    }}
+                  >
+                    <Stack spacing={0.9} alignItems="center" justifyContent="center" textAlign="center">
+                      <Box
+                        sx={{
+                          width: { xs: 40, md: 46 },
+                          height: { xs: 40, md: 46 },
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 2,
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          color: 'primary.main',
+                          '& .MuiSvgIcon-root': {
+                            fontSize: { xs: 22, md: 24 },
+                          },
+                        }}
+                      >
+                        {action.icon}
+                      </Box>
+                      <Typography
+                        sx={{
+                          fontWeight: 900,
+                          lineHeight: 1.2,
+                          minHeight: { xs: 30, md: 34 },
+                          fontSize: { xs: '0.74rem', md: '0.84rem' },
+                        }}
+                      >
+                        {action.label}
+                      </Typography>
+                    </Stack>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          <Paper
+            elevation={0}
+            sx={{
+              width: '100%',
+              maxWidth: { xs: 360, sm: 500, md: 640 },
+              p: { xs: 2.5, md: 3 },
+              borderRadius: 5,
+              border: '1px solid',
+              borderColor: alpha(theme.palette.divider, 0.12),
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 2.5 }}
+            >
+              <Box>
+                <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1.35rem', md: '1.6rem' } }}>
+                  Specijalizirani izvodjaci
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+                  Jednim klikom otvori filtrirani direktorij za trazenu uslugu.
+                </Typography>
+              </Box>
+              <IconButton
+                onClick={() => navigateWithScroll('/izvodjaci')}
                 sx={{
-                  p: { xs: 3, md: 4 },
-                  borderRadius: 4,
-                  bgcolor: 'secondary.main',
-                  color: 'common.white',
-                  height: '100%',
+                  width: 42,
+                  height: 42,
+                  bgcolor: alpha(theme.palette.primary.main, 0.12),
+                  color: 'primary.main',
+                  '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18) },
                 }}
               >
-                <Typography
-                  sx={{ fontWeight: 900, color: 'primary.main', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-                >
-                  <ShieldIcon /> BuildConnect
-                </Typography>
-                <Stack spacing={1.2}>
-                  {[
-                    'Provjerljivi profili i recenzije',
-                    'Pregled ponuda i rokova na jednom ekranu',
-                    'Brzi odabir i manje rizicnih odluka',
-                  ].map((line) => (
-                    <Stack key={line} direction="row" spacing={1} alignItems="center">
-                      <CheckCircleIcon sx={{ color: 'primary.main', fontSize: 18 }} />
-                      <Typography sx={{ color: alpha(theme.palette.common.white, 0.92), fontSize: '0.95rem' }}>{line}</Typography>
+                <ArrowForwardIosRoundedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Stack>
+
+            <Grid container spacing={{ xs: 1.5, md: 2 }}>
+              {contractorShortcuts.map((shortcut) => (
+                <Grid key={shortcut.label} size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper
+                    elevation={0}
+                    onClick={() => navigateWithScroll(`/izvodjaci?category=${encodeURIComponent(shortcut.category)}`)}
+                    sx={{
+                      p: 2,
+                      borderRadius: 3.5,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.divider, 0.12),
+                      bgcolor: alpha(theme.palette.primary.light, 0.22),
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      transition: 'all 0.18s ease',
+                      '&:hover': {
+                        borderColor: alpha(theme.palette.primary.main, 0.38),
+                        bgcolor: alpha(theme.palette.primary.light, 0.36),
+                      },
+                    }}
+                  >
+                    <Stack spacing={1} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          bgcolor: 'background.paper',
+                          color: 'primary.main',
+                        }}
+                      >
+                        {shortcut.icon}
+                      </Box>
+                      <Typography sx={{ fontWeight: 800, fontSize: '0.92rem' }}>{shortcut.label}</Typography>
                     </Stack>
-                  ))}
-                </Stack>
-              </Paper>
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
-          </Grid>
+          </Paper>
 
-          <Divider sx={{ my: { xs: 4, md: 5 } }} />
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography sx={{ color: 'text.secondary', mb: 2 }}>Spremni za sljedeci projekt?</Typography>
-            <BaseButton
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/register')}
-              endIcon={<ArrowForwardIcon />}
-              sx={{ px: { xs: 3, md: 5 }, py: 1.4, borderRadius: 3, fontWeight: 900 }}
-            >
-              Pokreni racun
-            </BaseButton>
-          </Box>
-        </BaseContainer>
-      </Box>
+        </Stack>
+      </BaseContainer>
     </Box>
   );
-};
+});
 
 export default Home;
