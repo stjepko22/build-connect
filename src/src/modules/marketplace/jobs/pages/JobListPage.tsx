@@ -20,18 +20,20 @@ import debounce from 'lodash/debounce';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
+import { useSearchParams } from 'react-router-dom';
 
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import JobCard from '@/core/components/molecules/cards/JobCard';
 import { useRootStore } from '@/core/hooks/useRootStore';
-import { JOB_CATEGORIES } from '@/modules/marketplace/jobs/constants/jobCategories';
+import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const JobListPage: React.FC = observer(() => {
   const { jobStore, bidStore, authenticationStore } = useRootStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [searchParams] = useSearchParams();
 
   const debouncedSearch = useMemo(
     () => debounce((val: string) => jobStore.setJobSearchQuery(val), 300),
@@ -45,14 +47,32 @@ const JobListPage: React.FC = observer(() => {
   };
 
   useEffect(() => {
+    const categoryFilters = Array.from(
+      new Set(
+        searchParams
+          .getAll('category')
+          .filter((value): value is JobCategory => JOB_CATEGORIES.includes(value as JobCategory))
+      )
+    );
+    const queryFilter = searchParams.get('q')?.trim() ?? '';
+    const hasRouteFilters = searchParams.has('q') || searchParams.has('category');
+
+    jobStore.resetAllJobFilters();
     jobStore.initializeJobFiltersForCurrentUser();
+
+    if (hasRouteFilters) {
+      jobStore.setSelectedJobCategories(categoryFilters);
+      jobStore.setJobSearchInputValue(queryFilter);
+      jobStore.setJobSearchQuery(queryFilter);
+    }
+
     void jobStore.loadJobs();
     void bidStore.loadBids();
 
     return () => {
       debouncedSearch.cancel();
     };
-  }, [bidStore, jobStore, debouncedSearch]);
+  }, [bidStore, jobStore, debouncedSearch, searchParams]);
 
   const filteredJobs = jobStore.filteredJobs;
   const roleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'izvođača' : 'investitora';

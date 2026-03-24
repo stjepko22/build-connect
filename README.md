@@ -36,8 +36,3 @@ npm run build
 ## Napomena
 
 Za puni rad aplikacije backend mora biti pokrenut.
-
-Demo login:
-
-- `investitor@buildconnect.hr` / `invest123`
-- `izvodjac@buildconnect.hr` / `izvodjac123`
