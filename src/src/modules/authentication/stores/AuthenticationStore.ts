@@ -15,13 +15,13 @@ export default class AuthenticationStore {
   authError: string | null = null;
   isLoginDialogOpen = false;
   pendingUnauthorizedLoginPrompt = false;
-  loginEmail = 'investitor@buildconnect.hr';
-  loginPassword = 'invest123';
+  loginEmail = '';
+  loginPassword = '';
   loginRole: 'INVESTITOR' | 'IZVODJAC' = 'INVESTITOR';
 
-  private readonly mockCredentialsByRole: Record<'INVESTITOR' | 'IZVODJAC', { email: string; password: string }> = {
-    INVESTITOR: { email: 'investitor@buildconnect.hr', password: 'invest123' },
-    IZVODJAC: { email: 'izvodjac@buildconnect.hr', password: 'izvodjac123' },
+  private readonly loginEmailSuggestionsByRole: Record<'INVESTITOR' | 'IZVODJAC', string> = {
+    INVESTITOR: '',
+    IZVODJAC: '',
   };
 
   constructor(rootStore: RootStore) {
@@ -39,7 +39,7 @@ export default class AuthenticationStore {
     this.isLoginDialogOpen = value;
     if (value) {
       this.authError = null;
-      this.applyMockCredentialsForRole(this.loginRole);
+      this.applyLoginRoleDefaults(this.loginRole);
     }
   };
 
@@ -56,17 +56,17 @@ export default class AuthenticationStore {
   setLoginRole = (value: 'INVESTITOR' | 'IZVODJAC') => {
     this.loginRole = value;
     this.authError = null;
-    this.applyMockCredentialsForRole(value);
+    this.applyLoginRoleDefaults(value);
   };
 
   setAuthError = (value: string | null) => {
     this.authError = value;
   };
 
-  applyMockCredentialsForRole = (role: 'INVESTITOR' | 'IZVODJAC') => {
-    const mock = this.mockCredentialsByRole[role];
-    this.loginEmail = mock.email;
-    this.loginPassword = mock.password;
+  applyLoginRoleDefaults = (role: 'INVESTITOR' | 'IZVODJAC') => {
+    const suggestedEmail = this.loginEmailSuggestionsByRole[role];
+    this.loginEmail = suggestedEmail;
+    this.loginPassword = '';
   };
 
   get isAuthenticated() {
