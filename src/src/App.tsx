@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { ThemeProvider, CssBaseline, Box, CircularProgress } from '@mui/material';
 import theme from './ui/themes/default/theme';
@@ -26,11 +26,35 @@ interface RequireAuthProps {
   allowedRoles?: Role[];
 }
 
+const UnauthorizedLoginPromptHandler: React.FC = observer(() => {
+  const location = useLocation();
+  const { authenticationStore } = useRootStore();
+
+  useEffect(() => {
+    if (!authenticationStore.pendingUnauthorizedLoginPrompt) {
+      return;
+    }
+
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+    if (!isAuthPage) {
+      authenticationStore.setLoginDialogOpen(true);
+    }
+
+    authenticationStore.clearUnauthorizedLoginPrompt();
+  }, [authenticationStore, location.pathname]);
+
+  return null;
+});
+
 const RequireAuth: React.FC<RequireAuthProps> = observer(({ allowedRoles }) => {
   const { authenticationStore } = useRootStore();
   const user = authenticationStore.user;
 
   if (!user) {
+    if (authenticationStore.pendingUnauthorizedLoginPrompt) {
+      return <Navigate to="/" replace />;
+    }
+
     return <Navigate to="/login" replace />;
   }
 
@@ -61,6 +85,7 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
+          <UnauthorizedLoginPromptHandler />
           <Suspense fallback={loadingFallback}>
             <Routes>
               <Route element={<MainLayout />}>

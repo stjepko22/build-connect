@@ -1,107 +1,54 @@
+import { AxiosError } from 'axios';
 import { makeAutoObservable, runInAction } from 'mobx';
+import { IReviewResponse } from '@/api/models/reviews/IReviewResponse';
 import RootStore from '@/core/stores/RootStore';
 import { IReview } from '@/modules/marketplace/reviews/models/IReview';
+import ReviewService from '@/modules/marketplace/reviews/services/ReviewService';
 
 export default class ReviewStore {
   rootStore: RootStore;
-  reviews: IReview[] = [
-    {
-      id: 'review-1',
-      jobId: 'posao-1',
-      reviewerId: 'investitor-1',
-      revieweeId: 'izvodjac-1',
-      rating: 5,
-      comment: 'Odlicna izvedba fasade, sve je zavrseno u roku.',
-      createdAt: new Date('2026-02-12'),
-    },
-    {
-      id: 'review-2',
-      jobId: 'posao-2',
-      reviewerId: 'investitor-2',
-      revieweeId: 'izvodjac-2',
-      rating: 4,
-      comment: 'Kvalitetan posao i dobra komunikacija kroz cijeli projekt.',
-      createdAt: new Date('2026-02-13'),
-    },
-    {
-      id: 'review-3',
-      jobId: 'posao-4',
-      reviewerId: 'investitor-2',
-      revieweeId: 'izvodjac-3',
-      rating: 5,
-      comment: 'Profesionalan elektro tim, preporuka za poslovne objekte.',
-      createdAt: new Date('2026-02-15'),
-    },
-  ];
-  isLoading: boolean = false;
+  reviewService: ReviewService;
+  reviews: IReview[] = [];
+  isLoading = false;
+  isLoadingReviews = false;
   reviewRating: number | null = 5;
   reviewComment = '';
   reviewError: string | null = null;
+  reviewListError: string | null = null;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.reviewService = new ReviewService();
     makeAutoObservable(this);
   }
 
-  private validateReviewInput(reviewData: Omit<IReview, 'id' | 'createdAt' | 'reviewerId'>): string | null {
-    const user = this.rootStore.authenticationStore.user;
+  loadReviews = async (jobId?: string, revieweeId?: string) => {
+    this.isLoadingReviews = true;
+    this.reviewListError = null;
 
-    if (!user) return 'Morate biti prijavljeni za ostavljanje recenzije.';
-    if (user.role !== 'INVESTITOR') return 'Samo investitor može ostaviti recenziju.';
+    try {
+      const response = await this.reviewService.getReviewsAsync({
+        jobId,
+        revieweeId,
+      });
 
-    const job = this.rootStore.jobStore.jobs.find((j) => j.id === reviewData.jobId);
-    if (!job) return 'Posao za recenziju nije pronađen.';
-    if (job.investitorId !== user.id) return 'Ne možete recenzirati posao koji nije vaš.';
-
-    const acceptedBid = this.rootStore.bidStore.bids.find(
-      (bid) => bid.jobId === reviewData.jobId && bid.status === 'ACCEPTED'
-    );
-    if (!acceptedBid) return 'Recenziju možete ostaviti tek nakon prihvaćene ponude.';
-    if (acceptedBid.contractorId !== reviewData.revieweeId) {
-      return 'Recenzija mora biti vezana za prihvaćenog izvođača.';
+      runInAction(() => {
+        this.replaceReviews(
+          response.data.map(this.mapReviewResponseToModel),
+          jobId,
+          revieweeId
+        );
+      });
+    } catch (error) {
+      console.error('Load reviews failed:', error);
+      runInAction(() => {
+        this.reviewListError = this.getApiErrorMessage(error, 'Dohvat recenzija nije uspio.');
+      });
+    } finally {
+      runInAction(() => {
+        this.isLoadingReviews = false;
+      });
     }
-
-    if (!Number.isFinite(reviewData.rating) || reviewData.rating < 1 || reviewData.rating > 5) {
-      return 'Ocjena mora biti između 1 i 5.';
-    }
-
-    if (reviewData.comment.trim().length < 10) {
-      return 'Komentar mora imati barem 10 znakova.';
-    }
-
-    const existingReview = this.reviews.find((r) => r.jobId === reviewData.jobId);
-    if (existingReview) return 'Za ovaj posao je već ostavljena recenzija.';
-
-    return null;
-  }
-
-  addReview = async (reviewData: Omit<IReview, 'id' | 'createdAt' | 'reviewerId'>) => {
-    const validationError = this.validateReviewInput(reviewData);
-    if (validationError) {
-      throw new Error(validationError);
-    }
-
-    this.isLoading = true;
-    
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const user = this.rootStore.authenticationStore.user!;
-        const newReview: IReview = {
-          ...reviewData,
-          id: Math.random().toString(36).substring(2, 9),
-          reviewerId: user.id,
-          createdAt: new Date(),
-        };
-        
-        runInAction(() => {
-          this.reviews.push(newReview);
-          this.isLoading = false;
-        });
-        
-        console.log(`[ReviewStore] Recenzija uspješno dodana za posao: ${reviewData.jobId}`);
-        resolve();
-      }, 800);
-    });
   };
 
   setReviewRating = (value: number | null) => { this.reviewRating = value; };
@@ -123,27 +70,84 @@ export default class ReviewStore {
     );
   }
 
-  submitReviewForJob = async (jobId: string, revieweeId: string) => {
+  submitReviewForJob = async (jobId: string) => {
     this.setReviewError(null);
+    const user = this.rootStore.authenticationStore.user;
+
+    if (!user) {
+      this.setReviewError('Morate biti prijavljeni za ostavljanje recenzije.');
+      return false;
+    }
+
+    this.isLoading = true;
+
     try {
-      await this.addReview({
+      const response = await this.reviewService.createReviewAsync(
         jobId,
-        revieweeId,
-        rating: this.reviewRating || 5,
-        comment: this.reviewComment,
+        {
+          rating: this.reviewRating || 5,
+          comment: this.reviewComment,
+        }
+      );
+
+      runInAction(() => {
+        this.upsertReview(this.mapReviewResponseToModel(response.data));
       });
+
       this.resetReviewForm();
       return true;
     } catch (error) {
-      this.setReviewError(error instanceof Error ? error.message : 'Objava recenzije nije uspjela.');
+      this.setReviewError(this.getApiErrorMessage(error, 'Objava recenzije nije uspjela.'));
       return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
     }
   };
 
   getReviewByJobId(jobId: string) {
-    return this.reviews.find(r => r.jobId === jobId);
+    return this.reviews.find((review) => review.jobId === jobId);
   }
+
+  private mapReviewResponseToModel = (reviewResponse: IReviewResponse): IReview => {
+    return {
+      ...reviewResponse,
+      createdAt: new Date(reviewResponse.createdAt),
+    };
+  };
+
+  private upsertReview = (review: IReview) => {
+    const existingReviewIndex = this.reviews.findIndex((existingReview) => existingReview.id === review.id);
+
+    if (existingReviewIndex === -1) {
+      this.reviews = [review, ...this.reviews];
+      return;
+    }
+
+    const nextReviews = [...this.reviews];
+    nextReviews[existingReviewIndex] = review;
+    this.reviews = nextReviews;
+  };
+
+  private replaceReviews = (reviews: IReview[], jobId?: string, revieweeId?: string) => {
+    if (!jobId && !revieweeId) {
+      this.reviews = reviews;
+      return;
+    }
+
+    const filteredExistingReviews = this.reviews.filter((review) => {
+      const matchesJob = jobId ? review.jobId === jobId : false;
+      const matchesReviewee = revieweeId ? review.revieweeId === revieweeId : false;
+
+      return !matchesJob && !matchesReviewee;
+    });
+
+    this.reviews = [...filteredExistingReviews, ...reviews];
+  };
+
+  private getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    return axiosError.response?.data?.message || fallbackMessage;
+  };
 }
-
-
-

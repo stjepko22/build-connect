@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   Typography,
   Paper,
   Box,
@@ -108,6 +109,12 @@ const CreateJobPage: React.FC = observer(() => {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 500 }}>
           Jasno opisan projekt daje brze i kvalitetnije ponude.
         </Typography>
+
+        {jobStore.jobsError && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+            {jobStore.jobsError}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>

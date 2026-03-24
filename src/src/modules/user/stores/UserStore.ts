@@ -1,92 +1,21 @@
-import { makeAutoObservable } from 'mobx';
+import { AxiosError } from 'axios';
+import { makeAutoObservable, runInAction } from 'mobx';
+import { IUserProfileResponse } from '@/api/models/users/IUserProfileResponse';
 import RootStore from '@/core/stores/RootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 import { IUserProfile } from '@/modules/user/models/IUserProfile';
 import { LegalType } from '@/modules/user/models/LegalType';
+import UserService from '@/modules/user/services/UserService';
 
 type ContractorLegalTypeFilter = 'ALL' | LegalType;
 
 export default class UserStore {
   rootStore: RootStore;
-
-  users: IUserProfile[] = [
-    {
-      id: 'investitor-1',
-      displayName: 'Marko Markovic',
-      role: 'INVESTITOR',
-      legalType: 'FIRMA',
-      email: 'marko@test.com',
-      bio: 'Trazim pouzdane izvodace za projekte renovacije stanova u Zagrebu.',
-      location: 'Zagreb',
-      joinedAt: new Date('2025-01-10'),
-    },
-    {
-      id: 'investitor-2',
-      displayName: 'Ana Anic',
-      role: 'INVESTITOR',
-      legalType: 'FIRMA',
-      email: 'ana@test.com',
-      bio: 'Investitor s fokusom na moderne niskoenergetske kuce.',
-      location: 'Split',
-      joinedAt: new Date('2025-02-15'),
-    },
-    {
-      id: 'izvodjac-1',
-      displayName: 'Ivan Ivic - Gradnja d.o.o.',
-      role: 'IZVODJAC',
-      legalType: 'FIRMA',
-      email: 'ivan@gradnja.hr',
-      bio: 'Specijalizirani za fasaderske radove i suhu gradnju. 15 godina iskustva.',
-      location: 'Zagreb',
-      joinedAt: new Date('2024-11-20'),
-      serviceCategories: ['Fasade', 'Gradnja', 'Renovacija'],
-    },
-    {
-      id: 'izvodjac-2',
-      displayName: 'Petar Horvat',
-      role: 'IZVODJAC',
-      legalType: 'FIZICKA_OSOBA',
-      email: 'petar@majstor.hr',
-      bio: 'Samostalni keramicar s fokusom na kupaonice i kuhinje.',
-      location: 'Split',
-      joinedAt: new Date('2024-10-12'),
-      serviceCategories: ['Keramika', 'Renovacija'],
-    },
-    {
-      id: 'izvodjac-3',
-      displayName: 'Elektro Napon d.o.o.',
-      role: 'IZVODJAC',
-      legalType: 'FIRMA',
-      email: 'info@napon.hr',
-      bio: 'Elektro tim za stambene i poslovne objekte.',
-      location: 'Zadar',
-      joinedAt: new Date('2024-09-03'),
-      serviceCategories: ['Elektro'],
-    },
-    {
-      id: 'izvodjac-4',
-      displayName: 'Krov Plus Obrt',
-      role: 'IZVODJAC',
-      legalType: 'FIRMA',
-      email: 'kontakt@krovplus.hr',
-      bio: 'Krovopokrivacki i limarski radovi na novogradnji i adaptacijama.',
-      location: 'Rijeka',
-      joinedAt: new Date('2024-08-19'),
-      serviceCategories: ['Krovovi', 'Stolarija'],
-    },
-    {
-      id: 'izvodjac-5',
-      displayName: 'Nikola Vukovic',
-      role: 'IZVODJAC',
-      legalType: 'FIZICKA_OSOBA',
-      email: 'nikola@vodomajstor.hr',
-      bio: 'Vodoinstalater i monter sustava grijanja.',
-      location: 'Osijek',
-      joinedAt: new Date('2024-07-01'),
-      serviceCategories: ['Vodoinstalacije', 'Grijanje'],
-    },
-  ];
-
+  userService: UserService;
+  users: IUserProfile[] = [];
+  isLoadingUsers = false;
+  userListError: string | null = null;
+  selectedUserError: string | null = null;
   contractorSearchQuery = '';
   selectedContractorCategories: JobCategory[] = [];
   selectedContractorLocation = '';
@@ -99,8 +28,83 @@ export default class UserStore {
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.userService = new UserService();
     makeAutoObservable(this);
   }
+
+  loadUsers = async (role?: 'INVESTITOR' | 'IZVODJAC') => {
+    this.isLoadingUsers = true;
+    this.userListError = null;
+
+    try {
+      const response = await this.userService.getUsersAsync({ role });
+
+      runInAction(() => {
+        this.replaceUsers(response.data.map(this.mapUserResponseToModel), role);
+      });
+    } catch (error) {
+      console.error('Load users failed:', error);
+      runInAction(() => {
+        this.userListError = this.getApiErrorMessage(error, 'Dohvat korisnika nije uspio.');
+      });
+    } finally {
+      runInAction(() => {
+        this.isLoadingUsers = false;
+      });
+    }
+  };
+
+  loadContractors = async () => {
+    this.isLoadingUsers = true;
+    this.userListError = null;
+
+    try {
+      const response = await this.userService.getContractorsAsync();
+
+      runInAction(() => {
+        this.replaceUsers(response.data.map(this.mapUserResponseToModel), 'IZVODJAC');
+      });
+    } catch (error) {
+      console.error('Load contractors failed:', error);
+      runInAction(() => {
+        this.userListError = this.getApiErrorMessage(error, 'Dohvat izvodaca nije uspio.');
+      });
+    } finally {
+      runInAction(() => {
+        this.isLoadingUsers = false;
+      });
+    }
+  };
+
+  loadUserById = async (id: string) => {
+    if (!id.trim()) {
+      return null;
+    }
+
+    this.isLoadingUsers = true;
+    this.selectedUserError = null;
+
+    try {
+      const response = await this.userService.getUserAsync(id);
+      const user = this.mapUserResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertUser(user);
+      });
+
+      return user;
+    } catch (error) {
+      console.error('Load user failed:', error);
+      runInAction(() => {
+        this.selectedUserError = this.getApiErrorMessage(error, 'Dohvat korisnika nije uspio.');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.isLoadingUsers = false;
+      });
+    }
+  };
 
   setContractorSearchQuery = (value: string) => { this.contractorSearchQuery = value; };
   setSelectedContractorCategories = (value: JobCategory[]) => { this.selectedContractorCategories = value; };
@@ -152,7 +156,7 @@ export default class UserStore {
   }
 
   getUserById(id: string) {
-    return this.users.find((u) => u.id === id);
+    return this.users.find((user) => user.id === id);
   }
 
   get contractorProfiles() {
@@ -216,4 +220,40 @@ export default class UserStore {
   get availableServiceCategories() {
     return JOB_CATEGORIES;
   }
+
+  private mapUserResponseToModel = (userResponse: IUserProfileResponse): IUserProfile => {
+    return {
+      ...userResponse,
+      serviceCategories: userResponse.serviceCategories as JobCategory[] | undefined,
+      joinedAt: new Date(userResponse.joinedAt),
+    };
+  };
+
+  private replaceUsers = (users: IUserProfile[], role?: 'INVESTITOR' | 'IZVODJAC') => {
+    if (!role) {
+      this.users = users;
+      return;
+    }
+
+    const filteredExistingUsers = this.users.filter((user) => user.role !== role);
+    this.users = [...filteredExistingUsers, ...users];
+  };
+
+  private upsertUser = (user: IUserProfile) => {
+    const existingUserIndex = this.users.findIndex((existingUser) => existingUser.id === user.id);
+
+    if (existingUserIndex === -1) {
+      this.users = [user, ...this.users];
+      return;
+    }
+
+    const nextUsers = [...this.users];
+    nextUsers[existingUserIndex] = user;
+    this.users = nextUsers;
+  };
+
+  private getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    return axiosError.response?.data?.message || fallbackMessage;
+  };
 }

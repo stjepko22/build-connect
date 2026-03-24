@@ -5,7 +5,7 @@ import { LegalType } from '@/modules/user/models/LegalType';
 export default class RegistrationStore {
   rootStore: RootStore;
   isLoading = false;
-
+  submitError: string | null = null;
   firstName = '';
   lastName = '';
   email = '';
@@ -24,6 +24,7 @@ export default class RegistrationStore {
   setEmail = (value: string) => { this.email = value; };
   setPassword = (value: string) => { this.password = value; };
   setPhone = (value: string) => { this.phone = value; };
+  setSubmitError = (value: string | null) => { this.submitError = value; };
   setRole = (value: 'INVESTITOR' | 'IZVODJAC') => {
     this.role = value;
     if (value === 'INVESTITOR') {
@@ -42,12 +43,13 @@ export default class RegistrationStore {
         this.phone = '';
         this.role = 'INVESTITOR';
         this.legalType = 'FIRMA';
+        this.submitError = null;
       });
     }
   };
 
   clearFormState = () => {
-    // Čišćenje resursa ako je potrebno
+    this.submitError = null;
   };
 
   get isFormValid() {
@@ -63,18 +65,27 @@ export default class RegistrationStore {
     if (!this.isFormValid) return false;
 
     this.isLoading = true;
+    this.submitError = null;
+
     try {
-      // Pozivamo AuthenticationStore register metodu
-      await this.rootStore.authenticationStore.register(
-        this.email,
-        this.password,
-        this.role,
-        this.legalType
-      );
-      // Ako register u AuthenticationStore prođe bez greške (resolve), vraćamo true
-      return true;
+      const isRegistered = await this.rootStore.authenticationStore.register({
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        password: this.password,
+        phone: this.phone,
+        role: this.role,
+        legalType: this.legalType,
+      });
+
+      if (!isRegistered) {
+        this.submitError = this.rootStore.authenticationStore.authError || 'Registracija nije uspjela.';
+      }
+
+      return isRegistered;
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error('Registration failed:', error);
+      this.submitError = 'Registracija nije uspjela.';
       return false;
     } finally {
       runInAction(() => {
@@ -83,4 +94,3 @@ export default class RegistrationStore {
     }
   };
 }
-

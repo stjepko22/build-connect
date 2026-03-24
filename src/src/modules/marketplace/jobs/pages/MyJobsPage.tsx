@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Typography,
   Box,
@@ -45,6 +45,20 @@ const MyJobsPage: React.FC = observer(() => {
   const { jobStore, bidStore, authenticationStore, reviewStore } = useRootStore();
   const theme = useTheme();
   const user = authenticationStore.user;
+
+  useEffect(() => {
+    void jobStore.loadJobs();
+    if (user?.role === 'IZVODJAC') {
+      void bidStore.loadBids(undefined, user.id);
+      void reviewStore.loadReviews(undefined, user.id);
+      return;
+    }
+
+    if (user?.role === 'INVESTITOR') {
+      void bidStore.loadBids();
+      void reviewStore.loadReviews();
+    }
+  }, [bidStore, jobStore, reviewStore, user]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     jobStore.setMyJobsTabValue(newValue);

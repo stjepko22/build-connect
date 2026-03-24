@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Box, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Alert, Box, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 // Store
 import RegistrationStore from '../stores/RegistrationStore';
@@ -118,6 +118,12 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         onChange={(e) => registrationStore.setPassword(e.target.value)}
         slotProps={{ input: { startAdornment: <KeyTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
       />
+
+      {registrationStore.submitError && (
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
+          {registrationStore.submitError}
+        </Alert>
+      )}
 
       <BaseLoadingButton
         title="Registriraj se"

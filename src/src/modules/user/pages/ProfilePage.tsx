@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { 
+  CircularProgress,
   Box, 
   Typography, 
   Grid, 
@@ -30,6 +31,14 @@ const ProfilePage: React.FC = observer(() => {
   const theme = useTheme();
   const { userStore, jobStore, reviewStore, authenticationStore } = useRootStore();
 
+  useEffect(() => {
+    void jobStore.loadJobs();
+    if (id) {
+      void userStore.loadUserById(id);
+      void reviewStore.loadReviews(undefined, id);
+    }
+  }, [id, jobStore, reviewStore, userStore]);
+
   const user = userStore.getUserById(id || '');
   const isOwnProfile = authenticationStore.user?.id === id;
 
@@ -41,6 +50,16 @@ const ProfilePage: React.FC = observer(() => {
   const avgRating = userReviews.length > 0 
     ? userReviews.reduce((acc, curr) => acc + curr.rating, 0) / userReviews.length 
     : 0;
+
+  if (userStore.isLoadingUsers && !user) {
+    return (
+      <BaseContainer maxWidth="lg">
+        <Box sx={{ mt: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      </BaseContainer>
+    );
+  }
 
   if (!user) {
     return (

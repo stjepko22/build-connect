@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  Alert,
   Box,
   Chip,
+  CircularProgress,
   Fade,
   Grid,
   InputAdornment,
@@ -27,7 +29,7 @@ import { JOB_CATEGORIES } from '@/modules/marketplace/jobs/constants/jobCategori
 import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const JobListPage: React.FC = observer(() => {
-  const { jobStore, authenticationStore } = useRootStore();
+  const { jobStore, bidStore, authenticationStore } = useRootStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -44,10 +46,13 @@ const JobListPage: React.FC = observer(() => {
 
   useEffect(() => {
     jobStore.initializeJobFiltersForCurrentUser();
+    void jobStore.loadJobs();
+    void bidStore.loadBids();
+
     return () => {
       debouncedSearch.cancel();
     };
-  }, [jobStore, debouncedSearch]);
+  }, [bidStore, jobStore, debouncedSearch]);
 
   const filteredJobs = jobStore.filteredJobs;
   const roleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'izvođača' : 'investitora';
@@ -164,6 +169,12 @@ const JobListPage: React.FC = observer(() => {
       </Box>
 
       <BaseContainer maxWidth="lg">
+        {jobStore.jobsError && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+            {jobStore.jobsError}
+          </Alert>
+        )}
+
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h5" sx={{ fontWeight: 900, color: 'secondary.main', display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ width: 6, height: 24, bgcolor: 'primary.main', borderRadius: 1 }} />
@@ -232,7 +243,20 @@ const JobListPage: React.FC = observer(() => {
           </Stack>
         </Paper>
 
-        {filteredJobs.length === 0 ? (
+        {jobStore.isLoadingJobs && filteredJobs.length === 0 ? (
+          <Paper
+            sx={{
+              p: { xs: 6, md: 10 },
+              textAlign: 'center',
+              borderRadius: 5,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            <CircularProgress color="primary" />
+          </Paper>
+        ) : filteredJobs.length === 0 ? (
           <Fade in>
             <Paper
               sx={{

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import {
+  CircularProgress,
   Box,
   Typography,
   Grid,
@@ -34,7 +35,7 @@ const JobDetailsPage: React.FC = observer(() => {
   const { jobStore, bidStore, authenticationStore, reviewStore } = useRootStore();
 
   const jobId = id || '';
-  const job = jobStore.jobs.find((j) => j.id === jobId);
+  const job = jobStore.getJobById(jobId);
   const bids = bidStore.getBidsByJobId(jobId);
   const isOwner = authenticationStore.user?.id === job?.investitorId;
   const acceptedBid = bids.find((b) => b.status === 'ACCEPTED');
@@ -43,14 +44,29 @@ const JobDetailsPage: React.FC = observer(() => {
   useEffect(() => {
     bidStore.resetBidForm();
     reviewStore.resetReviewForm();
-  }, [jobId, bidStore, reviewStore]);
+    if (jobId) {
+      void jobStore.loadJobById(jobId);
+      void bidStore.loadBids(jobId);
+      void reviewStore.loadReviews(jobId);
+    }
+  }, [jobId, bidStore, jobStore, reviewStore]);
+
+  if (jobStore.isLoadingJobDetails && !job) {
+    return (
+      <BaseContainer maxWidth="lg">
+        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      </BaseContainer>
+    );
+  }
 
   if (!job) {
     return (
       <BaseContainer maxWidth="lg">
         <Box sx={{ mt: 8, textAlign: 'center' }}>
           <Alert severity="error" sx={{ borderRadius: 4 }}>
-            Posao nije pronaden.
+            {jobStore.selectedJobError || 'Posao nije pronaden.'}
           </Alert>
           <BaseButton variant="contained" startIcon={<ArrowBackIcon />} onClick={() => navigate('/marketplace')} sx={{ mt: 4 }}>
             Povratak na listu
@@ -73,9 +89,7 @@ const JobDetailsPage: React.FC = observer(() => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (acceptedBid) {
-      await reviewStore.submitReviewForJob(job.id, acceptedBid.contractorId);
-    }
+    await reviewStore.submitReviewForJob(job.id);
   };
 
   const cardStyle = {
@@ -186,7 +200,17 @@ const JobDetailsPage: React.FC = observer(() => {
               <Chip label={bids.length} sx={{ fontWeight: 900, bgcolor: 'secondary.main', color: 'white' }} />
             </Stack>
 
-            {bids.length === 0 ? (
+            {bidStore.bidListError && (
+              <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+                {bidStore.bidListError}
+              </Alert>
+            )}
+
+            {bidStore.isLoadingBids && bids.length === 0 ? (
+              <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+                <CircularProgress color="primary" />
+              </Box>
+            ) : bids.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 10, bgcolor: alpha(theme.palette.divider, 0.03), borderRadius: 8, border: '2px dashed', borderColor: 'divider' }}>
                 <EngineeringIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
                 <Typography color="text.secondary" sx={{ fontWeight: 600 }}>

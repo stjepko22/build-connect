@@ -1,115 +1,22 @@
-import { makeAutoObservable } from 'mobx';
+import { IJobResponse } from '@/api/models/jobs/IJobResponse';
 import RootStore from '@/core/stores/RootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 import { IJob } from '@/modules/marketplace/jobs/models/IJob';
+import JobService from '@/modules/marketplace/jobs/services/JobService';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 type UserRole = 'INVESTITOR' | 'IZVODJAC';
 
 export default class JobStore {
   rootStore: RootStore;
-  jobs: IJob[] = [
-    {
-      id: 'posao-1',
-      title: 'Izrada fasade na obiteljskoj kuci',
-      description: 'Potrebna izrada termo fasade (stiropor 10cm) na objektu od 200m2. Materijal osiguran.',
-      category: 'Fasade',
-      location: 'Zagreb',
-      budget: 3500,
-      deadline: '2026-05-01',
-      investitorId: 'investitor-1',
-      createdAt: new Date('2026-02-08'),
-    },
-    {
-      id: 'posao-2',
-      title: 'Postavljanje keramike u kupaonici',
-      description: 'Potrebno postaviti 40m2 plocica u novogradnji. Podloga je spremna.',
-      category: 'Keramika',
-      location: 'Split',
-      budget: 800,
-      deadline: '2026-03-15',
-      investitorId: 'investitor-2',
-      createdAt: new Date('2026-02-09'),
-    },
-    {
-      id: 'posao-3',
-      title: 'Sanacija krova na poslovnom objektu',
-      description: 'Potrebna zamjena dotrajale limarije i hidroizolacije na krovu povrsine 320m2.',
-      category: 'Krovovi',
-      location: 'Rijeka',
-      budget: 6200,
-      deadline: '2026-06-10',
-      investitorId: 'investitor-1',
-      createdAt: new Date('2026-02-10'),
-    },
-    {
-      id: 'posao-4',
-      title: 'Kompletna elektro instalacija stana',
-      description: 'Novogradnja 85m2. Razvod ormara, uticnice, rasvjeta i priprema za pametni sustav.',
-      category: 'Elektro',
-      location: 'Zadar',
-      budget: 2800,
-      deadline: '2026-04-20',
-      investitorId: 'investitor-2',
-      createdAt: new Date('2026-02-11'),
-    },
-    {
-      id: 'posao-5',
-      title: 'Vodoinstalaterski radovi u kuci',
-      description: 'Potrebna zamjena glavnih cijevi i ugradnja novih prikljucaka u dvije kupaonice.',
-      category: 'Vodoinstalacije',
-      location: 'Osijek',
-      budget: 1900,
-      deadline: '2026-04-02',
-      investitorId: 'investitor-1',
-      createdAt: new Date('2026-02-13'),
-    },
-    {
-      id: 'posao-6',
-      title: 'Ugradnja podnog grijanja',
-      description: 'Projekt obuhvaca 110m2 prostora, pripremu podloge i test sustava prije glazure.',
-      category: 'Grijanje',
-      location: 'Varazdin',
-      budget: 3400,
-      deadline: '2026-05-18',
-      investitorId: 'investitor-2',
-      createdAt: new Date('2026-02-14'),
-    },
-    {
-      id: 'posao-7',
-      title: 'Renovacija ureda open-space',
-      description: 'Rusenje pregradnih zidova, gletanje, bojanje i priprema instalacija za nove pozicije.',
-      category: 'Renovacija',
-      location: 'Zagreb',
-      budget: 7600,
-      deadline: '2026-05-30',
-      investitorId: 'investitor-1',
-      createdAt: new Date('2026-02-16'),
-    },
-    {
-      id: 'posao-8',
-      title: 'Izrada drvene vanjske stolarije',
-      description: 'Potrebna izrada i montaza 6 prozora i 2 balkonska vrata od lameliranog drveta.',
-      category: 'Stolarija',
-      location: 'Pula',
-      budget: 5100,
-      deadline: '2026-06-25',
-      investitorId: 'investitor-2',
-      createdAt: new Date('2026-02-18'),
-    },
-    {
-      id: 'posao-9',
-      title: 'Priprema gradilista i grubi gradevinski radovi',
-      description: 'Potrebna ekipa za iskope, oplatu i betoniranje temeljne ploce za obiteljsku kucu.',
-      category: 'Gradnja',
-      location: 'Sisak',
-      budget: 12400,
-      deadline: '2026-07-05',
-      investitorId: 'investitor-1',
-      createdAt: new Date('2026-02-20'),
-    },
-  ];
+  jobService: JobService;
+  jobs: IJob[] = [];
 
   isLoading = false;
+  isLoadingJobs = false;
+  isLoadingJobDetails = false;
+  jobsError: string | null = null;
+  selectedJobError: string | null = null;
   createJobTitle = '';
   createJobDescription = '';
   createJobLocation = '';
@@ -127,24 +34,101 @@ export default class JobStore {
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.jobService = new JobService();
     makeAutoObservable(this);
   }
 
   createJob = async (jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId'>) => {
+    const user = this.rootStore.authenticationStore.user;
+    if (!user) {
+      runInAction(() => {
+        this.jobsError = 'Morate biti prijavljeni za objavu oglasa.';
+      });
+      return false;
+    }
+
     this.isLoading = true;
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const newJob: IJob = {
-          ...jobData,
-          id: Math.random().toString(36).substring(2, 9),
-          createdAt: new Date(),
-          investitorId: this.rootStore.authenticationStore.user?.id || 'unknown',
-        };
-        this.jobs.push(newJob);
+    this.jobsError = null;
+
+    try {
+      const response = await this.jobService.createJobAsync(
+        {
+          title: jobData.title,
+          description: jobData.description,
+          category: jobData.category,
+          location: jobData.location,
+          budget: jobData.budget,
+          deadline: jobData.deadline,
+        }
+      );
+
+      runInAction(() => {
+        this.upsertJob(this.mapJobResponseToModel(response.data));
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Create job failed:', error);
+      runInAction(() => {
+        this.jobsError = 'Objava oglasa nije uspjela.';
+      });
+      return false;
+    } finally {
+      runInAction(() => {
         this.isLoading = false;
-        resolve();
-      }, 1000);
-    });
+      });
+    }
+  };
+
+  loadJobs = async () => {
+    this.isLoadingJobs = true;
+    this.jobsError = null;
+
+    try {
+      const response = await this.jobService.getJobsAsync();
+      runInAction(() => {
+        this.jobs = response.data.map(this.mapJobResponseToModel);
+      });
+    } catch (error) {
+      console.error('Load jobs failed:', error);
+      runInAction(() => {
+        this.jobsError = 'Dohvat poslova nije uspio.';
+      });
+    } finally {
+      runInAction(() => {
+        this.isLoadingJobs = false;
+      });
+    }
+  };
+
+  loadJobById = async (jobId: string) => {
+    if (!jobId.trim()) {
+      return null;
+    }
+
+    this.isLoadingJobDetails = true;
+    this.selectedJobError = null;
+
+    try {
+      const response = await this.jobService.getJobAsync(jobId);
+      const job = this.mapJobResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertJob(job);
+      });
+
+      return job;
+    } catch (error) {
+      console.error('Load job details failed:', error);
+      runInAction(() => {
+        this.selectedJobError = 'Dohvat detalja posla nije uspio.';
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.isLoadingJobDetails = false;
+      });
+    }
   };
 
   setCreateJobTitle = (value: string) => { this.createJobTitle = value; };
@@ -236,7 +220,7 @@ export default class JobStore {
       return false;
     }
 
-    await this.createJob({
+    const isCreated = await this.createJob({
       title: this.createJobTitle,
       description: this.createJobDescription,
       location: this.createJobLocation,
@@ -244,6 +228,10 @@ export default class JobStore {
       category: this.createJobCategory as JobCategory,
       deadline: this.createJobDeadline,
     });
+
+    if (!isCreated) {
+      return false;
+    }
 
     this.resetCreateJobForm();
     return true;
@@ -273,4 +261,29 @@ export default class JobStore {
   get allJobs() {
     return this.jobs;
   }
+
+  getJobById = (jobId: string) => {
+    return this.jobs.find((job) => job.id === jobId);
+  };
+
+  private mapJobResponseToModel = (jobResponse: IJobResponse): IJob => {
+    return {
+      ...jobResponse,
+      category: jobResponse.category as JobCategory,
+      createdAt: new Date(jobResponse.createdAt),
+    };
+  };
+
+  private upsertJob = (job: IJob) => {
+    const existingJobIndex = this.jobs.findIndex((existingJob) => existingJob.id === job.id);
+
+    if (existingJobIndex === -1) {
+      this.jobs = [job, ...this.jobs];
+      return;
+    }
+
+    const nextJobs = [...this.jobs];
+    nextJobs[existingJobIndex] = job;
+    this.jobs = nextJobs;
+  };
 }

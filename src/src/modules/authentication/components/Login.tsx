@@ -1,6 +1,6 @@
 import EmailIcon from '@mui/icons-material/Email';
 import KeyIcon from '@mui/icons-material/Key';
-import { Box, Grid, MenuItem, Typography } from '@mui/material';
+import { Alert, Box, Grid, MenuItem, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import BaseLoadingButton from '@/core/components/atoms/buttons/BaseLoadingButton';
@@ -25,8 +25,8 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (auth.isLoginFormValid && !emailError) {
-      await auth.login();
-      if (onSuccess) onSuccess();
+      const isLoggedIn = await auth.login();
+      if (isLoggedIn && onSuccess) onSuccess();
     }
   };
 
@@ -87,6 +87,12 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
               },
             }}
           />
+
+          {auth.authError && (
+            <Alert severity="error" sx={{ borderRadius: 3 }}>
+              {auth.authError}
+            </Alert>
+          )}
         </Box>
 
         <BaseLoadingButton

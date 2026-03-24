@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  Alert,
   Box,
   Chip,
+  CircularProgress,
   Grid,
   MenuItem,
   Paper,
@@ -24,11 +26,13 @@ import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const ContractorDirectoryPage: React.FC = observer(() => {
   const theme = useTheme();
-  const { userStore } = useRootStore();
+  const { userStore, reviewStore } = useRootStore();
 
   useEffect(() => {
     userStore.initializeContractorFiltersForCurrentUser();
-  }, [userStore]);
+    void userStore.loadContractors();
+    void reviewStore.loadReviews();
+  }, [reviewStore, userStore]);
 
   return (
     <BaseContainer maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
@@ -164,72 +168,84 @@ const ContractorDirectoryPage: React.FC = observer(() => {
           </Stack>
         </Paper>
 
+        {userStore.userListError && (
+          <Alert severity="error" sx={{ borderRadius: 3 }}>
+            {userStore.userListError}
+          </Alert>
+        )}
+
         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>
           Pronadeno izvodaca: {userStore.filteredContractors.length}
         </Typography>
 
-        <Grid container spacing={2.5}>
-          {userStore.filteredContractors.map((contractor) => {
-            const averageRating = userStore.getContractorAverageRating(contractor.id);
-            const reviewCount = userStore.getContractorReviewCount(contractor.id);
+        {userStore.isLoadingUsers && userStore.contractorProfiles.length === 0 ? (
+          <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress color="primary" />
+          </Box>
+        ) : (
+          <Grid container spacing={2.5}>
+            {userStore.filteredContractors.map((contractor) => {
+              const averageRating = userStore.getContractorAverageRating(contractor.id);
+              const reviewCount = userStore.getContractorReviewCount(contractor.id);
 
-            return (
-              <Grid key={contractor.id} size={{ xs: 12, md: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    height: '100%',
-                    borderRadius: 4,
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.divider, 0.12),
-                    bgcolor: 'background.paper',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: { md: 'translateY(-2px)' } },
-                  }}
-                >
-                  <Stack spacing={2}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                        {contractor.displayName}
+              return (
+                <Grid key={contractor.id} size={{ xs: 12, md: 6 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3,
+                      height: '100%',
+                      borderRadius: 4,
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.divider, 0.12),
+                      bgcolor: 'background.paper',
+                      transition: 'transform 0.2s ease',
+                      '&:hover': { transform: { md: 'translateY(-2px)' } },
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                          {contractor.displayName}
+                        </Typography>
+                        <Chip
+                          icon={contractor.legalType === 'FIRMA' ? <BusinessIcon /> : <PersonIcon />}
+                          label={contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                          size="small"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </Stack>
+
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {contractor.bio}
                       </Typography>
-                      <Chip
-                        icon={contractor.legalType === 'FIRMA' ? <BusinessIcon /> : <PersonIcon />}
-                        label={contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
-                        size="small"
-                        sx={{ fontWeight: 700 }}
-                      />
+
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Rating value={averageRating} precision={0.1} readOnly size="small" />
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                          {averageRating.toFixed(1)} ({reviewCount} recenzija)
+                        </Typography>
+                      </Stack>
+
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <VerifiedUserIcon sx={{ fontSize: 18, color: 'success.main' }} />
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                          Lokacija: {contractor.location}
+                        </Typography>
+                      </Stack>
+
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                        {(contractor.serviceCategories || []).map((category) => (
+                          <Chip key={category} label={category} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                        ))}
+                      </Box>
                     </Stack>
-
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {contractor.bio}
-                    </Typography>
-
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Rating value={averageRating} precision={0.1} readOnly size="small" />
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                        {averageRating.toFixed(1)} ({reviewCount} recenzija)
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <VerifiedUserIcon sx={{ fontSize: 18, color: 'success.main' }} />
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                        Lokacija: {contractor.location}
-                      </Typography>
-                    </Stack>
-
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
-                      {(contractor.serviceCategories || []).map((category) => (
-                        <Chip key={category} label={category} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
-                      ))}
-                    </Box>
-                  </Stack>
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
       </Stack>
     </BaseContainer>
   );

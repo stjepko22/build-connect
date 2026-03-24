@@ -1,90 +1,55 @@
+import { AxiosError } from 'axios';
 import { makeAutoObservable, runInAction } from 'mobx';
+import { IBidResponse } from '@/api/models/bids/IBidResponse';
 import RootStore from '@/core/stores/RootStore';
 import { IBid } from '@/modules/marketplace/bids/models/IBid';
+import BidService from '@/modules/marketplace/bids/services/BidService';
 
 export default class BidStore {
   rootStore: RootStore;
+  bidService: BidService;
   bids: IBid[] = [];
-  isLoading: boolean = false;
+  isLoading = false;
+  isLoadingBids = false;
   bidAmount = '';
   bidDaysToComplete = '';
   bidMessage = '';
   bidError: string | null = null;
+  bidListError: string | null = null;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.bidService = new BidService();
     makeAutoObservable(this);
   }
 
-  private validateBidInput(
-    bidData: Omit<IBid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>
-  ): string | null {
-    const user = this.rootStore.authenticationStore.user;
+  loadBids = async (jobId?: string, contractorId?: string) => {
+    this.isLoadingBids = true;
+    this.bidListError = null;
 
-    if (!user) return 'Morate biti prijavljeni za slanje ponude.';
-    if (user.role !== 'IZVODJAC') return 'Samo izvođači mogu slati ponude.';
+    try {
+      const response = await this.bidService.getBidsAsync({
+        jobId,
+        contractorId,
+      });
 
-    if (!Number.isFinite(bidData.amount) || bidData.amount <= 0) {
-      return 'Iznos ponude mora biti veći od 0.';
+      runInAction(() => {
+        this.replaceBids(
+          response.data.map(this.mapBidResponseToModel),
+          jobId,
+          contractorId
+        );
+      });
+    } catch (error) {
+      console.error('Load bids failed:', error);
+      runInAction(() => {
+        this.bidListError = this.getApiErrorMessage(error, 'Dohvat ponuda nije uspio.');
+      });
+    } finally {
+      runInAction(() => {
+        this.isLoadingBids = false;
+      });
     }
-
-    if (!Number.isFinite(bidData.daysToComplete) || bidData.daysToComplete <= 0) {
-      return 'Rok izvedbe mora biti veći od 0 dana.';
-    }
-
-    if (bidData.message.trim().length < 10) {
-      return 'Poruka ponude mora imati barem 10 znakova.';
-    }
-
-    const existingBid = this.bids.find(
-      (bid) =>
-        bid.jobId === bidData.jobId &&
-        bid.contractorId === user.id &&
-        bid.status !== 'REJECTED'
-    );
-
-    if (existingBid) {
-      return 'Već imate aktivnu ponudu za ovaj posao.';
-    }
-
-    const alreadyAccepted = this.bids.some(
-      (bid) => bid.jobId === bidData.jobId && bid.status === 'ACCEPTED'
-    );
-
-    if (alreadyAccepted) {
-      return 'Za ovaj posao je već odabrana ponuda.';
-    }
-
-    return null;
-  }
-
-  addBid = async (bidData: Omit<IBid, 'id' | 'createdAt' | 'contractorId' | 'contractorName' | 'status'>) => {
-    const validationError = this.validateBidInput(bidData);
-    if (validationError) {
-      throw new Error(validationError);
-    }
-
-    this.isLoading = true;
-    
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const user = this.rootStore.authenticationStore.user!;
-        const newBid: IBid = {
-          ...bidData,
-          id: Math.random().toString(36).substring(2, 9),
-          contractorId: user.id,
-          contractorName: user.displayName,
-          status: 'PENDING',
-          createdAt: new Date(),
-        };
-        
-        runInAction(() => {
-          this.bids.push(newBid);
-          this.isLoading = false;
-        });
-        resolve();
-      }, 800);
-    });
   };
 
   setBidAmount = (value: string) => { this.bidAmount = value; };
@@ -111,47 +76,114 @@ export default class BidStore {
 
   submitBidForJob = async (jobId: string) => {
     this.setBidError(null);
+    const user = this.rootStore.authenticationStore.user;
+
+    if (!user) {
+      this.setBidError('Morate biti prijavljeni za slanje ponude.');
+      return false;
+    }
+
+    this.isLoading = true;
+
     try {
-      await this.addBid({
+      const response = await this.bidService.createBidAsync(
         jobId,
-        amount: Number(this.bidAmount),
-        daysToComplete: Number(this.bidDaysToComplete),
-        message: this.bidMessage,
+        {
+          amount: Number(this.bidAmount),
+          daysToComplete: Number(this.bidDaysToComplete),
+          message: this.bidMessage,
+        }
+      );
+
+      runInAction(() => {
+        this.upsertBid(this.mapBidResponseToModel(response.data));
       });
+
       this.resetBidForm();
       return true;
     } catch (error) {
-      this.setBidError(error instanceof Error ? error.message : 'Slanje ponude nije uspjelo.');
+      this.setBidError(this.getApiErrorMessage(error, 'Slanje ponude nije uspjelo.'));
       return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
     }
   };
 
   acceptBid = async (bidId: string) => {
+    const user = this.rootStore.authenticationStore.user;
+
+    if (!user) {
+      this.setBidError('Morate biti prijavljeni za prihvat ponude.');
+      return false;
+    }
+
     this.isLoading = true;
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        runInAction(() => {
-          const bid = this.bids.find(b => b.id === bidId);
-          if (bid) {
-            // Odbij sve ostale ponude za taj posao
-            this.bids.forEach(b => {
-              if (b.jobId === bid.jobId && b.id !== bidId) {
-                b.status = 'REJECTED';
-              }
-            });
-            // Prihvati odabranu
-            bid.status = 'ACCEPTED';
-          }
-          this.isLoading = false;
-        });
-        resolve();
-      }, 500);
-    });
+    this.setBidError(null);
+
+    try {
+      const response = await this.bidService.acceptBidAsync(bidId);
+      const updatedBids = response.data.map(this.mapBidResponseToModel);
+      const updatedBid = updatedBids.find((bid) => bid.id === bidId);
+
+      runInAction(() => {
+        this.replaceBids(updatedBids, updatedBid?.jobId);
+      });
+
+      return true;
+    } catch (error) {
+      this.setBidError(this.getApiErrorMessage(error, 'Prihvat ponude nije uspio.'));
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
   };
 
   getBidsByJobId(jobId: string) {
-    return this.bids.filter(bid => bid.jobId === jobId);
+    return this.bids.filter((bid) => bid.jobId === jobId);
   }
+
+  private mapBidResponseToModel = (bidResponse: IBidResponse): IBid => {
+    return {
+      ...bidResponse,
+      createdAt: new Date(bidResponse.createdAt),
+    };
+  };
+
+  private upsertBid = (bid: IBid) => {
+    const existingBidIndex = this.bids.findIndex((existingBid) => existingBid.id === bid.id);
+
+    if (existingBidIndex === -1) {
+      this.bids = [bid, ...this.bids];
+      return;
+    }
+
+    const nextBids = [...this.bids];
+    nextBids[existingBidIndex] = bid;
+    this.bids = nextBids;
+  };
+
+  private replaceBids = (bids: IBid[], jobId?: string, contractorId?: string) => {
+    if (!jobId && !contractorId) {
+      this.bids = bids;
+      return;
+    }
+
+    const filteredExistingBids = this.bids.filter((bid) => {
+      const matchesJob = jobId ? bid.jobId === jobId : false;
+      const matchesContractor = contractorId ? bid.contractorId === contractorId : false;
+
+      return !matchesJob && !matchesContractor;
+    });
+
+    this.bids = [...filteredExistingBids, ...bids];
+  };
+
+  private getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    return axiosError.response?.data?.message || fallbackMessage;
+  };
 }
-
-
