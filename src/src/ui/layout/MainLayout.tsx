@@ -5,8 +5,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useRootStore } from '@/core/hooks/useRootStore';
 import Sidebar from '@/modules/navigation/components/Sidebar';
-import AppBottomNavigation from '@/modules/navigation/components/AppBottomNavigation';
-import LoginView from '@/modules/authentication/components/LoginView';
 
 const DRAWER_WIDTH = 260;
 
@@ -141,8 +139,6 @@ const MainLayout: React.FC = observer(() => {
         <Outlet />
       </Box>
 
-      <AppBottomNavigation />
-      <LoginView />
     </Box>
   );
 });

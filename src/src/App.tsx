@@ -6,6 +6,8 @@ import theme from './ui/themes/default/theme';
 import RootStoreContext from './core/context/RootStoreContext';
 import RootStore from './core/stores/RootStore';
 import { useRootStore } from './core/hooks/useRootStore';
+import AppBottomNavigation from '@/modules/navigation/components/AppBottomNavigation';
+import LoginView from '@/modules/authentication/components/LoginView';
 
 const rootStore = new RootStore();
 const MainLayout = React.lazy(() => import('@/ui/layout/MainLayout'));
@@ -87,30 +89,34 @@ const App: React.FC = () => {
         <BrowserRouter>
           <UnauthorizedLoginPromptHandler />
           <Suspense fallback={loadingFallback}>
-            <Routes>
-              <Route element={<MainLayout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/marketplace" element={<JobListPage />} />
-                <Route path="/marketplace/:id" element={<JobDetailsPage />} />
-                <Route path="/izvodjaci" element={<ContractorDirectoryPage />} />
-                <Route path="/posao/:id" element={<JobDetailsPage />} />
-                <Route path="/profil/:id" element={<ProfilePage />} />
+            <>
+              <Routes>
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/marketplace" element={<JobListPage />} />
+                  <Route path="/marketplace/:id" element={<JobDetailsPage />} />
+                  <Route path="/izvodjaci" element={<ContractorDirectoryPage />} />
+                  <Route path="/posao/:id" element={<JobDetailsPage />} />
+                  <Route path="/profil/:id" element={<ProfilePage />} />
 
-                <Route element={<RequireAuth />}>
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/moji-poslovi" element={<MyJobsPage />} />
+                  <Route element={<RequireAuth />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/moji-poslovi" element={<MyJobsPage />} />
+                  </Route>
+
+                  <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
+                    <Route path="/objavi-posao" element={<CreateJobPage />} />
+                  </Route>
                 </Route>
 
-                <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>
-                  <Route path="/objavi-posao" element={<CreateJobPage />} />
-                </Route>
-              </Route>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegistrationPage />} />
 
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegistrationPage />} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <AppBottomNavigation />
+              <LoginView />
+            </>
           </Suspense>
         </BrowserRouter>
       </ThemeProvider>

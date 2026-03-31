@@ -1,15 +1,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Alert, Box, Typography, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Alert, Box, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 
-// Store
 import RegistrationStore from '../stores/RegistrationStore';
-
-// Atomi
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import BaseLoadingButton from '@/core/components/atoms/buttons/BaseLoadingButton';
 
-// Ikone
 import KeyTwoToneIcon from '@mui/icons-material/KeyTwoTone';
 import PhoneTwoToneIcon from '@mui/icons-material/PhoneTwoTone';
 import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
@@ -29,25 +25,25 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
   };
 
   return (
-    <Box 
-      component="form" 
+    <Box
+      component="form"
       onSubmit={handleSubmit}
-      display={"flex"} 
-      flexDirection={"column"} 
-      gap={3} 
-      width={"100%"}
+      display="flex"
+      flexDirection="column"
+      gap={{ xs: 2, sm: 2.5 }}
+      width="100%"
     >
       <Box textAlign="center">
-        <Typography variant='h4' sx={{ fontWeight: 900, color: 'primary.main', letterSpacing: '-1px' }}>
-          Kreiraj svoj račun
+        <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main', letterSpacing: '-1px' }}>
+          Kreiraj svoj racun
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-          Pridružite se našoj zajednici majstora i investitora.
+          Pridruzi se nasoj zajednici majstora i investitora.
         </Typography>
       </Box>
 
       <Box>
-        <Typography variant="caption" sx={{ fontWeight: 700, mb: 1, display: 'block', color: 'text.secondary', ml: 0.5 }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.7, display: 'block', color: 'text.secondary', ml: 0.5 }}>
           Registriram se kao:
         </Typography>
         <ToggleButtonGroup
@@ -57,38 +53,41 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
           onChange={(_, val) => val && registrationStore.setRole(val)}
           fullWidth
         >
-          <ToggleButton value="INVESTITOR" sx={{ fontWeight: 700, textTransform: 'none' }}>Investitor</ToggleButton>
-          <ToggleButton value="IZVODJAC" sx={{ fontWeight: 700, textTransform: 'none' }}>Izvođač</ToggleButton>
+          <ToggleButton value="INVESTITOR" sx={{ fontWeight: 700, textTransform: 'none' }}>
+            Investitor
+          </ToggleButton>
+          <ToggleButton value="IZVODJAC" sx={{ fontWeight: 700, textTransform: 'none' }}>
+            Izvodjac
+          </ToggleButton>
         </ToggleButtonGroup>
       </Box>
 
       {registrationStore.role === 'IZVODJAC' && (
         <Box>
-          <Typography variant="caption" sx={{ fontWeight: 700, mb: 1, display: 'block', color: 'text.secondary', ml: 0.5 }}>
-            Tip izvođača:
+          <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.7, display: 'block', color: 'text.secondary', ml: 0.5 }}>
+            Vrsta izvodjaca:
           </Typography>
-          <ToggleButtonGroup
-            color="primary"
-            value={registrationStore.legalType}
-            exclusive
-            onChange={(_, val) => val && registrationStore.setLegalType(val)}
+          <BaseInput
+            select
             fullWidth
+            value={registrationStore.legalType}
+            onChange={(e) => registrationStore.setLegalType(e.target.value as 'FIZICKA_OSOBA' | 'FIRMA')}
           >
-            <ToggleButton value="FIZICKA_OSOBA" sx={{ fontWeight: 700, textTransform: 'none' }}>Fizička osoba</ToggleButton>
-            <ToggleButton value="FIRMA" sx={{ fontWeight: 700, textTransform: 'none' }}>Firma</ToggleButton>
-          </ToggleButtonGroup>
+            <MenuItem value="FIRMA">Tvrtka/obrt</MenuItem>
+            <MenuItem value="FIZICKA_OSOBA">Fizicka osoba</MenuItem>
+          </BaseInput>
         </Box>
       )}
 
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-        <BaseInput 
+        <BaseInput
           label="Ime"
           value={registrationStore.firstName}
           onChange={(e) => registrationStore.setFirstName(e.target.value)}
           sx={{ flex: 1 }}
           slotProps={{ input: { startAdornment: <PersonTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
         />
-        <BaseInput 
+        <BaseInput
           label="Prezime"
           value={registrationStore.lastName}
           onChange={(e) => registrationStore.setLastName(e.target.value)}
@@ -96,7 +95,7 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         />
       </Box>
 
-      <BaseInput 
+      <BaseInput
         label="Email adresa"
         type="email"
         value={registrationStore.email}
@@ -104,14 +103,14 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         slotProps={{ input: { startAdornment: <EmailTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
       />
 
-      <BaseInput 
+      <BaseInput
         label="Broj telefona"
         value={registrationStore.phone}
         onChange={(e) => registrationStore.setPhone(e.target.value)}
         slotProps={{ input: { startAdornment: <PhoneTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
       />
 
-      <BaseInput 
+      <BaseInput
         label="Lozinka"
         type="password"
         value={registrationStore.password}
@@ -134,13 +133,10 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         isLoading={isLoading}
         disabled={isLoading || !isFormValid}
         type="submit"
-        sx={{ py: 1.8, mt: 1, borderRadius: 3, fontWeight: 800 }}
+        sx={{ py: 1.45, mt: 0.35, borderRadius: 3, fontWeight: 800 }}
       />
     </Box>
   );
 });
 
 export default Registration;
-
-
-
