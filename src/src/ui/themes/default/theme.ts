@@ -33,6 +33,29 @@ const theme = createTheme({
     button: { textTransform: 'none', fontWeight: 700 },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          overflowX: 'hidden',
+          '@media (max-width: 899.95px)': {
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+          },
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+        '#root': {
+          '@media (max-width: 899.95px)': {
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+          },
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {

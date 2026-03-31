@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import { useRootStore } from '@/core/hooks/useRootStore';
 import Registration from '../components/Registration';
@@ -8,11 +8,18 @@ import Registration from '../components/Registration';
 const RegistrationPage: React.FC = observer(() => {
   const { registrationStore } = useRootStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     registrationStore.initializeForm(true);
+    const requestedRole = searchParams.get('role');
+
+    if (requestedRole === 'INVESTITOR' || requestedRole === 'IZVODJAC') {
+      registrationStore.setRole(requestedRole);
+    }
+
     return () => registrationStore.clearFormState();
-  }, [registrationStore]);
+  }, [registrationStore, searchParams]);
 
   const handleRegistrationSubmit = async () => {
     const success = await registrationStore.submit();

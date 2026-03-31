@@ -69,15 +69,24 @@ const MainLayout: React.FC = observer(() => {
           display: { xs: 'flex', md: 'none' },
         }}
       >
-        <Toolbar>
-          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, display: { md: 'none' } }}>
+        <Toolbar sx={{ position: 'relative', justifyContent: 'flex-start' }}>
+          <IconButton color="inherit" edge="start" onClick={handleDrawerToggle} sx={{ display: { md: 'none' }, zIndex: 1 }}>
             <MenuIcon />
           </IconButton>
           <Typography
             variant="h6"
             noWrap
             onClick={handleLogoClick}
-            sx={{ fontWeight: 800, color: 'primary.main', cursor: 'pointer' }}
+            sx={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontWeight: 800,
+              color: 'primary.main',
+              cursor: 'pointer',
+              textAlign: 'center',
+              maxWidth: 'calc(100% - 96px)',
+            }}
           >
             Build
             <Box component="span" sx={{ color: 'secondary.main' }}>
