@@ -59,7 +59,7 @@ const JobDetailsPage: React.FC = observer(() => {
   if (jobStore.isLoadingJobDetails && !job) {
     return (
       <BaseContainer maxWidth="lg">
-        <Box sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ pt: 1, display: 'flex', justifyContent: 'center' }}>
           <CircularProgress color="primary" />
         </Box>
       </BaseContainer>
@@ -69,7 +69,7 @@ const JobDetailsPage: React.FC = observer(() => {
   if (!job) {
     return (
       <BaseContainer maxWidth="lg">
-        <Box sx={{ mt: 8, textAlign: 'center' }}>
+        <Box sx={{ pt: 1, textAlign: 'center' }}>
           <Alert severity="error" sx={{ borderRadius: 4 }}>
             {jobStore.selectedJobError || 'Posao nije pronaden.'}
           </Alert>
@@ -127,7 +127,7 @@ const JobDetailsPage: React.FC = observer(() => {
 
   return (
     <BaseContainer maxWidth="lg" withPadding={false}>
-      <Box sx={{ pt: { xs: 0, md: 6 }, pb: { xs: 3, md: 6 } }}>
+      <Box sx={{ pt: { xs: 0.25, md: 1 }, pb: { xs: 3, md: 6 } }}>
         <BaseButton
           variant="text"
           color="secondary"

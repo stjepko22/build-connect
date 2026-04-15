@@ -67,7 +67,7 @@ const MyJobsPage: React.FC = observer(() => {
   if (!user) {
     return (
       <BaseContainer maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ pt: 1 }}>
           <Alert severity="warning" variant="filled" sx={{ borderRadius: 3, fontWeight: 700 }}>
             Morate biti prijavljeni da biste vidjeli svoje poslove.
           </Alert>
@@ -89,6 +89,7 @@ const MyJobsPage: React.FC = observer(() => {
       <Box
         sx={{
           p: { xs: 3, md: 4 },
+          mt: { xs: 0.25, md: 0.5 },
           mb: 4,
           borderRadius: 5,
           color: 'common.white',

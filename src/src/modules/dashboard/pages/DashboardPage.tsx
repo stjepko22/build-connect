@@ -82,6 +82,7 @@ const DashboardPage: React.FC = observer(() => {
       <Box
         sx={{
           p: { xs: 3, md: 4 },
+          mt: { xs: 0.25, md: 0.5 },
           mb: 4,
           borderRadius: 5,
           color: 'common.white',
@@ -246,7 +247,7 @@ const DashboardPage: React.FC = observer(() => {
                           {item.contractor.displayName}
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-                          {item.contractor.location} • {item.contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                          {item.contractor.location} â€¢ {item.contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           <StarRateIcon sx={{ fontSize: 16, color: 'secondary.main' }} />
@@ -272,7 +273,7 @@ const DashboardPage: React.FC = observer(() => {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Vas profil je javan i vidljiv drugim korisnicima.
               </Typography>
-              <BaseButton fullWidth variant="outlined" onClick={() => navigate(`/profil/${user?.id}`)}>
+              <BaseButton fullWidth variant="outlined" onClick={() => navigate('/profil/uredi')}>
                 Uredi Profil
               </BaseButton>
             </Paper>

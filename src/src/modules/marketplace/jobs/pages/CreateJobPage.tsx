@@ -41,7 +41,7 @@ const CreateJobPage: React.FC = observer(() => {
   };
 
   return (
-    <BaseContainer maxWidth="md" sx={{ py: 6 }}>
+    <BaseContainer maxWidth="md" sx={{ pb: 6 }}>
       <BaseButton
         variant="text"
         color="secondary"

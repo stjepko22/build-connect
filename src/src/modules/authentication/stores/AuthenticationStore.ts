@@ -6,6 +6,7 @@ import RootStore from '@/core/stores/RootStore';
 import { IUser } from '@/modules/authentication/models/IUser';
 import { authTokenStorageKey, authUnauthorizedEventName, authUserStorageKey } from '@/modules/authentication/constants/authStorage';
 import AuthenticationService from '@/modules/authentication/services/AuthenticationService';
+import { LegalType } from '@/modules/user/models/LegalType';
 
 export default class AuthenticationStore {
   rootStore: RootStore;
@@ -152,6 +153,21 @@ export default class AuthenticationStore {
 
   clearUnauthorizedLoginPrompt = () => {
     this.pendingUnauthorizedLoginPrompt = false;
+  };
+
+  updateCurrentUserProfile = (profile: { displayName: string; legalType: LegalType; email: string }) => {
+    if (!this.user) {
+      return;
+    }
+
+    this.user = {
+      ...this.user,
+      displayName: profile.displayName,
+      legalType: profile.legalType,
+      email: profile.email,
+    };
+
+    localStorage.setItem(authUserStorageKey, JSON.stringify(this.user));
   };
 
   private applyAuthenticatedSession = (session: IAuthenticatedSessionResponse) => {

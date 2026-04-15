@@ -59,7 +59,7 @@ const ContractorDirectoryPage: React.FC = observer(() => {
   }, [reviewStore, searchParams, userStore]);
 
   return (
-    <BaseContainer maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <BaseContainer maxWidth="lg" sx={{ pb: { xs: 2, md: 4 } }}>
       <Stack spacing={3}>
         <Box
           sx={{

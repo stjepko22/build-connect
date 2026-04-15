@@ -29,7 +29,7 @@ const RegistrationPage: React.FC = observer(() => {
   };
 
   return (
-    <BaseContainer maxWidth="xs" withPadding={true} animate={true}>
+    <BaseContainer maxWidth="xs" animate={true}>
       <Registration
         registrationStore={registrationStore}
         onCustomSubmit={handleRegistrationSubmit}

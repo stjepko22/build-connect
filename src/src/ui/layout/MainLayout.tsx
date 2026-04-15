@@ -138,7 +138,9 @@ const MainLayout: React.FC = observer(() => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: isLandingPage ? 0 : { xs: 2, sm: 3 },
+          px: isLandingPage ? 0 : { xs: 2, sm: 3 },
+          pt: isLandingPage ? 0 : { xs: 0.5, sm: 1 },
+          pb: isLandingPage ? 0 : { xs: 2, sm: 3 },
           minWidth: 0,
           maxWidth: '100%',
           width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
