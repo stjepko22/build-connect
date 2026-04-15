@@ -8,7 +8,7 @@ interface BaseContainerProps extends ContainerProps {
 
 const BaseContainer: React.FC<BaseContainerProps> = ({ 
   children, 
-  withPadding = true, 
+  withPadding = false, 
   animate = true, 
   ...props 
 }) => {

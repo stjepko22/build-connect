@@ -16,6 +16,7 @@ const JobListPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/Jo
 const JobDetailsPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/JobDetailsPage'));
 const ContractorDirectoryPage = React.lazy(() => import('@/modules/marketplace/contractors/pages/ContractorDirectoryPage'));
 const ProfilePage = React.lazy(() => import('@/modules/user/pages/ProfilePage'));
+const EditProfilePage = React.lazy(() => import('@/modules/user/pages/EditProfilePage'));
 const DashboardPage = React.lazy(() => import('@/modules/dashboard/pages/DashboardPage'));
 const MyJobsPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/MyJobsPage'));
 const CreateJobPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/CreateJobPage'));
@@ -102,6 +103,7 @@ const App: React.FC = () => {
                   <Route element={<RequireAuth />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/moji-poslovi" element={<MyJobsPage />} />
+                    <Route path="/profil/uredi" element={<EditProfilePage />} />
                   </Route>
 
                   <Route element={<RequireAuth allowedRoles={['INVESTITOR']} />}>

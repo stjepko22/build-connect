@@ -54,7 +54,7 @@ const ProfilePage: React.FC = observer(() => {
   if (userStore.isLoadingUsers && !user) {
     return (
       <BaseContainer maxWidth="lg">
-        <Box sx={{ mt: 10, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ pt: 1, display: 'flex', justifyContent: 'center' }}>
           <CircularProgress color="primary" />
         </Box>
       </BaseContainer>
@@ -64,7 +64,7 @@ const ProfilePage: React.FC = observer(() => {
   if (!user) {
     return (
       <BaseContainer maxWidth="lg">
-        <Box sx={{ mt: 10, textAlign: 'center' }}>
+        <Box sx={{ pt: 1, textAlign: 'center' }}>
           <Typography variant="h5" sx={{ fontWeight: 900 }}>Korisnik nije pronađen.</Typography>
           <BaseButton onClick={() => navigate(-1)} sx={{ mt: 2 }}>Povratak</BaseButton>
         </Box>
@@ -87,7 +87,7 @@ const ProfilePage: React.FC = observer(() => {
         variant="text" 
         startIcon={<ArrowBackIcon />} 
         onClick={() => navigate(-1)} 
-        sx={{ mb: 4, px: 0, fontWeight: 700 }}
+        sx={{ mt: 0.25, mb: 4, px: 0, fontWeight: 700 }}
       >
         Natrag
       </BaseButton>
@@ -115,12 +115,22 @@ const ProfilePage: React.FC = observer(() => {
               </Typography>
 
               {isOwnProfile && (
-                <Chip
-                  label="Moj profil"
-                  variant="outlined"
-                  color="success"
-                  sx={{ fontWeight: 800, borderRadius: 2, mb: 2 }}
-                />
+                <Stack spacing={1.5} sx={{ mb: 2 }}>
+                  <Chip
+                    label="Moj profil"
+                    variant="outlined"
+                    color="success"
+                    sx={{ fontWeight: 800, borderRadius: 2 }}
+                  />
+                  <BaseButton
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate('/profil/uredi')}
+                    sx={{ minHeight: 40 }}
+                  >
+                    Uredi profil
+                  </BaseButton>
+                </Stack>
               )}
               
               <Chip 

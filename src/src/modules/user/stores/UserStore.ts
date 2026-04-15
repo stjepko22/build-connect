@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { makeAutoObservable, runInAction } from 'mobx';
+import { IUpdateUserProfileRequest } from '@/api/models/users/IUpdateUserProfileRequest';
 import { IUserProfileResponse } from '@/api/models/users/IUserProfileResponse';
 import RootStore from '@/core/stores/RootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
@@ -14,13 +15,20 @@ export default class UserStore {
   userService: UserService;
   users: IUserProfile[] = [];
   isLoadingUsers = false;
+  isSavingProfile = false;
   userListError: string | null = null;
   selectedUserError: string | null = null;
+  profileSaveError: string | null = null;
   contractorSearchQuery = '';
   selectedContractorCategories: JobCategory[] = [];
   selectedContractorLocation = '';
   selectedContractorLegalType: ContractorLegalTypeFilter = 'ALL';
   minContractorRating = 0;
+  profileDisplayName = '';
+  profileLegalType: LegalType = 'FIRMA';
+  profileBio = '';
+  profileLocation = '';
+  profileServiceCategories: JobCategory[] = [];
   defaultContractorCategoriesByRole: Record<'INVESTITOR' | 'IZVODJAC', JobCategory[]> = {
     INVESTITOR: ['Fasade'],
     IZVODJAC: [],
@@ -111,6 +119,11 @@ export default class UserStore {
   setSelectedContractorLocation = (value: string) => { this.selectedContractorLocation = value; };
   setSelectedContractorLegalType = (value: ContractorLegalTypeFilter) => { this.selectedContractorLegalType = value; };
   setMinContractorRating = (value: number) => { this.minContractorRating = value; };
+  setProfileDisplayName = (value: string) => { this.profileDisplayName = value; this.profileSaveError = null; };
+  setProfileLegalType = (value: LegalType) => { this.profileLegalType = value; this.profileSaveError = null; };
+  setProfileBio = (value: string) => { this.profileBio = value; this.profileSaveError = null; };
+  setProfileLocation = (value: string) => { this.profileLocation = value; this.profileSaveError = null; };
+  setProfileSaveError = (value: string | null) => { this.profileSaveError = value; };
 
   toggleSelectedContractorCategory = (category: JobCategory) => {
     if (this.selectedContractorCategories.includes(category)) {
@@ -119,6 +132,15 @@ export default class UserStore {
     }
 
     this.selectedContractorCategories = [...this.selectedContractorCategories, category];
+  };
+
+  toggleProfileServiceCategory = (category: JobCategory) => {
+    if (this.profileServiceCategories.includes(category)) {
+      this.profileServiceCategories = this.profileServiceCategories.filter((item) => item !== category);
+      return;
+    }
+
+    this.profileServiceCategories = [...this.profileServiceCategories, category];
   };
 
   resetContractorFilters = () => {
@@ -220,6 +242,92 @@ export default class UserStore {
   get availableServiceCategories() {
     return JOB_CATEGORIES;
   }
+
+  get isProfileFormValid() {
+    return this.profileDisplayName.trim().length >= 2
+      && this.profileLocation.trim().length >= 2
+      && this.profileBio.trim().length >= 10;
+  }
+
+  initializeProfileForm = (user: IUserProfile) => {
+    this.profileDisplayName = user.displayName;
+    this.profileLegalType = user.legalType;
+    this.profileBio = user.bio;
+    this.profileLocation = user.location;
+    this.profileServiceCategories = [...(user.serviceCategories || [])];
+    this.profileSaveError = null;
+  };
+
+  resetProfileForm = () => {
+    const authenticatedUserId = this.rootStore.authenticationStore.user?.id;
+    if (!authenticatedUserId) {
+      this.profileDisplayName = '';
+      this.profileLegalType = 'FIRMA';
+      this.profileBio = '';
+      this.profileLocation = '';
+      this.profileServiceCategories = [];
+      this.profileSaveError = null;
+      return;
+    }
+
+    const currentUser = this.getUserById(authenticatedUserId);
+    if (currentUser) {
+      this.initializeProfileForm(currentUser);
+      return;
+    }
+
+    this.profileSaveError = null;
+  };
+
+  submitCurrentUserProfile = async () => {
+    const authenticatedUser = this.rootStore.authenticationStore.user;
+    if (!authenticatedUser) {
+      this.profileSaveError = 'Morate biti prijavljeni za azuriranje profila.';
+      return false;
+    }
+
+    if (!this.isProfileFormValid) {
+      this.profileSaveError = 'Provjerite obavezna polja profila.';
+      return false;
+    }
+
+    this.isSavingProfile = true;
+    this.profileSaveError = null;
+
+    try {
+      const request: IUpdateUserProfileRequest = {
+        displayName: this.profileDisplayName.trim(),
+        legalType: this.profileLegalType,
+        bio: this.profileBio.trim(),
+        location: this.profileLocation.trim(),
+        serviceCategories: authenticatedUser.role === 'IZVODJAC' ? this.profileServiceCategories : undefined,
+      };
+
+      const response = await this.userService.updateCurrentUserAsync(request);
+      const updatedUser = this.mapUserResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertUser(updatedUser);
+        this.rootStore.authenticationStore.updateCurrentUserProfile({
+          displayName: updatedUser.displayName,
+          legalType: updatedUser.legalType,
+          email: updatedUser.email,
+        });
+        this.initializeProfileForm(updatedUser);
+      });
+
+      return true;
+    } catch (error) {
+      runInAction(() => {
+        this.profileSaveError = this.getApiErrorMessage(error, 'Azuriranje profila nije uspjelo.');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isSavingProfile = false;
+      });
+    }
+  };
 
   private mapUserResponseToModel = (userResponse: IUserProfileResponse): IUserProfile => {
     return {
