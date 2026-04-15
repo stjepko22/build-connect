@@ -53,10 +53,19 @@ const MainLayout: React.FC = observer(() => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        minHeight: '100vh',
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
+      }}
+    >
       <AppBar
         position="fixed"
         sx={{
+          maxWidth: '100vw',
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           ml: { md: `${DRAWER_WIDTH}px` },
           bgcolor: 'background.paper',
@@ -130,10 +139,14 @@ const MainLayout: React.FC = observer(() => {
         sx={{
           flexGrow: 1,
           p: isLandingPage ? 0 : { xs: 2, sm: 3 },
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          minWidth: 0,
+          maxWidth: '100%',
+          width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` },
           mt: { xs: '64px', md: 0 },
           mb: { xs: '80px', md: 0 },
           bgcolor: 'background.default',
+          overflowX: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         <Outlet />

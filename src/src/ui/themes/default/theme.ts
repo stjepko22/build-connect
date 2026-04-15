@@ -35,7 +35,14 @@ const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          width: '100%',
+          maxWidth: '100%',
+          overflowX: 'hidden',
+        },
         body: {
+          width: '100%',
+          maxWidth: '100%',
           overflowX: 'hidden',
           '@media (max-width: 899.95px)': {
             msOverflowStyle: 'none',
@@ -46,6 +53,9 @@ const theme = createTheme({
           },
         },
         '#root': {
+          width: '100%',
+          maxWidth: '100%',
+          overflowX: 'hidden',
           '@media (max-width: 899.95px)': {
             msOverflowStyle: 'none',
             scrollbarWidth: 'none',

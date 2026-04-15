@@ -249,6 +249,7 @@ const Home: React.FC = observer(() => {
                   onClick={action.onClick}
                   sx={{
                     width: '100%',
+                    boxSizing: 'border-box',
                     p: { xs: 0.88, md: 1.02 },
                     aspectRatio: '1 / 1',
                     minHeight: { xs: 90, sm: 96, md: 102 },
