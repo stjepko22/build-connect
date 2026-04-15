@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { IJobResponse } from '@/api/models/jobs/IJobResponse';
 import RootStore from '@/core/stores/RootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
@@ -23,6 +24,13 @@ export default class JobStore {
   createJobBudget = '';
   createJobCategory: JobCategory | '' = '';
   createJobDeadline = '';
+  editJobId = '';
+  editJobTitle = '';
+  editJobDescription = '';
+  editJobLocation = '';
+  editJobBudget = '';
+  editJobCategory: JobCategory | '' = '';
+  editJobDeadline = '';
   jobSearchInputValue = '';
   jobSearchQuery = '';
   selectedJobCategories: JobCategory[] = [];
@@ -68,9 +76,50 @@ export default class JobStore {
 
       return true;
     } catch (error) {
-      console.error('Create job failed:', error);
       runInAction(() => {
-        this.jobsError = 'Objava oglasa nije uspjela.';
+        this.jobsError = this.getApiErrorMessage(error, 'Objava oglasa nije uspjela.');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  };
+
+  updateJob = async (jobId: string, jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId'>) => {
+    const user = this.rootStore.authenticationStore.user;
+    if (!user) {
+      runInAction(() => {
+        this.jobsError = 'Morate biti prijavljeni za azuriranje oglasa.';
+      });
+      return false;
+    }
+
+    this.isLoading = true;
+    this.jobsError = null;
+
+    try {
+      const response = await this.jobService.updateJobAsync(jobId, {
+        title: jobData.title,
+        description: jobData.description,
+        category: jobData.category,
+        location: jobData.location,
+        budget: jobData.budget,
+        deadline: jobData.deadline,
+      });
+
+      const updatedJob = this.mapJobResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertJob(updatedJob);
+        this.initializeEditJobForm(updatedJob);
+      });
+
+      return true;
+    } catch (error) {
+      runInAction(() => {
+        this.jobsError = this.getApiErrorMessage(error, 'Azuriranje oglasa nije uspjelo.');
       });
       return false;
     } finally {
@@ -90,9 +139,8 @@ export default class JobStore {
         this.jobs = response.data.map(this.mapJobResponseToModel);
       });
     } catch (error) {
-      console.error('Load jobs failed:', error);
       runInAction(() => {
-        this.jobsError = 'Dohvat poslova nije uspio.';
+        this.jobsError = this.getApiErrorMessage(error, 'Dohvat poslova nije uspio.');
       });
     } finally {
       runInAction(() => {
@@ -119,9 +167,8 @@ export default class JobStore {
 
       return job;
     } catch (error) {
-      console.error('Load job details failed:', error);
       runInAction(() => {
-        this.selectedJobError = 'Dohvat detalja posla nije uspio.';
+        this.selectedJobError = this.getApiErrorMessage(error, 'Dohvat detalja posla nije uspio.');
       });
       return null;
     } finally {
@@ -137,6 +184,12 @@ export default class JobStore {
   setCreateJobBudget = (value: string) => { this.createJobBudget = value; };
   setCreateJobCategory = (value: JobCategory | '') => { this.createJobCategory = value; };
   setCreateJobDeadline = (value: string) => { this.createJobDeadline = value; };
+  setEditJobTitle = (value: string) => { this.editJobTitle = value; this.jobsError = null; };
+  setEditJobDescription = (value: string) => { this.editJobDescription = value; this.jobsError = null; };
+  setEditJobLocation = (value: string) => { this.editJobLocation = value; this.jobsError = null; };
+  setEditJobBudget = (value: string) => { this.editJobBudget = value; this.jobsError = null; };
+  setEditJobCategory = (value: JobCategory | '') => { this.editJobCategory = value; this.jobsError = null; };
+  setEditJobDeadline = (value: string) => { this.editJobDeadline = value; this.jobsError = null; };
   setJobSearchInputValue = (value: string) => { this.jobSearchInputValue = value; };
   setJobSearchQuery = (value: string) => { this.jobSearchQuery = value; };
   setSelectedJobCategories = (categories: JobCategory[]) => { this.selectedJobCategories = categories; };
@@ -149,6 +202,28 @@ export default class JobStore {
     this.createJobBudget = '';
     this.createJobCategory = '';
     this.createJobDeadline = '';
+  };
+
+  initializeEditJobForm = (job: IJob) => {
+    this.editJobId = job.id;
+    this.editJobTitle = job.title;
+    this.editJobDescription = job.description;
+    this.editJobLocation = job.location;
+    this.editJobBudget = job.budget?.toString() || '';
+    this.editJobCategory = job.category;
+    this.editJobDeadline = job.deadline;
+    this.jobsError = null;
+  };
+
+  resetEditJobForm = () => {
+    this.editJobId = '';
+    this.editJobTitle = '';
+    this.editJobDescription = '';
+    this.editJobLocation = '';
+    this.editJobBudget = '';
+    this.editJobCategory = '';
+    this.editJobDeadline = '';
+    this.jobsError = null;
   };
 
   resetJobSearch = () => {
@@ -210,6 +285,16 @@ export default class JobStore {
     );
   }
 
+  get isEditJobFormValid() {
+    return (
+      this.editJobTitle.trim().length > 0 &&
+      this.editJobDescription.trim().length > 0 &&
+      this.editJobLocation.trim().length > 0 &&
+      this.editJobCategory.trim().length > 0 &&
+      this.editJobDeadline.trim().length > 0
+    );
+  }
+
   submitCreateJobForm = async () => {
     if (!this.isCreateJobFormValid) {
       return false;
@@ -235,6 +320,33 @@ export default class JobStore {
 
     this.resetCreateJobForm();
     return true;
+  };
+
+  submitEditJobForm = async () => {
+    if (!this.editJobId.trim()) {
+      this.jobsError = 'Oglas nije dostupan za uredjivanje.';
+      return false;
+    }
+
+    if (!this.isEditJobFormValid) {
+      this.jobsError = 'Provjerite obavezna polja oglasa.';
+      return false;
+    }
+
+    const isCategoryValid = JOB_CATEGORIES.includes(this.editJobCategory as JobCategory);
+    if (!isCategoryValid) {
+      this.jobsError = 'Odabrana kategorija nije podrzana.';
+      return false;
+    }
+
+    return this.updateJob(this.editJobId, {
+      title: this.editJobTitle,
+      description: this.editJobDescription,
+      location: this.editJobLocation,
+      budget: this.editJobBudget ? Number(this.editJobBudget) : undefined,
+      category: this.editJobCategory as JobCategory,
+      deadline: this.editJobDeadline,
+    });
   };
 
   get filteredJobs() {
@@ -285,5 +397,10 @@ export default class JobStore {
     const nextJobs = [...this.jobs];
     nextJobs[existingJobIndex] = job;
     this.jobs = nextJobs;
+  };
+
+  private getApiErrorMessage = (error: unknown, fallbackMessage: string) => {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    return axiosError.response?.data?.message || fallbackMessage;
   };
 }

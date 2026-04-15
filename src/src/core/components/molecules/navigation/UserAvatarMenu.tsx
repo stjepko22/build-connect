@@ -129,7 +129,7 @@ const UserAvatarMenu: React.FC = observer(() => {
           <ListItemIcon>
             <WorkOutlineIcon fontSize="small" />
           </ListItemIcon>
-          Moji Oglasi
+          Moji poslovi
         </MenuItem>
         <Divider />
         <MenuItem 

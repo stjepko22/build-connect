@@ -19,6 +19,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EngineeringIcon from '@mui/icons-material/Engineering';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -328,6 +329,28 @@ const JobDetailsPage: React.FC = observer(() => {
               {job.description}
             </Typography>
           </Paper>
+
+          {isOwner && (
+            <Box sx={{ mt: 2.5, mb: { xs: 3, md: 4 }, display: 'flex', justifyContent: 'center' }}>
+              <BaseButton
+                variant="contained"
+                color="secondary"
+                startIcon={<EditNoteIcon />}
+                onClick={() => navigate(`/posao/${job.id}/uredi`)}
+                sx={{
+                  minWidth: { xs: '100%', sm: 240 },
+                  maxWidth: { xs: '100%', sm: 320 },
+                  fontWeight: 800,
+                  py: 1.15,
+                  borderRadius: 999,
+                  boxShadow: `0 14px 30px ${alpha(theme.palette.secondary.main, 0.18)}`,
+                  textTransform: 'none',
+                }}
+              >
+                Uredi ovaj oglas
+              </BaseButton>
+            </Box>
+          )}
 
           {existingReview && (
             <Paper

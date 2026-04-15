@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react';
 import {
-  Typography,
   Box,
   Grid,
   Alert,
   Tabs,
   Tab,
   useTheme,
-  alpha,
   Stack,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
@@ -17,7 +15,8 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import { useRootStore } from '@/core/hooks/useRootStore';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
+import { useNavigate } from 'react-router-dom';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -44,6 +43,7 @@ function CustomTabPanel(props: TabPanelProps) {
 const MyJobsPage: React.FC = observer(() => {
   const { jobStore, bidStore, authenticationStore, reviewStore } = useRootStore();
   const theme = useTheme();
+  const navigate = useNavigate();
   const user = authenticationStore.user;
 
   useEffect(() => {
@@ -86,34 +86,6 @@ const MyJobsPage: React.FC = observer(() => {
 
   return (
     <BaseContainer maxWidth="lg">
-      <Box
-        sx={{
-          p: { xs: 3, md: 4 },
-          mt: { xs: 0.25, md: 0.5 },
-          mb: 4,
-          borderRadius: 5,
-          color: 'common.white',
-          position: 'relative',
-          overflow: 'hidden',
-          background: BRAND_COLORS.heroGradient,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 42%)`,
-          },
-        }}
-      >
-        <Stack spacing={1} sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main', letterSpacing: '-1px' }}>
-            Upravljanje poslovima
-          </Typography>
-          <Typography variant="h6" sx={{ color: alpha(theme.palette.common.white, 0.82), fontWeight: 400 }}>
-            Pregledajte svoje aktivnosti kao {user.role.toLowerCase()}.
-          </Typography>
-        </Stack>
-      </Box>
-
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs
@@ -121,14 +93,14 @@ const MyJobsPage: React.FC = observer(() => {
             onChange={handleTabChange}
             textColor="primary"
             indicatorColor="primary"
-            variant="scrollable"
-            allowScrollButtonsMobile
+            variant="fullWidth"
             sx={{
               '& .MuiTab-root': {
                 fontWeight: 800,
                 fontSize: { xs: '0.85rem', sm: '1rem' },
                 textTransform: 'none',
                 minHeight: 64,
+                minWidth: 0,
               },
             }}
           >
@@ -152,13 +124,23 @@ const MyJobsPage: React.FC = observer(() => {
                   Trenutno nemate aktivnih oglasa koji cekaju majstore.
                 </Alert>
               ) : (
-                <Grid container spacing={4}>
-                  {activeJobs.map((job) => (
-                    <Grid key={job.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                      <JobCard job={job} />
-                    </Grid>
-                  ))}
-                </Grid>
+                  <Grid container spacing={4}>
+                    {activeJobs.map((job) => (
+                      <Grid key={job.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Stack spacing={1.5}>
+                          <JobCard job={job} />
+                          <BaseButton
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() => navigate(`/posao/${job.id}/uredi`)}
+                            sx={{ fontWeight: 800 }}
+                          >
+                            Uredi oglas
+                          </BaseButton>
+                        </Stack>
+                      </Grid>
+                    ))}
+                  </Grid>
               )}
             </CustomTabPanel>
 

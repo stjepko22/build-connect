@@ -43,18 +43,9 @@ const OwnProfileEditor: React.FC<OwnProfileEditorProps> = observer(({ onCancel, 
         borderColor: alpha(theme.palette.primary.main, 0.12),
         bgcolor: alpha(theme.palette.primary.light, 0.08),
       }}
-    >
-      <form onSubmit={handleSubmit}>
-        <Stack spacing={2.5}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900, color: 'secondary.main' }}>
-              Uredi profil
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
-              Azurirajte javne podatke koje vide drugi korisnici.
-            </Typography>
-          </Box>
-
+      >
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={2.5}>
           {userStore.profileSaveError && (
             <Alert severity="error" sx={{ borderRadius: 3 }}>
               {userStore.profileSaveError}
