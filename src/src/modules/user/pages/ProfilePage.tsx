@@ -1,24 +1,27 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { 
+import {
   CircularProgress,
-  Box, 
-  Typography, 
-  Grid, 
-  Paper, 
-  Avatar, 
-  Chip, 
-  Stack, 
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Avatar,
+  Chip,
+  Stack,
   Divider,
   Rating,
   alpha,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
@@ -42,14 +45,14 @@ const ProfilePage: React.FC = observer(() => {
   const user = userStore.getUserById(id || '');
   const isOwnProfile = authenticationStore.user?.id === id;
 
-  // Dohvati poslove ako je investitor
-  const userJobs = jobStore.jobs.filter(j => j.investitorId === id);
-  
-  // Dohvati recenzije ako je izvođač
-  const userReviews = reviewStore.reviews.filter(r => r.revieweeId === id);
-  const avgRating = userReviews.length > 0 
-    ? userReviews.reduce((acc, curr) => acc + curr.rating, 0) / userReviews.length 
-    : 0;
+  const userJobs = jobStore.jobs.filter((job) => job.investitorId === id);
+  const userReviews = reviewStore.reviews.filter((review) => review.revieweeId === id);
+  const avgRating =
+    userReviews.length > 0 ? userReviews.reduce((accumulator, review) => accumulator + review.rating, 0) / userReviews.length : 0;
+  const isContractor = user?.role === 'IZVODJAC';
+  const showInvestorJobsSection = !isContractor && !isOwnProfile;
+  const isOwnInvestorProfile = isOwnProfile && !isContractor;
+  const showSecondaryColumn = isContractor || showInvestorJobsSection;
 
   if (userStore.isLoadingUsers && !user) {
     return (
@@ -65,7 +68,7 @@ const ProfilePage: React.FC = observer(() => {
     return (
       <BaseContainer maxWidth="lg">
         <Box sx={{ pt: 1, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 900 }}>Korisnik nije pronađen.</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 900 }}>Korisnik nije pronaden.</Typography>
           <BaseButton onClick={() => navigate(-1)} sx={{ mt: 2 }}>Povratak</BaseButton>
         </Box>
       </BaseContainer>
@@ -73,186 +76,471 @@ const ProfilePage: React.FC = observer(() => {
   }
 
   const cardStyle = {
-    p: 4,
-    borderRadius: 6,
+    p: { xs: 2.4, md: 3.2, lg: 3.5 },
+    borderRadius: { xs: 4, md: 5 },
     border: '1px solid',
-    borderColor: alpha(theme.palette.divider, 0.1),
+    borderColor: alpha(theme.palette.primary.main, 0.08),
     bgcolor: 'background.paper',
-    boxShadow: 'none' // Terminalski stil - manje sjena, više čvrstih linija
+    boxShadow: `0 16px 36px ${alpha(theme.palette.common.black, 0.035)}`,
   };
 
+  const headerTitle = isOwnProfile
+    ? 'Uredite dojam koji ostavljate drugim korisnicima'
+    : isContractor
+      ? 'Pogledajte reputaciju i usluge ovog izvodjaca'
+      : 'Pregledajte objave i osnovne podatke investitora';
+  const headerSubtitle = isOwnProfile
+    ? 'Na jednom mjestu vidite kako vaš profil izgleda javno i brzo pristupate uređivanju.'
+    : isContractor
+      ? 'Profil prikazuje lokaciju, recenzije i usluge koje izvođač nudi investitorima.'
+      : 'Ovdje su objavljeni oglasi, osnovni podaci i javna prisutnost investitora.';
+  const roleLabel = isContractor ? 'Izvodjac profil' : 'Investitor profil';
+  const profilePageTitle = isOwnProfile
+    ? 'Uredite svoj profil'
+    : isContractor
+      ? 'Profil izvodjaca'
+      : 'Profil investitora';
+  const profilePageSubtitle = isOwnProfile
+    ? 'Pregledajte svoje javne podatke i uredite ih po potrebi.'
+    : isContractor
+      ? 'Lokacija, usluge i recenzije koje investitorima pomazu pri odabiru.'
+      : 'Osnovni podaci i aktivni oglasi investitora na jednom mjestu.';
+
   return (
-    <BaseContainer maxWidth="lg">
-      <BaseButton 
-        variant="text" 
-        startIcon={<ArrowBackIcon />} 
-        onClick={() => navigate(-1)} 
-        sx={{ mt: 0.25, mb: 4, px: 0, fontWeight: 700 }}
-      >
-        Natrag
-      </BaseButton>
+    <BaseContainer maxWidth={false} disableGutters animate={false}>
+      <Box sx={{ width: '100%' }}>
+        <BaseButton
+          variant="text"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          sx={{ mt: 0.25, mb: 1.6, px: 0, fontWeight: 700 }}
+        >
+          Natrag
+        </BaseButton>
 
-      <Grid container spacing={4}>
-        {/* Sidebar: User Info */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper sx={cardStyle}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <Avatar 
-                sx={{ 
-                  width: 120, 
-                  height: 120, 
-                  bgcolor: 'primary.main', 
-                  fontSize: 40, 
-                  fontWeight: 900,
-                  mb: 3
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+          spacing={2}
+          sx={{
+            mb: { xs: 2.8, md: 3.3 },
+            px: { md: 0.15, lg: 0.25 },
+            py: { md: 0.75, lg: 0.95 },
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.16)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 34%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+            borderBottom: '1px solid',
+            borderColor: alpha(theme.palette.primary.main, 0.07),
+          }}
+        >
+          <Box sx={{ maxWidth: 860 }}>
+            <Chip
+              label={isOwnProfile ? 'Moj profil' : roleLabel}
+              color="primary"
+              sx={{
+                mb: 1,
+                height: 28,
+                fontWeight: 900,
+                borderRadius: 999,
+                '& .MuiChip-label': {
+                  px: 1.1,
+                  fontSize: '0.7rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                },
+              }}
+            />
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 900,
+                color: 'secondary.main',
+                mb: 0.8,
+                letterSpacing: '-0.04em',
+                lineHeight: 1.04,
+                fontSize: { xs: '2rem', md: '2.45rem', lg: '2.75rem' },
+              }}
+            >
+              {profilePageTitle}
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: 760, lineHeight: 1.6 }}>
+              {profilePageSubtitle}
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+            {isContractor ? (
+              <Chip
+                icon={<StarRoundedIcon sx={{ fontSize: '0.95rem !important' }} />}
+                label={`${avgRating.toFixed(1)} ocjena`}
+                variant="outlined"
+                sx={{
+                  height: 32,
+                  borderRadius: 999,
+                  fontWeight: 800,
+                  bgcolor: alpha(theme.palette.background.paper, 0.8),
+                  borderColor: alpha(theme.palette.primary.main, 0.14),
                 }}
-              >
-                {user.displayName.charAt(0)}
-              </Avatar>
-              
-              <Typography variant="h5" sx={{ fontWeight: 900, mb: 1 }}>
-                {user.displayName}
-              </Typography>
+              />
+            ) : !isOwnProfile ? (
+              <Chip
+                icon={<WorkOutlineRoundedIcon sx={{ fontSize: '0.95rem !important' }} />}
+                label={`${userJobs.length} oglasa`}
+                variant="outlined"
+                sx={{
+                  height: 32,
+                  borderRadius: 999,
+                  fontWeight: 800,
+                  bgcolor: alpha(theme.palette.background.paper, 0.8),
+                  borderColor: alpha(theme.palette.primary.main, 0.14),
+                }}
+              />
+            ) : null}
 
-              {isOwnProfile && (
-                <Stack spacing={1.5} sx={{ mb: 2 }}>
+          </Stack>
+        </Stack>
+
+        <Grid container spacing={{ xs: 2.2, md: 3.2 }} justifyContent={showSecondaryColumn ? undefined : 'center'}>
+          <Grid size={isOwnInvestorProfile ? { xs: 12, md: 9, lg: 8 } : { xs: 12, md: 4 }}>
+            <Paper sx={{ ...cardStyle, position: showSecondaryColumn ? { md: 'sticky' } : undefined, top: showSecondaryColumn ? { md: 24 } : undefined }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <Avatar
+                  sx={{
+                    width: { xs: 98, md: 118 },
+                    height: { xs: 98, md: 118 },
+                    bgcolor: alpha(theme.palette.primary.main, 0.14),
+                    color: 'primary.main',
+                    fontSize: { xs: 34, md: 40 },
+                    fontWeight: 900,
+                    mb: 2.4,
+                    boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.72)}`,
+                  }}
+                >
+                  {user.displayName.charAt(0)}
+                </Avatar>
+
+                <Typography variant="h5" sx={{ fontWeight: 900, mb: 0.8, color: 'secondary.main' }}>
+                  {user.displayName}
+                </Typography>
+
+                <Chip
+                  label={user.role === 'IZVODJAC' ? 'Izvodjac' : 'Investitor'}
+                  color={user.role === 'IZVODJAC' ? 'secondary' : 'primary'}
+                  sx={{ fontWeight: 900, borderRadius: 999, mb: 2.4 }}
+                />
+
+                {isOwnProfile && (
                   <Chip
                     label="Moj profil"
                     variant="outlined"
                     color="success"
-                    sx={{ fontWeight: 800, borderRadius: 2 }}
+                    sx={{ fontWeight: 800, borderRadius: 999, mb: 2 }}
                   />
-                  <BaseButton
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate('/profil/uredi')}
-                    sx={{ minHeight: 40 }}
-                  >
-                    Uredi profil
-                  </BaseButton>
-                </Stack>
-              )}
-              
-              <Chip 
-                label={user.role} 
-                color={user.role === 'IZVODJAC' ? 'secondary' : 'primary'}
-                sx={{ fontWeight: 900, borderRadius: 2, mb: 3 }}
-              />
+                )}
 
-              <Stack spacing={2} sx={{ width: '100%', mt: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <LocationOnIcon sx={{ color: 'text.disabled' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.location}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CalendarMonthIcon sx={{ color: 'text.disabled' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    Član od: {user.joinedAt.toLocaleDateString('hr-HR')}
-                  </Typography>
-                </Box>
-                {user.role === 'IZVODJAC' && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <VerifiedUserIcon sx={{ color: 'success.main' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'success.main' }}>
-                      Provjereni izvođač
+                <Stack spacing={1.4} sx={{ width: '100%', mt: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <LocationOnIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{user.location}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <CalendarMonthIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                      Clan od: {user.joinedAt.toLocaleDateString('hr-HR')}
                     </Typography>
                   </Box>
-                )}
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 4 }} />
-
-            <Typography variant="subtitle2" sx={{ fontWeight: 900, color: 'text.disabled', textTransform: 'uppercase', mb: 2 }}>
-              Biografija
-            </Typography>
-            <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
-              {user.bio}
-            </Typography>
-
-            {user.serviceCategories && (
-              <Box sx={{ mt: 4 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 900, color: 'text.disabled', textTransform: 'uppercase', mb: 2 }}>
-                  Vještine
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {user.serviceCategories.map(skill => (
-                    <Chip key={skill} label={skill} size="small" sx={{ fontWeight: 700, borderRadius: 1 }} />
-                  ))}
-                </Box>
-              </Box>
-            )}
-          </Paper>
-        </Grid>
-
-        {/* Main Content: Activity / Reviews */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          {user.role === 'IZVODJAC' ? (
-            <Box>
-              <Paper sx={{ ...cardStyle, mb: 4, bgcolor: 'primary.main', color: 'white' }}>
-                <Grid container alignItems="center">
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 700 }}>Ukupna ocjena</Typography>
-                    <Typography variant="h2" sx={{ fontWeight: 900 }}>{avgRating.toFixed(1)}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6 }} sx={{ textAlign: 'right' }}>
-                    <Rating value={avgRating} readOnly precision={0.5} size="large" />
-                    <Typography sx={{ mt: 1, opacity: 0.8 }}>{userReviews.length} recenzija</Typography>
-                  </Grid>
-                </Grid>
-              </Paper>
-
-              <Typography variant="h4" sx={{ fontWeight: 900, mb: 3 }}>Recenzije klijenata</Typography>
-              
-              {userReviews.length === 0 ? (
-                <Paper sx={{ ...cardStyle, textAlign: 'center', py: 8 }}>
-                  <Typography sx={{ fontWeight: 600, color: 'text.disabled' }}>Još nema recenzija.</Typography>
-                </Paper>
-              ) : (
-                <Stack spacing={3}>
-                  {userReviews.map(review => (
-                    <Paper key={review.id} sx={cardStyle}>
-                      <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-                        <Rating value={review.rating} readOnly size="small" />
-                        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700 }}>
-                          {review.createdAt.toLocaleDateString('hr-HR')}
-                        </Typography>
-                      </Stack>
-                      <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
-                        "{review.comment}"
+                  {(user.isPhoneVisible || isOwnProfile) && user.phone && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <PhoneOutlinedIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {user.phone}
                       </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: 'secondary.main' }}>
-                        PROJEKT: {jobStore.jobs.find(j => j.id === review.jobId)?.title || 'Nepoznat posao'}
+                    </Box>
+                  )}
+                  {user.role === 'IZVODJAC' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <VerifiedUserIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>
+                        Provjereni izvodjac
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                Biografija
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 0.7, lineHeight: 1.7, color: 'text.secondary' }}>
+                {user.bio}
+              </Typography>
+
+              {user.serviceCategories && user.serviceCategories.length > 0 && (
+                <Box sx={{ mt: 3.2 }}>
+                  <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                    Usluge i vjestine
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {user.serviceCategories.map((serviceCategory) => (
+                      <Chip
+                        key={serviceCategory}
+                        label={serviceCategory}
+                        size="small"
+                        sx={{
+                          fontWeight: 700,
+                          borderRadius: 999,
+                          bgcolor: alpha(theme.palette.background.paper, 0.84),
+                          border: '1px solid',
+                          borderColor: alpha(theme.palette.primary.main, 0.1),
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              {isOwnProfile && user.phone && !user.isPhoneVisible && (
+                <Box
+                  sx={{
+                    mt: 3.2,
+                    p: 1.5,
+                    borderRadius: 3,
+                    bgcolor: alpha(theme.palette.warning.light, 0.18),
+                    border: '1px solid',
+                    borderColor: alpha(theme.palette.warning.main, 0.18),
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 800, color: 'secondary.main', fontSize: '0.9rem' }}>
+                    Broj je trenutno skriven
+                  </Typography>
+                  <Typography sx={{ mt: 0.35, color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                    Samo vi vidite kontakt broj dok je opcija prikaza iskljucena.
+                  </Typography>
+                </Box>
+              )}
+
+              {isOwnProfile && (
+                <Box
+                  sx={{
+                    mt: 3.2,
+                    pt: 2.4,
+                    borderTop: '1px solid',
+                    borderColor: alpha(theme.palette.primary.main, 0.08),
+                  }}
+                >
+                  <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                    Moj profil
+                  </Typography>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.1} sx={{ mt: 1.15 }}>
+                    <BaseButton
+                      variant="contained"
+                      color="primary"
+                      onClick={() =>
+                        navigate('/profil/uredi', {
+                          state: { returnTo: `/profil/${user.id}`, returnLabel: 'Povratak na profil' },
+                        })
+                      }
+                      sx={{ flex: 1, borderRadius: 999, minHeight: 44, fontWeight: 800 }}
+                    >
+                      Uredi profil
+                    </BaseButton>
+                  </Stack>
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+
+          {showSecondaryColumn && (
+            <Grid size={{ xs: 12, md: 8 }}>
+              {isContractor ? (
+              <Box>
+                <Paper
+                  sx={{
+                    ...cardStyle,
+                    mb: 3.2,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.18)} 0%, ${theme.palette.background.paper} 62%)`,
+                  }}
+                >
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={2}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', md: 'center' }}
+                  >
+                    <Box>
+                      <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                        Reputacija
+                      </Typography>
+                      <Typography variant="h4" sx={{ mt: 0.2, fontWeight: 900, color: 'secondary.main' }}>
+                        Ukupna ocjena
+                      </Typography>
+                      <Typography sx={{ mt: 0.45, color: 'text.secondary', fontWeight: 600 }}>
+                        Sazetak ocjena i dojmova nakon suradnje.
+                      </Typography>
+                    </Box>
+
+                    <Box sx={{ minWidth: { md: 230 } }}>
+                      <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '2rem', md: '2.7rem' }, lineHeight: 1 }}>
+                        {avgRating.toFixed(1)}
+                      </Typography>
+                      <Rating value={avgRating} readOnly precision={0.5} size="large" sx={{ mt: 0.5 }} />
+                      <Typography sx={{ mt: 0.5, color: 'text.secondary', fontWeight: 700 }}>
+                        {userReviews.length} recenzija
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Paper>
+
+                <Paper sx={cardStyle}>
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+                    spacing={1}
+                    sx={{
+                      mb: 2.8,
+                      pb: 1.2,
+                      borderBottom: '1px solid',
+                      borderColor: alpha(theme.palette.primary.main, 0.08),
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                        Iskustva klijenata
+                      </Typography>
+                      <Typography variant="h5" sx={{ mt: 0.2, fontWeight: 900, color: 'secondary.main' }}>
+                        Recenzije klijenata
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`${userReviews.length} recenzija`}
+                      variant="outlined"
+                      sx={{
+                        height: 30,
+                        borderRadius: 999,
+                        fontWeight: 800,
+                        bgcolor: alpha(theme.palette.background.paper, 0.8),
+                        borderColor: alpha(theme.palette.primary.main, 0.14),
+                      }}
+                    />
+                  </Stack>
+
+                  {userReviews.length === 0 ? (
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        textAlign: 'center',
+                        py: 6,
+                        borderRadius: 4,
+                        border: '1px dashed',
+                        borderColor: alpha(theme.palette.primary.main, 0.18),
+                        bgcolor: alpha(theme.palette.primary.light, 0.18),
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 700, color: 'text.secondary' }}>Jos nema recenzija.</Typography>
+                    </Paper>
+                  ) : (
+                    <Stack spacing={2}>
+                      {userReviews.map((review) => (
+                        <Paper
+                          key={review.id}
+                          elevation={0}
+                          sx={{
+                            p: { xs: 2, md: 2.5 },
+                            borderRadius: 4,
+                            border: '1px solid',
+                            borderColor: alpha(theme.palette.primary.main, 0.08),
+                            bgcolor: alpha(theme.palette.background.paper, 0.8),
+                            backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.12)} 0%, ${theme.palette.background.paper} 100%)`,
+                          }}
+                        >
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.2 }}>
+                            <Rating value={review.rating} readOnly size="small" />
+                            <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 700 }}>
+                              {review.createdAt.toLocaleDateString('hr-HR')}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="body1" sx={{ fontWeight: 500, mb: 1.2, lineHeight: 1.65, color: 'secondary.main' }}>
+                            "{review.comment}"
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                            PROJEKT: {jobStore.jobs.find((job) => job.id === review.jobId)?.title || 'Nepoznat posao'}
+                          </Typography>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  )}
+                </Paper>
+              </Box>
+              ) : (
+                <Paper sx={cardStyle}>
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+                    spacing={1}
+                    sx={{
+                      mb: 2.8,
+                      pb: 1.2,
+                      borderBottom: '1px solid',
+                      borderColor: alpha(theme.palette.primary.main, 0.08),
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                        Aktivnost investitora
+                      </Typography>
+                      <Typography variant="h5" sx={{ mt: 0.2, fontWeight: 900, color: 'secondary.main' }}>
+                        Objavljeni oglasi
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`${userJobs.length} oglasa`}
+                      variant="outlined"
+                      sx={{
+                        height: 30,
+                        borderRadius: 999,
+                        fontWeight: 800,
+                        bgcolor: alpha(theme.palette.background.paper, 0.8),
+                        borderColor: alpha(theme.palette.primary.main, 0.14),
+                      }}
+                    />
+                  </Stack>
+
+                  {userJobs.length === 0 ? (
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        textAlign: 'center',
+                        py: 6,
+                        borderRadius: 4,
+                        border: '1px dashed',
+                        borderColor: alpha(theme.palette.primary.main, 0.18),
+                        bgcolor: alpha(theme.palette.primary.light, 0.18),
+                      }}
+                    >
+                      <Typography sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                        Korisnik trenutno nema aktivnih oglasa.
                       </Typography>
                     </Paper>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-          ) : (
-            <Box>
-              <Typography variant="h4" sx={{ fontWeight: 900, mb: 3 }}>Objavljeni oglasi</Typography>
-              {userJobs.length === 0 ? (
-                <Paper sx={{ ...cardStyle, textAlign: 'center', py: 8 }}>
-                  <Typography sx={{ fontWeight: 600, color: 'text.disabled' }}>Korisnik trenutno nema aktivnih oglasa.</Typography>
-                </Paper>
-              ) : (
-                <Grid container spacing={3}>
-                  {userJobs.map(job => (
-                    <Grid key={job.id} size={{ xs: 12, sm: 6 }}>
-                      <JobCard job={job} />
+                  ) : (
+                    <Grid container spacing={{ xs: 2, md: 2.6 }}>
+                      {userJobs.map((job) => (
+                        <Grid key={job.id} size={{ xs: 12, md: 12, lg: 6, xl: 4 }}>
+                          <JobCard job={job} />
+                        </Grid>
+                      ))}
                     </Grid>
-                  ))}
-                </Grid>
+                  )}
+                </Paper>
               )}
-            </Box>
+            </Grid>
           )}
         </Grid>
-      </Grid>
+      </Box>
     </BaseContainer>
   );
 });
 
 export default ProfilePage;
-
-

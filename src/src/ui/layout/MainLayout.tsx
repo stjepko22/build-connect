@@ -9,11 +9,10 @@ import Sidebar from '@/modules/navigation/components/Sidebar';
 const DRAWER_WIDTH = 260;
 
 const MainLayout: React.FC = observer(() => {
-  const { navigationStore, authenticationStore, jobStore, bidStore, reviewStore, userStore } = useRootStore();
+  const { navigationStore, authenticationStore } = useRootStore();
   const navigate = useNavigate();
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
-  const isDashboardPage = location.pathname === '/dashboard';
   const previousUserIdRef = useRef<string | null>(authenticationStore.user?.id ?? null);
 
   useEffect(() => {
@@ -23,26 +22,6 @@ const MainLayout: React.FC = observer(() => {
     }
     previousUserIdRef.current = currentUserId;
   }, [authenticationStore.user, navigate]);
-
-  useEffect(() => {
-    const user = authenticationStore.user;
-    if (!user || !isDashboardPage) {
-      return;
-    }
-
-    void jobStore.loadJobs();
-
-    if (user.role === 'IZVODJAC') {
-      void bidStore.loadBids(undefined, user.id);
-      void reviewStore.loadReviews(undefined, user.id);
-      void userStore.loadContractors();
-      return;
-    }
-
-    void bidStore.loadBids();
-    void reviewStore.loadReviews();
-    void userStore.loadContractors();
-  }, [authenticationStore.user, bidStore, isDashboardPage, jobStore, reviewStore, userStore]);
 
   const handleDrawerToggle = () => {
     navigationStore.toggleMobileSidebar();

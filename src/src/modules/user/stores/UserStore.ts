@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { makeAutoObservable, runInAction } from 'mobx';
+import IGetContractorsQuery from '@/api/models/users/IGetContractorsQuery';
 import { IUpdateUserProfileRequest } from '@/api/models/users/IUpdateUserProfileRequest';
 import { IUserProfileResponse } from '@/api/models/users/IUserProfileResponse';
 import RootStore from '@/core/stores/RootStore';
@@ -19,6 +20,7 @@ export default class UserStore {
   userListError: string | null = null;
   selectedUserError: string | null = null;
   profileSaveError: string | null = null;
+  contractorSearchInputValue = '';
   contractorSearchQuery = '';
   selectedContractorCategories: JobCategory[] = [];
   selectedContractorLocation = '';
@@ -26,6 +28,8 @@ export default class UserStore {
   minContractorRating = 0;
   profileDisplayName = '';
   profileLegalType: LegalType = 'FIRMA';
+  profilePhone = '';
+  profileIsPhoneVisible = false;
   profileBio = '';
   profileLocation = '';
   profileServiceCategories: JobCategory[] = [];
@@ -62,12 +66,12 @@ export default class UserStore {
     }
   };
 
-  loadContractors = async () => {
+  loadContractors = async (query: IGetContractorsQuery = {}) => {
     this.isLoadingUsers = true;
     this.userListError = null;
 
     try {
-      const response = await this.userService.getContractorsAsync();
+      const response = await this.userService.getContractorsAsync(query);
 
       runInAction(() => {
         this.replaceUsers(response.data.map(this.mapUserResponseToModel), 'IZVODJAC');
@@ -114,6 +118,7 @@ export default class UserStore {
     }
   };
 
+  setContractorSearchInputValue = (value: string) => { this.contractorSearchInputValue = value; };
   setContractorSearchQuery = (value: string) => { this.contractorSearchQuery = value; };
   setSelectedContractorCategories = (value: JobCategory[]) => { this.selectedContractorCategories = value; };
   setSelectedContractorLocation = (value: string) => { this.selectedContractorLocation = value; };
@@ -121,6 +126,14 @@ export default class UserStore {
   setMinContractorRating = (value: number) => { this.minContractorRating = value; };
   setProfileDisplayName = (value: string) => { this.profileDisplayName = value; this.profileSaveError = null; };
   setProfileLegalType = (value: LegalType) => { this.profileLegalType = value; this.profileSaveError = null; };
+  setProfilePhone = (value: string) => {
+    this.profilePhone = value;
+    if (!value.trim()) {
+      this.profileIsPhoneVisible = false;
+    }
+    this.profileSaveError = null;
+  };
+  setProfileIsPhoneVisible = (value: boolean) => { this.profileIsPhoneVisible = value; this.profileSaveError = null; };
   setProfileBio = (value: string) => { this.profileBio = value; this.profileSaveError = null; };
   setProfileLocation = (value: string) => { this.profileLocation = value; this.profileSaveError = null; };
   setProfileSaveError = (value: string | null) => { this.profileSaveError = value; };
@@ -144,6 +157,7 @@ export default class UserStore {
   };
 
   resetContractorFilters = () => {
+    this.contractorSearchInputValue = '';
     this.contractorSearchQuery = '';
     this.selectedContractorCategories = [];
     this.selectedContractorLocation = '';
@@ -200,35 +214,8 @@ export default class UserStore {
   };
 
   get filteredContractors() {
-    const query = this.contractorSearchQuery.trim().toLowerCase();
-
     return this.contractorProfiles
       .filter((contractor) => {
-        if (query) {
-          const haystack = [contractor.displayName, contractor.bio, contractor.location, ...(contractor.serviceCategories || [])]
-            .join(' ')
-            .toLowerCase();
-          if (!haystack.includes(query)) {
-            return false;
-          }
-        }
-
-        if (this.selectedContractorCategories.length > 0) {
-          const serviceCategories = contractor.serviceCategories || [];
-          const hasAnyCategory = this.selectedContractorCategories.some((category) => serviceCategories.includes(category));
-          if (!hasAnyCategory) {
-            return false;
-          }
-        }
-
-        if (this.selectedContractorLocation && contractor.location !== this.selectedContractorLocation) {
-          return false;
-        }
-
-        if (this.selectedContractorLegalType !== 'ALL' && contractor.legalType !== this.selectedContractorLegalType) {
-          return false;
-        }
-
         const avgRating = this.getContractorAverageRating(contractor.id);
         if (avgRating < this.minContractorRating) {
           return false;
@@ -244,7 +231,11 @@ export default class UserStore {
   }
 
   get isProfileFormValid() {
+    const normalizedPhone = this.profilePhone.trim();
+    const isPhoneValid = normalizedPhone.length >= 6;
+
     return this.profileDisplayName.trim().length >= 2
+      && isPhoneValid
       && this.profileLocation.trim().length >= 2
       && this.profileBio.trim().length >= 10;
   }
@@ -252,6 +243,8 @@ export default class UserStore {
   initializeProfileForm = (user: IUserProfile) => {
     this.profileDisplayName = user.displayName;
     this.profileLegalType = user.legalType;
+    this.profilePhone = user.phone || '';
+    this.profileIsPhoneVisible = user.isPhoneVisible ?? false;
     this.profileBio = user.bio;
     this.profileLocation = user.location;
     this.profileServiceCategories = [...(user.serviceCategories || [])];
@@ -263,6 +256,8 @@ export default class UserStore {
     if (!authenticatedUserId) {
       this.profileDisplayName = '';
       this.profileLegalType = 'FIRMA';
+      this.profilePhone = '';
+      this.profileIsPhoneVisible = false;
       this.profileBio = '';
       this.profileLocation = '';
       this.profileServiceCategories = [];
@@ -298,6 +293,8 @@ export default class UserStore {
       const request: IUpdateUserProfileRequest = {
         displayName: this.profileDisplayName.trim(),
         legalType: this.profileLegalType,
+        phone: this.profilePhone.trim(),
+        isPhoneVisible: this.profileIsPhoneVisible,
         bio: this.profileBio.trim(),
         location: this.profileLocation.trim(),
         serviceCategories: authenticatedUser.role === 'IZVODJAC' ? this.profileServiceCategories : undefined,
@@ -312,6 +309,8 @@ export default class UserStore {
           displayName: updatedUser.displayName,
           legalType: updatedUser.legalType,
           email: updatedUser.email,
+          phone: updatedUser.phone,
+          isPhoneVisible: updatedUser.isPhoneVisible,
         });
         this.initializeProfileForm(updatedUser);
       });

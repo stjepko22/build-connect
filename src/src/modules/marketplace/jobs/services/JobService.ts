@@ -1,5 +1,6 @@
 import HttpClient from '@/api/clients/HttpClient';
 import { ICreateJobRequest } from '@/api/models/jobs/ICreateJobRequest';
+import IGetJobsQuery from '@/api/models/jobs/IGetJobsQuery';
 import { IJobResponse } from '@/api/models/jobs/IJobResponse';
 import { IUpdateJobRequest } from '@/api/models/jobs/IUpdateJobRequest';
 
@@ -14,8 +15,8 @@ export default class JobService {
     this.httpClient = new HttpClient(config.endpoint);
   }
 
-  getJobsAsync = async () => {
-    return this.httpClient.findAsync<IJobResponse[]>();
+  getJobsAsync = async (query: IGetJobsQuery = {}) => {
+    return this.httpClient.findAsync<IJobResponse[]>(query);
   };
 
   getJobAsync = async (id: string) => {
@@ -28,5 +29,17 @@ export default class JobService {
 
   updateJobAsync = async (id: string, model: IUpdateJobRequest) => {
     return this.httpClient.putAsync<IJobResponse, IUpdateJobRequest>(id, model);
+  };
+
+  closeJobAsync = async (id: string) => {
+    return this.httpClient.postAsync<IJobResponse, Record<string, never>>({}, `${id}/close`);
+  };
+
+  completeJobAsync = async (id: string) => {
+    return this.httpClient.postAsync<IJobResponse, Record<string, never>>({}, `${id}/complete`);
+  };
+
+  deleteJobAsync = async (id: string) => {
+    return this.httpClient.deleteAsync<void>(id);
   };
 }

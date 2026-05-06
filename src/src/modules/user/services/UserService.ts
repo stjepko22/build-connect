@@ -1,5 +1,6 @@
 import HttpClient from '@/api/clients/HttpClient';
 import { QueryParameters } from '@/api/models/HttpClientModels';
+import IGetContractorsQuery from '@/api/models/users/IGetContractorsQuery';
 import { IUpdateUserProfileRequest } from '@/api/models/users/IUpdateUserProfileRequest';
 import { IUserProfileResponse } from '@/api/models/users/IUserProfileResponse';
 
@@ -28,8 +29,8 @@ export default class UserService {
     return this.usersHttpClient.getAsync<IUserProfileResponse>(id);
   };
 
-  getContractorsAsync = async () => {
-    return this.contractorsHttpClient.findAsync<IUserProfileResponse[]>();
+  getContractorsAsync = async (query: IGetContractorsQuery = {}) => {
+    return this.contractorsHttpClient.findAsync<IUserProfileResponse[]>(query);
   };
 
   updateCurrentUserAsync = async (model: IUpdateUserProfileRequest) => {

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Alert, Box, CircularProgress, Stack, Typography, alpha, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
@@ -10,9 +10,14 @@ import OwnProfileEditor from '@/modules/user/components/OwnProfileEditor';
 
 const EditProfilePage: React.FC = observer(() => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
   const { authenticationStore, userStore } = useRootStore();
   const authenticatedUser = authenticationStore.user;
   const currentUser = authenticatedUser ? userStore.getUserById(authenticatedUser.id) : null;
+  const navigationState = location.state as { returnTo?: string; returnLabel?: string } | null;
+  const backTarget = navigationState?.returnTo || (authenticatedUser ? `/profil/${authenticatedUser.id}` : '/dashboard');
+  const backLabel = navigationState?.returnLabel || 'Povratak na profil';
 
   useEffect(() => {
     if (!authenticatedUser) {
@@ -53,28 +58,44 @@ const EditProfilePage: React.FC = observer(() => {
   }
 
   return (
-    <BaseContainer maxWidth="md" withPadding={false}>
+    <BaseContainer maxWidth={false} disableGutters animate={false}>
       <BaseButton
         variant="text"
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(`/profil/${authenticatedUser.id}`)}
+        onClick={() => navigate(backTarget)}
         sx={{ mb: 1.5, mt: 0.25, px: 0, fontWeight: 700 }}
       >
-        Povratak na profil
+        {backLabel}
       </BaseButton>
 
-      <Stack spacing={0.75} sx={{ mb: 1.5 }}>
-        <Typography variant="h3" sx={{ fontWeight: 900, color: 'secondary.main', letterSpacing: '-1px' }}>
+      <Stack
+        spacing={0.55}
+        sx={{
+          mb: 2.15,
+          px: { md: 0.15, lg: 0.25 },
+          py: { md: 0.35, lg: 0.45 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 900,
+            color: 'secondary.main',
+            letterSpacing: '-0.04em',
+            lineHeight: 1.04,
+            fontSize: { xs: '1.7rem', md: '2rem', lg: '2.2rem' },
+          }}
+        >
           Uredi profil
         </Typography>
-        <Typography sx={{ color: 'text.secondary' }}>
-          Azurirajte javne podatke koje vide drugi korisnici.
+        <Typography sx={{ color: 'text.secondary', maxWidth: 720, lineHeight: 1.6, fontSize: { xs: '0.92rem', md: '0.98rem' } }}>
+          Azurirajte podatke koji se prikazuju na vasem profilu.
         </Typography>
       </Stack>
 
       <OwnProfileEditor
-        onCancel={() => navigate(`/profil/${authenticatedUser.id}`)}
-        onSaved={() => navigate(`/profil/${authenticatedUser.id}`)}
+        onCancel={() => navigate(backTarget)}
+        onSaved={() => navigate(backTarget)}
       />
     </BaseContainer>
   );

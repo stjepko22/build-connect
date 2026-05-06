@@ -1,8 +1,10 @@
 import { AxiosError } from 'axios';
+import IGetJobsQuery from '@/api/models/jobs/IGetJobsQuery';
 import { IJobResponse } from '@/api/models/jobs/IJobResponse';
 import RootStore from '@/core/stores/RootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
 import { IJob } from '@/modules/marketplace/jobs/models/IJob';
+import { JobStatus } from '@/modules/marketplace/jobs/models/JobStatus';
 import JobService from '@/modules/marketplace/jobs/services/JobService';
 import { makeAutoObservable, runInAction } from 'mobx';
 
@@ -46,7 +48,7 @@ export default class JobStore {
     makeAutoObservable(this);
   }
 
-  createJob = async (jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId'>) => {
+  createJob = async (jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId' | 'status'>) => {
     const user = this.rootStore.authenticationStore.user;
     if (!user) {
       runInAction(() => {
@@ -87,7 +89,7 @@ export default class JobStore {
     }
   };
 
-  updateJob = async (jobId: string, jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId'>) => {
+  updateJob = async (jobId: string, jobData: Omit<IJob, 'id' | 'createdAt' | 'investitorId' | 'status'>) => {
     const user = this.rootStore.authenticationStore.user;
     if (!user) {
       runInAction(() => {
@@ -129,12 +131,12 @@ export default class JobStore {
     }
   };
 
-  loadJobs = async () => {
+  loadJobs = async (query: IGetJobsQuery = {}) => {
     this.isLoadingJobs = true;
     this.jobsError = null;
 
     try {
-      const response = await this.jobService.getJobsAsync();
+      const response = await this.jobService.getJobsAsync(query);
       runInAction(() => {
         this.jobs = response.data.map(this.mapJobResponseToModel);
       });
@@ -174,6 +176,80 @@ export default class JobStore {
     } finally {
       runInAction(() => {
         this.isLoadingJobDetails = false;
+      });
+    }
+  };
+
+  closeJob = async (jobId: string) => {
+    this.isLoading = true;
+    this.jobsError = null;
+
+    try {
+      const response = await this.jobService.closeJobAsync(jobId);
+      const closedJob = this.mapJobResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertJob(closedJob);
+      });
+
+      return closedJob;
+    } catch (error) {
+      runInAction(() => {
+        this.jobsError = this.getApiErrorMessage(error, 'Zatvaranje oglasa nije uspjelo.');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  };
+
+  completeJob = async (jobId: string) => {
+    this.isLoading = true;
+    this.jobsError = null;
+
+    try {
+      const response = await this.jobService.completeJobAsync(jobId);
+      const completedJob = this.mapJobResponseToModel(response.data);
+
+      runInAction(() => {
+        this.upsertJob(completedJob);
+      });
+
+      return completedJob;
+    } catch (error) {
+      runInAction(() => {
+        this.jobsError = this.getApiErrorMessage(error, 'Zavrsetak posla nije uspio.');
+      });
+      return null;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  };
+
+  deleteJob = async (jobId: string) => {
+    this.isLoading = true;
+    this.jobsError = null;
+
+    try {
+      await this.jobService.deleteJobAsync(jobId);
+
+      runInAction(() => {
+        this.jobs = this.jobs.filter((job) => job.id !== jobId);
+      });
+
+      return true;
+    } catch (error) {
+      runInAction(() => {
+        this.jobsError = this.getApiErrorMessage(error, 'Brisanje oglasa nije uspjelo.');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
       });
     }
   };
@@ -376,6 +452,57 @@ export default class JobStore {
 
   getJobById = (jobId: string) => {
     return this.jobs.find((job) => job.id === jobId);
+  };
+
+  canEditJob = (job: IJob) => {
+    return job.status === 'OPEN' || job.status === 'CLOSED';
+  };
+
+  canCloseJob = (job: IJob) => {
+    return job.status === 'OPEN';
+  };
+
+  canDeleteJob = (job: IJob) => {
+    return job.status === 'OPEN' || job.status === 'CLOSED';
+  };
+
+  canCompleteJob = (job: IJob, acceptedContractorId?: string, currentUserId?: string) => {
+    return (
+      job.status === 'IN_PROGRESS' &&
+      Boolean(acceptedContractorId) &&
+      Boolean(currentUserId) &&
+      acceptedContractorId === currentUserId
+    );
+  };
+
+  getJobStatusLabel = (status: JobStatus) => {
+    switch (status) {
+      case 'OPEN':
+        return 'Otvoren';
+      case 'CLOSED':
+        return 'Zatvoren';
+      case 'IN_PROGRESS':
+        return 'U radu';
+      case 'COMPLETED':
+        return 'Zavrsen';
+      default:
+        return status;
+    }
+  };
+
+  getJobStatusColor = (status: JobStatus): 'default' | 'warning' | 'primary' | 'success' => {
+    switch (status) {
+      case 'OPEN':
+        return 'default';
+      case 'CLOSED':
+        return 'warning';
+      case 'IN_PROGRESS':
+        return 'primary';
+      case 'COMPLETED':
+        return 'success';
+      default:
+        return 'default';
+    }
   };
 
   private mapJobResponseToModel = (jobResponse: IJobResponse): IJob => {
