@@ -1,4 +1,5 @@
 import { JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
+import { JobStatus } from '@/modules/marketplace/jobs/models/JobStatus';
 
 export interface IJob {
   id: string;
@@ -10,4 +11,5 @@ export interface IJob {
   deadline: string;
   investitorId: string;
   createdAt: Date;
+  status: JobStatus;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import {
   CircularProgress,
@@ -37,14 +37,20 @@ const JobDetailsPage: React.FC = observer(() => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
+  const location = useLocation();
   const { jobStore, bidStore, authenticationStore, reviewStore } = useRootStore();
 
   const jobId = id || '';
   const job = jobStore.getJobById(jobId);
   const bids = bidStore.getBidsByJobId(jobId);
   const isOwner = authenticationStore.user?.id === job?.investitorId;
+  const currentUserId = authenticationStore.user?.id;
   const acceptedBid = bids.find((bid) => bid.status === 'ACCEPTED');
   const existingReview = reviewStore.getReviewByJobId(jobId);
+  const isAcceptedContractor = acceptedBid?.contractorId === currentUserId;
+  const navigationState = location.state as { returnTo?: string; returnLabel?: string } | null;
+  const backTarget = navigationState?.returnTo || '/marketplace';
+  const backLabel = navigationState?.returnLabel || 'Povratak na marketplace';
 
   useEffect(() => {
     bidStore.resetBidForm();
@@ -77,10 +83,10 @@ const JobDetailsPage: React.FC = observer(() => {
           <BaseButton
             variant="contained"
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/marketplace')}
+            onClick={() => navigate(backTarget)}
             sx={{ mt: 4 }}
           >
-            Povratak na listu
+            {backLabel}
           </BaseButton>
         </Box>
       </BaseContainer>
@@ -103,12 +109,28 @@ const JobDetailsPage: React.FC = observer(() => {
     await reviewStore.submitReviewForJob(job.id);
   };
 
+  const handleCloseJob = async () => {
+    if (!window.confirm('Jeste li sigurni da zelite zatvoriti ovaj oglas za nove ponude?')) {
+      return;
+    }
+
+    await jobStore.closeJob(job.id);
+  };
+
+  const handleCompleteJob = async () => {
+    if (!window.confirm('Jeste li sigurni da zelite oznaciti posao zavrsenim?')) {
+      return;
+    }
+
+    await jobStore.completeJob(job.id);
+  };
+
   const cardStyle = {
-    p: { xs: 2.2, md: 5 },
-    borderRadius: { xs: 4, md: 6 },
+    p: { xs: 2.2, md: 4.2, lg: 4.6 },
+    borderRadius: { xs: 4, md: 5 },
     border: '1px solid',
-    borderColor: alpha(theme.palette.divider, 0.08),
-    boxShadow: `0 10px 40px ${alpha(theme.palette.common.black, 0.02)}`,
+    borderColor: alpha(theme.palette.primary.main, 0.08),
+    boxShadow: `0 16px 36px ${alpha(theme.palette.common.black, 0.035)}`,
     bgcolor: 'background.paper',
   };
 
@@ -122,96 +144,146 @@ const JobDetailsPage: React.FC = observer(() => {
     },
   };
 
-  const statusLabel = existingReview ? 'Zavrseno' : acceptedBid ? 'U radu' : 'Otvoreno';
-  const statusColor = existingReview ? 'success' : acceptedBid ? 'primary' : 'default';
+  const statusLabel = jobStore.getJobStatusLabel(job.status);
+  const statusColor = jobStore.getJobStatusColor(job.status);
   const bidCountLabel = bids.length === 1 ? '1 ponuda' : `${bids.length} ponuda`;
+  const desktopMetaChips = [job.category, statusLabel, bidCountLabel];
 
   return (
-    <BaseContainer maxWidth="lg" withPadding={false}>
-      <Box sx={{ pt: { xs: 0.25, md: 1 }, pb: { xs: 3, md: 6 } }}>
+    <BaseContainer maxWidth={false} disableGutters withPadding={false} animate={false}>
+      <Box sx={{ width: '100%', pt: { xs: 0.25, md: 0.35 }, pb: { xs: 3, md: 6 } }}>
         <BaseButton
           variant="text"
           color="secondary"
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(backTarget)}
           sx={{
-            mb: { xs: 0.45, md: 4 },
+            mb: { xs: 0.45, md: 1.6 },
             fontWeight: 700,
             px: 0,
             minHeight: isMobile ? 32 : undefined,
           }}
         >
-          Natrag na pretragu
+          {backLabel}
         </BaseButton>
 
         <Box
           sx={{
-            p: { xs: 2.1, md: 4 },
-            mb: { xs: 2.2, md: 4 },
-            borderRadius: { xs: 4, md: 5 },
-            color: isMobile ? 'secondary.main' : 'common.white',
+            p: { xs: 2.1, md: 0 },
+            mb: { xs: 2.2, md: 3.3 },
+            borderRadius: { xs: 4, md: 0 },
+            color: isMobile ? 'secondary.main' : 'secondary.main',
             position: 'relative',
             overflow: 'hidden',
             background: isMobile
               ? `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.72)} 0%, ${theme.palette.background.default} 100%)`
-              : BRAND_COLORS.heroGradient,
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.16)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 32%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
             border: isMobile ? '1px solid' : 'none',
             borderColor: isMobile ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
             boxShadow: isMobile ? `0 10px 24px ${alpha(theme.palette.common.black, 0.04)}` : 'none',
+            borderBottom: { md: '1px solid' },
+            borderBottomColor: { md: alpha(theme.palette.primary.main, 0.07) },
             '&::before': {
               content: '""',
               position: 'absolute',
               inset: 0,
               background: isMobile
                 ? `radial-gradient(circle at 18% 12%, ${alpha(theme.palette.primary.main, 0.12)}, transparent 40%)`
-                : `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 42%)`,
+                : `radial-gradient(circle at 18% 20%, ${alpha(theme.palette.primary.main, 0.11)}, transparent 42%)`,
             },
           }}
         >
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          spacing={{ xs: 1.8, md: 2 }}
+          spacing={{ xs: 1.8, md: 3 }}
           justifyContent="space-between"
-          sx={{ position: 'relative', zIndex: 1 }}
+          alignItems={{ md: 'flex-end' }}
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            px: { md: 0.15, lg: 0.25 },
+            py: { md: 0.7, lg: 0.95 },
+          }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1.2 }}>
-              <Chip
-                label={job.category}
-                color="primary"
-                sx={{
-                  fontWeight: 800,
-                  borderRadius: 999,
-                  height: 30,
-                  boxShadow: `0 8px 18px ${alpha(theme.palette.primary.main, 0.14)}`,
-                }}
-              />
-              <Chip
-                label={statusLabel}
-                color={statusColor}
-                sx={{
-                  fontWeight: 900,
-                  borderRadius: 999,
-                  textTransform: 'uppercase',
-                  fontSize: '0.68rem',
-                  height: 30,
-                }}
-              />
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+              {isMobile ? (
+                <>
+                  <Chip
+                    label={job.category}
+                    color="primary"
+                    sx={{
+                      fontWeight: 800,
+                      borderRadius: 999,
+                      height: 30,
+                      boxShadow: `0 8px 18px ${alpha(theme.palette.primary.main, 0.14)}`,
+                    }}
+                  />
+                  <Chip
+                    label={statusLabel}
+                    color={statusColor}
+                    sx={{
+                      fontWeight: 900,
+                      borderRadius: 999,
+                      textTransform: 'uppercase',
+                      fontSize: '0.68rem',
+                      height: 30,
+                    }}
+                  />
+                </>
+              ) : (
+                desktopMetaChips.map((label) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    color={label === job.category ? 'primary' : undefined}
+                    variant={label === job.category ? 'filled' : 'outlined'}
+                    sx={{
+                      height: 32,
+                      borderRadius: 999,
+                      fontWeight: 800,
+                      bgcolor: label === job.category ? undefined : alpha(theme.palette.background.paper, 0.82),
+                      borderColor: label === job.category ? undefined : alpha(theme.palette.primary.main, 0.14),
+                      boxShadow:
+                        label === job.category ? `0 10px 22px ${alpha(theme.palette.primary.main, 0.12)}` : 'none',
+                      '& .MuiChip-label': {
+                        px: 1.1,
+                        fontSize: '0.74rem',
+                      },
+                    }}
+                  />
+                ))
+              )}
             </Stack>
 
             <Typography
               variant="h4"
               sx={{
                 fontWeight: 900,
-                mb: 0.85,
-                lineHeight: 1.12,
-                letterSpacing: '-0.03em',
-                fontSize: { xs: '1.45rem', md: '2.15rem' },
-                maxWidth: { md: '90%' },
+                mb: 0.8,
+                lineHeight: 1.06,
+                letterSpacing: '-0.04em',
+                fontSize: { xs: '1.45rem', md: '2.45rem', lg: '2.8rem' },
+                maxWidth: { md: '88%' },
               }}
             >
               {job.title}
             </Typography>
+
+            {!isMobile && (
+              <Typography
+                sx={{
+                  mb: 1.25,
+                  maxWidth: 760,
+                  color: 'text.secondary',
+                  fontSize: '1rem',
+                  lineHeight: 1.55,
+                }}
+              >
+                Detaljan pregled projekta, otvorenih ponuda i koraka koje trebate poduzeti da suradnja krene bez
+                zastoja.
+              </Typography>
+            )}
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               <Chip
@@ -230,62 +302,132 @@ const JobDetailsPage: React.FC = observer(() => {
           </Box>
 
           <Box
-            sx={{
-              alignSelf: { xs: 'stretch', md: 'flex-start' },
-              minWidth: { md: 220 },
-            }}
-          >
-            <Paper
-              elevation={0}
               sx={{
-                p: { xs: 1.4, md: 1.8 },
-                borderRadius: 3.5,
-                bgcolor: alpha(theme.palette.background.paper, isMobile ? 0.9 : 0.08),
-                border: '1px solid',
-                borderColor: isMobile
-                  ? alpha(theme.palette.success.main, 0.12)
-                  : alpha(theme.palette.common.white, 0.12),
-                boxShadow: isMobile
-                  ? `0 14px 28px ${alpha(theme.palette.success.main, 0.08)}`
-                  : `0 18px 30px ${alpha(theme.palette.common.black, 0.14)}`,
-                backdropFilter: 'blur(8px)',
+                alignSelf: { xs: 'stretch', md: 'flex-start' },
+                minWidth: { md: 270, lg: 310 },
               }}
             >
-              <Typography
-                variant="caption"
+            <Stack spacing={1.4}>
+              <Paper
+                elevation={0}
                 sx={{
-                  display: 'block',
-                  mb: 0.5,
-                  color: isMobile ? 'text.secondary' : alpha(theme.palette.common.white, 0.7),
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
+                  p: { xs: 1.4, md: 2.05 },
+                  borderRadius: { xs: 3.5, md: 4 },
+                  bgcolor: alpha(theme.palette.background.paper, isMobile ? 0.9 : 0.84),
+                  border: '1px solid',
+                  borderColor: isMobile
+                    ? alpha(theme.palette.success.main, 0.12)
+                    : alpha(theme.palette.success.main, 0.12),
+                  boxShadow: isMobile
+                    ? `0 14px 28px ${alpha(theme.palette.success.main, 0.08)}`
+                    : `0 18px 34px ${alpha(theme.palette.success.main, 0.08)}`,
+                  backdropFilter: 'blur(8px)',
                 }}
               >
-                Budzet projekta
-              </Typography>
-              <Typography
-                sx={{
-                  fontWeight: 900,
-                  color: job.budget ? 'success.dark' : isMobile ? 'secondary.main' : 'common.white',
-                  fontSize: { xs: '1.35rem', md: '1.7rem' },
-                  lineHeight: 1.05,
-                  letterSpacing: '-0.03em',
-                }}
-              >
-                {job.budget ? `${job.budget.toLocaleString()} EUR` : 'Po dogovoru'}
-              </Typography>
-              <Typography
-                sx={{
-                  mt: 0.55,
-                  color: isMobile ? 'text.secondary' : alpha(theme.palette.common.white, 0.72),
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                }}
-              >
-                Investitor prima ponude direktno kroz BuildConnect.
-              </Typography>
-            </Paper>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mb: 0.5,
+                    color: 'text.secondary',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                  }}
+                >
+                  Budzet projekta
+                </Typography>
+                <Typography
+                  sx={{
+                    fontWeight: 900,
+                    color: job.budget ? 'success.dark' : 'secondary.main',
+                    fontSize: { xs: '1.35rem', md: '1.8rem' },
+                    lineHeight: 1.05,
+                    letterSpacing: '-0.03em',
+                  }}
+                >
+                  {job.budget ? `${job.budget.toLocaleString()} EUR` : 'Po dogovoru'}
+                </Typography>
+                <Typography
+                  sx={{
+                    mt: 0.55,
+                    color: 'text.secondary',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  Investitor prima ponude direktno kroz BuildConnect.
+                </Typography>
+
+                {!isMobile && (
+                  <Stack direction="row" spacing={0.9} sx={{ mt: 1.35 }}>
+                    <Chip
+                      icon={<LocationOnIcon sx={{ fontSize: '0.95rem !important' }} />}
+                      label={job.location}
+                      variant="outlined"
+                      sx={{
+                        ...metaChipSx,
+                        height: 30,
+                        bgcolor: alpha(theme.palette.background.paper, 0.9),
+                      }}
+                    />
+                    <Chip
+                      icon={<CalendarMonthIcon sx={{ fontSize: '0.95rem !important' }} />}
+                      label={job.deadline}
+                      variant="outlined"
+                      sx={{
+                        ...metaChipSx,
+                        height: 30,
+                        bgcolor: alpha(theme.palette.background.paper, 0.9),
+                      }}
+                    />
+                  </Stack>
+                )}
+              </Paper>
+
+              {isOwner && (jobStore.canEditJob(job) || jobStore.canCloseJob(job)) && (
+                <Stack spacing={1.1}>
+                  {jobStore.canEditJob(job) && (
+                    <BaseButton
+                      fullWidth
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<EditNoteIcon />}
+                      onClick={() =>
+                        navigate(`/posao/${job.id}/uredi`, {
+                          state: { returnTo: `/posao/${job.id}`, returnLabel: 'Povratak na oglas' },
+                        })
+                      }
+                      sx={{
+                        minHeight: 46,
+                        fontWeight: 800,
+                        borderRadius: 999,
+                        boxShadow: `0 14px 30px ${alpha(theme.palette.secondary.main, 0.18)}`,
+                        textTransform: 'none',
+                      }}
+                    >
+                      Uredi ovaj oglas
+                    </BaseButton>
+                  )}
+                  {jobStore.canCloseJob(job) && (
+                    <BaseButton
+                      fullWidth
+                      variant="outlined"
+                      color="warning"
+                      onClick={() => void handleCloseJob()}
+                      sx={{
+                        minHeight: 46,
+                        fontWeight: 800,
+                        borderRadius: 999,
+                        textTransform: 'none',
+                      }}
+                    >
+                      Zatvori oglas
+                    </BaseButton>
+                  )}
+                </Stack>
+              )}
+            </Stack>
           </Box>
         </Stack>
         </Box>
@@ -330,28 +472,6 @@ const JobDetailsPage: React.FC = observer(() => {
             </Typography>
           </Paper>
 
-          {isOwner && (
-            <Box sx={{ mt: 2.5, mb: { xs: 3, md: 4 }, display: 'flex', justifyContent: 'center' }}>
-              <BaseButton
-                variant="contained"
-                color="secondary"
-                startIcon={<EditNoteIcon />}
-                onClick={() => navigate(`/posao/${job.id}/uredi`)}
-                sx={{
-                  minWidth: { xs: '100%', sm: 240 },
-                  maxWidth: { xs: '100%', sm: 320 },
-                  fontWeight: 800,
-                  py: 1.15,
-                  borderRadius: 999,
-                  boxShadow: `0 14px 30px ${alpha(theme.palette.secondary.main, 0.18)}`,
-                  textTransform: 'none',
-                }}
-              >
-                Uredi ovaj oglas
-              </BaseButton>
-            </Box>
-          )}
-
           {existingReview && (
             <Paper
               sx={{
@@ -385,38 +505,86 @@ const JobDetailsPage: React.FC = observer(() => {
             </Paper>
           )}
 
-          <Box sx={{ mt: { xs: 3, md: 8 } }}>
+          <Box sx={{ mt: { xs: 3, md: 5.5 } }}>
             <Stack
-              direction="row"
-              alignItems="center"
+              direction={{ xs: 'column', md: 'row' }}
+              alignItems={{ xs: 'flex-start', md: 'flex-end' }}
               justifyContent="space-between"
-              spacing={2}
-              sx={{ mb: { xs: 2.4, md: 4 } }}
+              spacing={{ xs: 1.2, md: 2 }}
+              sx={{
+                mb: { xs: 2.4, md: 3.6 },
+                pb: { md: 1.5 },
+                borderBottom: { md: '1px solid' },
+                borderColor: { md: alpha(theme.palette.primary.main, 0.08) },
+              }}
             >
               <Box>
                 <Typography
+                  variant="overline"
+                  sx={{
+                    color: 'primary.main',
+                    fontWeight: 900,
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  Suradnje i odabir
+                </Typography>
+                <Typography
                   variant="h4"
-                  sx={{ fontWeight: 900, fontSize: { xs: '1.25rem', md: '2.125rem' } }}
+                  sx={{
+                    mt: 0.2,
+                    fontWeight: 900,
+                    color: 'secondary.main',
+                    fontSize: { xs: '1.25rem', md: '2rem', lg: '2.15rem' },
+                    letterSpacing: '-0.03em',
+                  }}
                 >
                   Pristigle ponude
                 </Typography>
-                <Typography sx={{ mt: 0.3, color: 'text.secondary', fontSize: { xs: '0.82rem', md: '0.9rem' } }}>
+                <Typography
+                  sx={{
+                    mt: 0.35,
+                    color: 'text.secondary',
+                    fontSize: { xs: '0.82rem', md: '0.92rem' },
+                    maxWidth: 620,
+                    lineHeight: 1.55,
+                  }}
+                >
                   Pregledaj zainteresirane izvodjace i odaberi najbolju ponudu.
                 </Typography>
               </Box>
-              <Chip
-                label={bidCountLabel}
-                sx={{
-                  fontWeight: 900,
-                  bgcolor: alpha(theme.palette.secondary.main, 0.96),
-                  color: 'common.white',
-                  borderRadius: 999,
-                  height: 30,
-                  '& .MuiChip-label': {
-                    px: 1.15,
-                  },
-                }}
-              />
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip
+                  label={bidCountLabel}
+                  sx={{
+                    fontWeight: 900,
+                    bgcolor: alpha(theme.palette.secondary.main, 0.96),
+                    color: 'common.white',
+                    borderRadius: 999,
+                    height: 30,
+                    '& .MuiChip-label': {
+                      px: 1.15,
+                    },
+                  }}
+                />
+                {!isMobile && (
+                  <Chip
+                    label={acceptedBid ? 'Odabir u tijeku' : 'Ceka odabir'}
+                    variant="outlined"
+                    sx={{
+                      height: 30,
+                      borderRadius: 999,
+                      fontWeight: 800,
+                      bgcolor: alpha(theme.palette.background.paper, 0.8),
+                      borderColor: alpha(theme.palette.primary.main, 0.14),
+                      '& .MuiChip-label': {
+                        px: 1.1,
+                        fontSize: '0.74rem',
+                      },
+                    }}
+                  />
+                )}
+              </Stack>
             </Stack>
 
             {bidStore.bidListError && (
@@ -467,13 +635,13 @@ const JobDetailsPage: React.FC = observer(() => {
                 </Typography>
               </Paper>
             ) : (
-              bids.map((bid) => (
+              <Stack spacing={{ xs: 2.2, md: 2.5 }}>
+              {bids.map((bid) => (
                 <Paper
                   key={bid.id}
                   sx={{
                     ...cardStyle,
-                    mb: 2.2,
-                    p: { xs: 2, md: 3.25 },
+                    p: { xs: 2, md: 2.8, lg: 3.05 },
                     borderColor: bid.status === 'ACCEPTED' ? alpha(theme.palette.success.main, 0.28) : alpha(theme.palette.divider, 0.1),
                     bgcolor: bid.status === 'ACCEPTED' ? alpha(theme.palette.success.main, 0.03) : 'background.paper',
                     backgroundImage: bid.status === 'ACCEPTED'
@@ -489,12 +657,18 @@ const JobDetailsPage: React.FC = observer(() => {
                     },
                   }}
                 >
-                  <Stack spacing={1.5}>
-                    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+                  <Stack spacing={1.65}>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      spacing={{ xs: 1.15, sm: 1.25 }}
+                      alignItems={{ xs: 'flex-start', sm: 'flex-start' }}
+                      justifyContent="space-between"
+                    >
+                      <Stack direction="row" spacing={1.25} alignItems="flex-start" sx={{ minWidth: 0, flex: 1 }}>
                       <Box
                         sx={{
-                          width: 42,
-                          height: 42,
+                          width: 46,
+                          height: 46,
                           borderRadius: 999,
                           display: 'flex',
                           alignItems: 'center',
@@ -502,7 +676,7 @@ const JobDetailsPage: React.FC = observer(() => {
                           bgcolor: alpha(theme.palette.primary.main, 0.14),
                           color: 'secondary.main',
                           fontWeight: 900,
-                          fontSize: '1rem',
+                          fontSize: '1.02rem',
                           flexShrink: 0,
                           boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.7)}`,
                         }}
@@ -522,7 +696,7 @@ const JobDetailsPage: React.FC = observer(() => {
                               lineHeight: 1.2,
                               '&:hover': { color: 'primary.main' },
                             }}
-                            onClick={() => navigate(`/profil/${bid.contractorId}`)}
+                              onClick={() => navigate(`/profil/${bid.contractorId}`)}
                           >
                             {bid.contractorName}
                           </Typography>
@@ -556,6 +730,47 @@ const JobDetailsPage: React.FC = observer(() => {
                           </Box>
                         </Stack>
                       </Box>
+                      </Stack>
+
+                      {!isMobile && (
+                        <Box
+                          sx={{
+                            minWidth: 176,
+                            ml: { sm: 1.25 },
+                            px: 1.15,
+                            py: 0.95,
+                            borderRadius: 3.2,
+                            border: '1px solid',
+                            borderColor: alpha(theme.palette.success.main, 0.12),
+                            bgcolor: alpha(theme.palette.background.paper, 0.82),
+                            boxShadow: `0 12px 24px ${alpha(theme.palette.common.black, 0.04)}`,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: '0.68rem',
+                              fontWeight: 800,
+                              color: 'text.secondary',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              mb: 0.2,
+                            }}
+                          >
+                            Vrijednost ponude
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontWeight: 900,
+                              color: 'success.dark',
+                              fontSize: '1.3rem',
+                              lineHeight: 1.05,
+                              letterSpacing: '-0.03em',
+                            }}
+                          >
+                            {bid.amount.toLocaleString()} EUR
+                          </Typography>
+                        </Box>
+                      )}
                     </Stack>
 
                     <Typography
@@ -571,9 +786,14 @@ const JobDetailsPage: React.FC = observer(() => {
 
                     <Stack
                       direction={{ xs: 'column', sm: 'row' }}
-                      spacing={1.1}
+                      spacing={1.15}
                       justifyContent="space-between"
                       alignItems={{ xs: 'stretch', sm: 'flex-end' }}
+                      sx={{
+                        pt: 0.25,
+                        borderTop: '1px solid',
+                        borderColor: alpha(theme.palette.divider, 0.08),
+                      }}
                     >
                       <Box
                         sx={{
@@ -632,26 +852,43 @@ const JobDetailsPage: React.FC = observer(() => {
                         </Box>
                       </Box>
 
-                      {isOwner && bid.status === 'PENDING' && !acceptedBid && (
+                      <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" flexWrap="wrap" useFlexGap>
                         <BaseButton
-                          variant="contained"
-                          color="success"
-                          onClick={() => handleAcceptBid(bid.id)}
-                          loading={bidStore.isLoading}
+                          variant="text"
+                          color="secondary"
+                          onClick={() => navigate(`/profil/${bid.contractorId}`)}
                           sx={{
-                            minHeight: 42,
-                            px: 2.2,
-                            borderRadius: 2.6,
+                            minHeight: 38,
+                            px: 0.4,
+                            fontWeight: 800,
                             alignSelf: { xs: 'stretch', sm: 'flex-end' },
                           }}
                         >
-                          Prihvati ponudu
+                          Pogledaj profil
                         </BaseButton>
-                      )}
+                        {isOwner && bid.status === 'PENDING' && !acceptedBid && (
+                          <BaseButton
+                            variant="contained"
+                            color="success"
+                            onClick={() => handleAcceptBid(bid.id)}
+                            loading={bidStore.isLoading}
+                            sx={{
+                              minHeight: 42,
+                              px: 2.2,
+                              borderRadius: 999,
+                              boxShadow: `0 14px 28px ${alpha(theme.palette.success.main, 0.18)}`,
+                              alignSelf: { xs: 'stretch', sm: 'flex-end' },
+                            }}
+                          >
+                            Prihvati ponudu
+                          </BaseButton>
+                        )}
+                      </Stack>
                     </Stack>
                   </Stack>
                 </Paper>
-              ))
+              ))}
+              </Stack>
             )}
           </Box>
         </Grid>
@@ -665,8 +902,26 @@ const JobDetailsPage: React.FC = observer(() => {
                   bgcolor: 'secondary.main',
                   color: 'white',
                   boxShadow: `0 20px 40px ${alpha(theme.palette.secondary.main, 0.25)}`,
+                  backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.common.white, 0.04)} 0%, ${theme.palette.secondary.main} 100%)`,
                 }}
               >
+                <Chip
+                  label="Zavrsni korak"
+                  sx={{
+                    mb: 1.25,
+                    height: 28,
+                    borderRadius: 999,
+                    bgcolor: alpha(theme.palette.common.white, 0.1),
+                    color: 'common.white',
+                    fontWeight: 900,
+                    '& .MuiChip-label': {
+                      px: 1.05,
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                    },
+                  }}
+                />
                 <Typography variant="h5" sx={{ fontWeight: 900, mb: 1.5 }}>
                   Zavrsi projekt
                 </Typography>
@@ -681,6 +936,8 @@ const JobDetailsPage: React.FC = observer(() => {
                       borderRadius: 4,
                       mb: 3,
                       textAlign: 'center',
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.common.white, 0.08),
                     }}
                   >
                     <Rating
@@ -715,6 +972,12 @@ const JobDetailsPage: React.FC = observer(() => {
                     type="submit"
                     loading={reviewStore.isLoading}
                     disabled={!reviewStore.isReviewFormValid || reviewStore.isLoading}
+                    sx={{
+                      minHeight: 46,
+                      borderRadius: 999,
+                      boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.22)}`,
+                      fontWeight: 800,
+                    }}
                   >
                     Objavi recenziju
                   </BaseButton>
@@ -723,43 +986,205 @@ const JobDetailsPage: React.FC = observer(() => {
             )}
 
             {authenticationStore.user?.role === 'IZVODJAC' && (
-              <Paper sx={cardStyle}>
-                {acceptedBid ? (
-                  <Alert severity="info" sx={{ borderRadius: 4, fontWeight: 600 }}>
-                    Ovaj oglas vise ne prima ponude.
-                  </Alert>
+              <Paper
+                sx={{
+                  ...cardStyle,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  backgroundImage: job.status !== 'OPEN'
+                    ? undefined
+                    : `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.16)} 0%, ${theme.palette.background.paper} 36%)`,
+                  '&::before': job.status !== 'OPEN'
+                    ? undefined
+                    : {
+                        content: '""',
+                        position: 'absolute',
+                        top: -56,
+                        right: -52,
+                        width: 160,
+                        height: 160,
+                        borderRadius: '50%',
+                        background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.12)} 0%, transparent 70%)`,
+                      },
+                }}
+              >
+                {jobStore.canCompleteJob(job, acceptedBid?.contractorId, currentUserId) ? (
+                  <Stack spacing={1.4}>
+                    <Chip
+                      label="Vas projekt"
+                      color="success"
+                      sx={{
+                        alignSelf: 'flex-start',
+                        height: 28,
+                        borderRadius: 999,
+                        fontWeight: 900,
+                        '& .MuiChip-label': {
+                          px: 1.05,
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                        },
+                      }}
+                    />
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: 'secondary.main' }}>
+                      Zavrsite posao
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                      Kada ste dovrsili dogovorene radove, oznacite posao zavrsenim. Nakon toga investitor moze ostaviti recenziju.
+                    </Typography>
+                    {jobStore.jobsError && (
+                      <Alert severity="error" sx={{ borderRadius: 3 }}>
+                        {jobStore.jobsError}
+                      </Alert>
+                    )}
+                    <BaseButton
+                      fullWidth
+                      variant="contained"
+                      color="success"
+                      onClick={() => void handleCompleteJob()}
+                      loading={jobStore.isLoading}
+                      sx={{
+                        minHeight: 48,
+                        borderRadius: 999,
+                        fontWeight: 800,
+                        boxShadow: `0 14px 30px ${alpha(theme.palette.success.main, 0.2)}`,
+                      }}
+                    >
+                      Oznaci posao zavrsenim
+                    </BaseButton>
+                  </Stack>
+                ) : job.status !== 'OPEN' ? (
+                  <Stack spacing={1.2}>
+                    <Chip
+                      label="Status oglasa"
+                      variant="outlined"
+                      sx={{
+                        alignSelf: 'flex-start',
+                        height: 28,
+                        borderRadius: 999,
+                        fontWeight: 900,
+                        borderColor: alpha(theme.palette.info.main, 0.22),
+                        bgcolor: alpha(theme.palette.info.main, 0.06),
+                        '& .MuiChip-label': {
+                          px: 1.05,
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                        },
+                      }}
+                    />
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: 'secondary.main' }}>
+                      {`Oglas je ${jobStore.getJobStatusLabel(job.status).toLowerCase()}`}
+                    </Typography>
+                    <Alert severity="info" sx={{ borderRadius: 4, fontWeight: 600 }}>
+                      {job.status === 'CLOSED'
+                        ? 'Investitor je zatvorio oglas i vise ne prima nove ponude.'
+                        : isAcceptedContractor
+                          ? 'Posao je oznacen zavrsenim i ceka zakljucak investitora.'
+                        : 'Ovaj oglas vise ne prima nove ponude.'}
+                    </Alert>
+                  </Stack>
                 ) : (
                   <>
+                    <Chip
+                      label="Akcija"
+                      color="primary"
+                      sx={{
+                        mb: 1.1,
+                        height: 28,
+                        borderRadius: 999,
+                        fontWeight: 900,
+                        '& .MuiChip-label': {
+                          px: 1.05,
+                          fontSize: '0.7rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        },
+                      }}
+                    />
                     <Typography variant="h5" sx={{ fontWeight: 900, mb: 1 }}>
                       Posaljite ponudu
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                      Investitor ce primiti vasu ponudu odmah.
-                    </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2.6, maxWidth: 320, lineHeight: 1.55 }}>
+                        Investitor ce primiti vasu ponudu odmah.
+                      </Typography>
+                      {currentUserId === job.investitorId && (
+                        <Alert severity="info" sx={{ mb: 2.4, borderRadius: 3 }}>
+                          Ne mozete poslati ponudu na vlastiti oglas.
+                        </Alert>
+                      )}
+                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
+                      <Chip
+                        icon={<PaidOutlinedIcon sx={{ fontSize: '0.95rem !important' }} />}
+                        label="Cijena i rok"
+                        variant="outlined"
+                        sx={{
+                          height: 30,
+                          borderRadius: 999,
+                          fontWeight: 800,
+                          bgcolor: alpha(theme.palette.background.paper, 0.82),
+                          borderColor: alpha(theme.palette.primary.main, 0.14),
+                          '& .MuiChip-label': {
+                            px: 1.05,
+                            fontSize: '0.72rem',
+                          },
+                        }}
+                      />
+                      <Chip
+                        icon={<EditNoteIcon sx={{ fontSize: '0.95rem !important' }} />}
+                        label="Kratka poruka"
+                        variant="outlined"
+                        sx={{
+                          height: 30,
+                          borderRadius: 999,
+                          fontWeight: 800,
+                          bgcolor: alpha(theme.palette.background.paper, 0.82),
+                          borderColor: alpha(theme.palette.primary.main, 0.14),
+                          '& .MuiChip-label': {
+                            px: 1.05,
+                            fontSize: '0.72rem',
+                          },
+                        }}
+                      />
+                    </Stack>
                     <form onSubmit={handleSendBid}>
                       {bidStore.bidError && (
                         <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
                           {bidStore.bidError}
                         </Alert>
                       )}
-                      <BaseInput
-                        label="Cijena (EUR)"
-                        type="number"
-                        value={bidStore.bidAmount}
-                        onChange={(event) => bidStore.setBidAmount(event.target.value)}
-                        inputProps={{ min: 1, step: 1 }}
-                        required
-                        sx={{ mb: 2 }}
-                      />
-                      <BaseInput
-                        label="Rok izvedbe (dana)"
-                        type="number"
-                        value={bidStore.bidDaysToComplete}
-                        onChange={(event) => bidStore.setBidDaysToComplete(event.target.value)}
-                        inputProps={{ min: 1, step: 1 }}
-                        required
-                        sx={{ mb: 2 }}
-                      />
+                      <Stack direction={{ xs: 'column', sm: 'row', md: 'column', lg: 'row' }} spacing={1.5} sx={{ mb: 1.8 }}>
+                        <BaseInput
+                          label="Cijena (EUR)"
+                          type="number"
+                          value={bidStore.bidAmount}
+                          onChange={(event) => bidStore.setBidAmount(event.target.value)}
+                          inputProps={{ min: 1, step: 1 }}
+                          required
+                          sx={{
+                            flex: 1,
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 3,
+                              bgcolor: alpha(theme.palette.background.paper, 0.82),
+                            },
+                          }}
+                        />
+                        <BaseInput
+                          label="Rok izvedbe (dana)"
+                          type="number"
+                          value={bidStore.bidDaysToComplete}
+                          onChange={(event) => bidStore.setBidDaysToComplete(event.target.value)}
+                          inputProps={{ min: 1, step: 1 }}
+                          required
+                          sx={{
+                            flex: 1,
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 3,
+                              bgcolor: alpha(theme.palette.background.paper, 0.82),
+                            },
+                          }}
+                        />
+                      </Stack>
                       <BaseInput
                         label="Vasa poruka"
                         multiline
@@ -767,15 +1192,30 @@ const JobDetailsPage: React.FC = observer(() => {
                         value={bidStore.bidMessage}
                         onChange={(event) => bidStore.setBidMessage(event.target.value)}
                         required
-                        sx={{ mb: 3 }}
+                        sx={{
+                          mb: 2.4,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 3.2,
+                            bgcolor: alpha(theme.palette.background.paper, 0.82),
+                          },
+                        }}
                       />
+                      <Typography sx={{ mb: 2.1, color: 'text.secondary', fontSize: '0.76rem', lineHeight: 1.5 }}>
+                        Unesi realnu cijenu, procijenjeni rok i kratko objasni kako bi pristupio ovom projektu.
+                      </Typography>
                       <BaseButton
                         fullWidth
                         variant="contained"
                         color="primary"
                         type="submit"
                         loading={bidStore.isLoading}
-                        disabled={!bidStore.isBidFormValid || bidStore.isLoading}
+                        disabled={!bidStore.isBidFormValid || bidStore.isLoading || currentUserId === job.investitorId}
+                        sx={{
+                          minHeight: 48,
+                          borderRadius: 999,
+                          fontWeight: 800,
+                          boxShadow: `0 14px 30px ${alpha(theme.palette.primary.main, 0.2)}`,
+                        }}
                       >
                         Posalji ponudu
                       </BaseButton>
