@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useNavigate } from 'react-router-dom';
 import {
+  Alert,
   Box,
+  CircularProgress,
   Typography,
   Grid,
   Paper,
@@ -23,179 +26,329 @@ import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import { useRootStore } from '@/core/hooks/useRootStore';
 import StatCard from '../components/StatCard';
-import { useNavigate } from 'react-router-dom';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
+import DashboardService from '@/modules/dashboard/services/DashboardService';
+import IDashboardResponse from '@/api/models/dashboard/IDashboardResponse';
 
 const DashboardPage: React.FC = observer(() => {
-  const { authenticationStore, jobStore, bidStore, reviewStore, userStore } = useRootStore();
+  const { authenticationStore } = useRootStore();
   const theme = useTheme();
   const navigate = useNavigate();
   const user = authenticationStore.user;
+  const dashboardService = useMemo(() => new DashboardService(), []);
+  const [dashboard, setDashboard] = useState<IDashboardResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const myJobs = jobStore.jobs.filter((j) => j.investitorId === user?.id);
-  const totalBidsOnMyJobs = myJobs.reduce((acc, job) => acc + bidStore.getBidsByJobId(job.id).length, 0);
-  const activeProjectsCount = myJobs.filter((j) => bidStore.getBidsByJobId(j.id).some((b) => b.status === 'ACCEPTED')).length;
+  useEffect(() => {
+    if (!user) {
+      setDashboard(null);
+      return;
+    }
 
-  const myBids = bidStore.bids.filter((b) => b.contractorId === user?.id);
-  const acceptedBids = myBids.filter((b) => b.status === 'ACCEPTED');
-  const userReviews = reviewStore.reviews.filter((r) => r.revieweeId === user?.id);
-  const myRating = userReviews.length > 0 ? userReviews.reduce((acc, r) => acc + r.rating, 0) / userReviews.length : 0;
+    const loadDashboard = async () => {
+      setIsLoading(true);
+      setLoadError(null);
 
-  const investorCategoriesFromJobs = Array.from(new Set(myJobs.map((job) => job.category)));
-  const investorLocations = Array.from(new Set(myJobs.map((job) => job.location)));
-  const investorPreferredCategories = investorCategoriesFromJobs.length > 0 ? investorCategoriesFromJobs : userStore.defaultContractorCategoriesByRole.INVESTITOR;
+      try {
+        const response = await dashboardService.getDashboardAsync();
+        setDashboard(response.data);
+      } catch {
+        setLoadError('Dohvat dashboard podataka nije uspio.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const recommendedContractors = userStore.contractorProfiles
-    .map((contractor) => {
-      const contractorCategories = contractor.serviceCategories || [];
-      const categoryMatches = contractorCategories.filter((category) => investorPreferredCategories.includes(category));
-      const locationMatch = investorLocations.includes(contractor.location);
-      const avgRating = userStore.getContractorAverageRating(contractor.id);
-      const reviewCount = userStore.getContractorReviewCount(contractor.id);
-
-      const matchScore = categoryMatches.length * 3 + (locationMatch ? 2 : 0) + avgRating * 1.5 + Math.min(reviewCount * 0.2, 1);
-
-      return {
-        contractor,
-        categoryMatches,
-        locationMatch,
-        avgRating,
-        reviewCount,
-        matchScore,
-      };
-    })
-    .filter((item) => item.categoryMatches.length > 0 || item.locationMatch)
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 3);
+    void loadDashboard();
+  }, [dashboardService, user]);
 
   const cardStyle = {
-    p: 4,
-    borderRadius: 6,
+    p: { xs: 2.4, md: 3.2, lg: 3.5 },
+    borderRadius: { xs: 4, md: 5 },
     border: '1px solid',
-    borderColor: alpha(theme.palette.divider, 0.08),
+    borderColor: alpha(theme.palette.primary.main, 0.08),
     bgcolor: 'background.paper',
-    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.01)}`,
+    boxShadow: `0 16px 36px ${alpha(theme.palette.common.black, 0.035)}`,
   };
 
+  const dashboardTitle =
+    user?.role === 'INVESTITOR' ? 'Kontrolirajte objave i odabir izvodjaca' : 'Pratite ponude i aktivne projekte';
+  const dashboardSubtitle =
+    user?.role === 'INVESTITOR'
+      ? 'Na jednom mjestu pratite svoje oglase, broj pristiglih ponuda i preporucene izvodjace za sljedece korake.'
+      : 'Odmah vidite status poslanih ponuda, prihvacene projekte i reputaciju koju gradite kroz suradnje.';
+  const dashboardRoleLabel = user?.role === 'INVESTITOR' ? 'Investitor workspace' : 'Izvodjac workspace';
+  const primaryActionLabel = user?.role === 'INVESTITOR' ? 'Novi oglas' : 'Pronadji posao';
+  const summary = dashboard?.summary;
+  const jobActivities = dashboard?.jobActivities ?? [];
+  const bidActivities = dashboard?.bidActivities ?? [];
+  const recommendedContractors = dashboard?.recommendedContractors ?? [];
+
+  if (isLoading && !dashboard) {
+    return (
+      <BaseContainer maxWidth={false} disableGutters animate={false}>
+        <Box sx={{ pt: 2, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress color="primary" />
+        </Box>
+      </BaseContainer>
+    );
+  }
+
   return (
-    <BaseContainer maxWidth="lg">
-      <Box
+    <BaseContainer maxWidth={false} disableGutters animate={false}>
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 2.5, borderRadius: 3 }}>
+          {loadError}
+        </Alert>
+      )}
+
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+        spacing={2}
         sx={{
-          p: { xs: 3, md: 4 },
-          mt: { xs: 0.25, md: 0.5 },
-          mb: 4,
-          borderRadius: 5,
-          color: 'common.white',
-          position: 'relative',
-          overflow: 'hidden',
-          background: BRAND_COLORS.heroGradient,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            inset: 0,
-            background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 42%)`,
-          },
+          mt: { xs: 0.25, md: 0.35 },
+          mb: { xs: 3, md: 3.5 },
+          px: { md: 0.15, lg: 0.25 },
+          py: { md: 0.75, lg: 0.95 },
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.16)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 34%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+          borderBottom: '1px solid',
+          borderColor: alpha(theme.palette.primary.main, 0.07),
         }}
       >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'flex-start', md: 'center' }}
-          spacing={2}
-          sx={{ position: 'relative', zIndex: 1 }}
-        >
-          <Box>
-            <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main', mb: 1, letterSpacing: '-1px' }}>
-              Nadzorna ploca
-            </Typography>
-            <Typography variant="body1" sx={{ color: alpha(theme.palette.common.white, 0.82), fontWeight: 500 }}>
-              Dobrodosao natrag, <Box component="span" sx={{ color: 'primary.main', fontWeight: 900 }}>{user?.displayName}</Box>
-            </Typography>
-          </Box>
+        <Box sx={{ maxWidth: 860 }}>
+          <Chip
+            label={dashboardRoleLabel}
+            color="primary"
+            sx={{
+              mb: 1,
+              height: 28,
+              fontWeight: 900,
+              borderRadius: 999,
+              '& .MuiChip-label': {
+                px: 1.1,
+                fontSize: '0.7rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+              },
+            }}
+          />
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 900,
+              color: 'secondary.main',
+              mb: 0.8,
+              letterSpacing: '-0.04em',
+              lineHeight: 1.04,
+              fontSize: { xs: '2rem', md: '2.55rem', lg: '2.85rem' },
+            }}
+          >
+            {dashboardTitle}
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500, maxWidth: 760, lineHeight: 1.6 }}>
+            {dashboardSubtitle}
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 0.7, color: 'text.secondary', fontWeight: 600 }}>
+            Dobrodosao natrag, <Box component="span" sx={{ color: 'primary.main', fontWeight: 900 }}>{user?.displayName}</Box>
+          </Typography>
+        </Box>
+
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
+          <Chip
+            label={user?.role === 'INVESTITOR' ? `${summary?.jobsCount ?? 0} oglasa` : `${summary?.sentBidsCount ?? 0} ponuda`}
+            variant="outlined"
+            sx={{
+              height: 32,
+              borderRadius: 999,
+              fontWeight: 800,
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              borderColor: alpha(theme.palette.primary.main, 0.14),
+              '& .MuiChip-label': {
+                px: 1.1,
+                fontSize: '0.74rem',
+              },
+            }}
+          />
           <BaseButton
             variant="contained"
             startIcon={user?.role === 'INVESTITOR' ? <AssignmentIcon /> : <EngineeringIcon />}
-            onClick={() => navigate(user?.role === 'INVESTITOR' ? '/objavi-posao' : '/marketplace')}
-            sx={{ borderRadius: 3, px: 4 }}
+            onClick={() =>
+              navigate(
+                user?.role === 'INVESTITOR' ? '/objavi-posao' : '/marketplace',
+                user?.role === 'INVESTITOR'
+                  ? { state: { returnTo: '/dashboard', returnLabel: 'Povratak na dashboard', afterSaveTo: '/dashboard' } }
+                  : undefined
+              )
+            }
+            sx={{
+              borderRadius: 999,
+              px: 3.4,
+              minHeight: 46,
+              boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.18)}`,
+            }}
           >
-            {user?.role === 'INVESTITOR' ? 'Novi Oglas' : 'Pronadi Posao'}
+            {primaryActionLabel}
           </BaseButton>
         </Stack>
-      </Box>
+      </Stack>
 
-      <Grid container spacing={3} sx={{ mb: 6 }}>
+      <Grid container spacing={{ xs: 1.6, md: 2.4 }} sx={{ mb: { xs: 3, md: 4.5 } }}>
         {user?.role === 'INVESTITOR' ? (
           <>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Moji Oglasi" value={myJobs.length} icon={<DashboardIcon />} />
+              <StatCard label="Moji oglasi" value={summary?.jobsCount ?? 0} icon={<DashboardIcon />} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Ukupno Ponuda" value={totalBidsOnMyJobs} icon={<NotificationsActiveIcon />} color={theme.palette.secondary.main} />
+              <StatCard label="Ukupno ponuda" value={summary?.totalBidsOnMyJobs ?? 0} icon={<NotificationsActiveIcon />} color={theme.palette.secondary.main} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Ugovoreni Radovi" value={activeProjectsCount} icon={<AssignmentIcon />} color={theme.palette.success.main} />
+              <StatCard label="Ugovoreni radovi" value={summary?.activeProjectsCount ?? 0} icon={<AssignmentIcon />} color={theme.palette.success.main} />
             </Grid>
           </>
         ) : (
           <>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Poslane Ponude" value={myBids.length} icon={<SendIcon />} />
+              <StatCard label="Poslane ponude" value={summary?.sentBidsCount ?? 0} icon={<SendIcon />} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Prihvaceni Poslovi" value={acceptedBids.length} icon={<AssignmentIcon />} color={theme.palette.success.main} />
+              <StatCard label="Prihvaceni poslovi" value={summary?.acceptedBidsCount ?? 0} icon={<AssignmentIcon />} color={theme.palette.success.main} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Prosjecna Ocjena" value={myRating.toFixed(1)} icon={<StarRateIcon />} color={theme.palette.warning.main} />
+              <StatCard label="Prosjecna ocjena" value={(summary?.averageRating ?? 0).toFixed(1)} icon={<StarRateIcon />} color={theme.palette.warning.main} />
             </Grid>
           </>
         )}
       </Grid>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 2.2, md: 3.2 }}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={cardStyle}>
-            <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <NotificationsActiveIcon color="secondary" />
-              {user?.role === 'INVESTITOR' ? 'Status vasih oglasa' : 'Status vasih ponuda'}
-            </Typography>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              justifyContent="space-between"
+              alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+              spacing={1.2}
+              sx={{
+                mb: 3,
+                pb: 1.4,
+                borderBottom: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.08),
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="overline"
+                  sx={{
+                    color: 'primary.main',
+                    fontWeight: 900,
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  Aktivnosti i statusi
+                </Typography>
+                <Typography variant="h5" sx={{ mt: 0.2, fontWeight: 900, color: 'secondary.main', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                  <NotificationsActiveIcon color="secondary" />
+                  {user?.role === 'INVESTITOR' ? 'Status vasih oglasa' : 'Status vasih ponuda'}
+                </Typography>
+              </Box>
+              <Chip
+                label={user?.role === 'INVESTITOR' ? `${summary?.jobsCount ?? 0} aktivnih stavki` : `${summary?.sentBidsCount ?? 0} ukupno ponuda`}
+                variant="outlined"
+                sx={{
+                  height: 30,
+                  borderRadius: 999,
+                  fontWeight: 800,
+                  bgcolor: alpha(theme.palette.background.paper, 0.8),
+                  borderColor: alpha(theme.palette.primary.main, 0.14),
+                  '& .MuiChip-label': {
+                    px: 1.1,
+                    fontSize: '0.74rem',
+                  },
+                }}
+              />
+            </Stack>
 
-            <Stack spacing={2}>
+            <Stack spacing={1.6}>
               {user?.role === 'INVESTITOR' ? (
-                myJobs.length === 0 ? (
+                jobActivities.length === 0 ? (
                   <Box sx={{ py: 4, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.03), borderRadius: 4 }}>
                     <Typography color="text.disabled" sx={{ fontWeight: 600 }}>Nemate aktivnih oglasa.</Typography>
                   </Box>
                 ) : (
-                  myJobs.map((job) => {
-                    const bidsCount = bidStore.getBidsByJobId(job.id).length;
+                  jobActivities.map((job) => {
                     return (
-                      <Box key={job.id} sx={{ p: 3, border: '1px solid', borderColor: alpha(theme.palette.divider, 0.1), borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box>
-                          <Typography variant="body1" sx={{ fontWeight: 900, mb: 0.5 }}>{job.title}</Typography>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Chip label={`${bidsCount} ponuda`} size="small" sx={{ fontWeight: 800, height: 20, fontSize: 10 }} />
-                            <Typography variant="caption" color="text.disabled">Budzet: {job.budget} EUR</Typography>
+                      <Box
+                        key={job.jobId}
+                        sx={{
+                          p: { xs: 2, md: 2.25 },
+                          border: '1px solid',
+                          borderColor: alpha(theme.palette.primary.main, 0.08),
+                          borderRadius: 4,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: 2,
+                          bgcolor: alpha(theme.palette.background.paper, 0.76),
+                          backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.12)} 0%, ${theme.palette.background.paper} 100%)`,
+                        }}
+                      >
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="body1" sx={{ fontWeight: 900, mb: 0.6, color: 'secondary.main' }}>{job.title}</Typography>
+                          <Stack direction="row" spacing={0.9} alignItems="center" flexWrap="wrap" useFlexGap>
+                            <Chip label={`${job.bidsCount} ponuda`} size="small" sx={{ fontWeight: 800, height: 24, fontSize: 11 }} />
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
+                              Budzet: {job.budget ? `${job.budget} EUR` : 'Po dogovoru'}
+                            </Typography>
                           </Stack>
                         </Box>
-                        <BaseButton size="small" variant="outlined" onClick={() => navigate(`/posao/${job.id}`)}>Pregledaj</BaseButton>
+                        <BaseButton
+                          size="small"
+                          variant="outlined"
+                          onClick={() => navigate(`/posao/${job.jobId}`, { state: { returnTo: '/dashboard', returnLabel: 'Povratak na dashboard' } })}
+                          sx={{ borderRadius: 999, px: 1.8, fontWeight: 800 }}
+                        >
+                          Pregledaj
+                        </BaseButton>
                       </Box>
                     );
                   })
                 )
-              ) : myBids.length === 0 ? (
+              ) : bidActivities.length === 0 ? (
                 <Box sx={{ py: 4, textAlign: 'center', bgcolor: alpha(theme.palette.divider, 0.03), borderRadius: 4 }}>
                   <Typography color="text.disabled" sx={{ fontWeight: 600 }}>Niste poslali ni jednu ponudu.</Typography>
                 </Box>
               ) : (
-                myBids.map((bid) => {
-                  const relatedJob = jobStore.jobs.find((j) => j.id === bid.jobId);
+                bidActivities.map((bid) => {
                   return (
-                    <Box key={bid.id} sx={{ p: 3, border: '1px solid', borderColor: alpha(theme.palette.divider, 0.1), borderRadius: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box>
-                        <Typography variant="body1" sx={{ fontWeight: 900, mb: 0.5 }}>{relatedJob?.title || 'Nepoznat posao'}</Typography>
-                        <Chip label={bid.status} size="small" color={bid.status === 'ACCEPTED' ? 'success' : bid.status === 'PENDING' ? 'primary' : 'default'} sx={{ fontWeight: 900, height: 20, fontSize: 10 }} />
+                    <Box
+                      key={bid.bidId}
+                      sx={{
+                        p: { xs: 2, md: 2.25 },
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.08),
+                        borderRadius: 4,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        bgcolor: alpha(theme.palette.background.paper, 0.76),
+                        backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.12)} 0%, ${theme.palette.background.paper} 100%)`,
+                      }}
+                    >
+                        <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 900, mb: 0.6, color: 'secondary.main' }}>{bid.jobTitle}</Typography>
+                        <Chip
+                          label={bid.status}
+                          size="small"
+                          color={bid.status === 'ACCEPTED' ? 'success' : bid.status === 'PENDING' ? 'primary' : 'default'}
+                          sx={{ fontWeight: 900, height: 24, fontSize: 11 }}
+                        />
                       </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 900, color: 'secondary.main' }}>{bid.amount} EUR</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 900, color: 'secondary.main', whiteSpace: 'nowrap' }}>
+                        {bid.amount} EUR
+                      </Typography>
                     </Box>
                   );
                 })
@@ -205,22 +358,38 @@ const DashboardPage: React.FC = observer(() => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Stack spacing={3}>
-            <Paper sx={{ ...cardStyle, bgcolor: 'primary.main', color: 'common.white' }}>
-              <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>Savjeti za suradnju</Typography>
+          <Stack spacing={2.4}>
+            <Paper
+              sx={{
+                ...cardStyle,
+                bgcolor: 'secondary.main',
+                color: 'common.white',
+                backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.common.white, 0.04)} 0%, ${theme.palette.secondary.main} 100%)`,
+                boxShadow: `0 18px 36px ${alpha(theme.palette.secondary.main, 0.2)}`,
+              }}
+            >
+              <Typography variant="overline" sx={{ fontWeight: 900, letterSpacing: '0.08em', opacity: 0.82 }}>
+                Kratki savjet
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 900, mb: 1.6 }}>Savjeti za suradnju</Typography>
               <Divider sx={{ bgcolor: alpha(theme.palette.common.white, 0.1), mb: 2 }} />
-              <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.6 }}>
+              <Typography variant="body2" sx={{ opacity: 0.92, lineHeight: 1.65 }}>
                 Uvijek provjerite recenzije investitora prije slanja ponude kako biste osigurali dobru suradnju.
               </Typography>
             </Paper>
 
             {user?.role === 'INVESTITOR' && (
               <Paper sx={cardStyle}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <PeopleAltIcon color="secondary" />
-                    Preporuceni izvodaci
-                  </Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.2 }}>
+                  <Box>
+                    <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                      Preporuke
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PeopleAltIcon color="secondary" />
+                      Preporuceni izvodaci
+                    </Typography>
+                  </Box>
                   <BaseButton size="small" variant="text" onClick={() => navigate('/izvodjaci')}>
                     Svi izvodaci
                   </BaseButton>
@@ -231,35 +400,40 @@ const DashboardPage: React.FC = observer(() => {
                     Objavite prvi posao ili odaberite kategorije kako biste dobili preporuke izvodaca.
                   </Typography>
                 ) : (
-                  <Stack spacing={2}>
+                  <Stack spacing={1.6}>
                     {recommendedContractors.map((item) => (
                       <Box
-                        key={item.contractor.id}
+                        key={item.contractorId}
                         sx={{
                           p: 2,
-                          borderRadius: 3,
+                          borderRadius: 4,
                           border: '1px solid',
-                          borderColor: alpha(theme.palette.divider, 0.1),
-                          bgcolor: alpha(theme.palette.background.paper, 0.5),
+                          borderColor: alpha(theme.palette.primary.main, 0.08),
+                          bgcolor: alpha(theme.palette.background.paper, 0.7),
+                          backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.12)} 0%, ${theme.palette.background.paper} 100%)`,
                         }}
                       >
-                        <Typography variant="body1" sx={{ fontWeight: 900, cursor: 'pointer', mb: 0.5 }} onClick={() => navigate(`/profil/${item.contractor.id}`)}>
-                          {item.contractor.displayName}
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 900, cursor: 'pointer', mb: 0.45, color: 'secondary.main' }}
+                          onClick={() => navigate(`/profil/${item.contractorId}`)}
+                        >
+                          {item.displayName}
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-                          {item.contractor.location} • {item.contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                          {item.location} - {item.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           <StarRateIcon sx={{ fontSize: 16, color: 'secondary.main' }} />
                           <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                            {item.avgRating.toFixed(1)} ({item.reviewCount})
+                            {item.averageRating.toFixed(1)} ({item.reviewCount})
                           </Typography>
                         </Stack>
                         <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap">
                           {item.categoryMatches.slice(0, 2).map((category) => (
                             <Chip key={category} label={category} size="small" sx={{ fontWeight: 700 }} />
                           ))}
-                          {item.locationMatch && <Chip label="Ista lokacija" size="small" color="success" variant="outlined" sx={{ fontWeight: 700 }} />}
+                          {item.isLocationMatch && <Chip label="Ista lokacija" size="small" color="success" variant="outlined" sx={{ fontWeight: 700 }} />}
                         </Stack>
                       </Box>
                     ))}
@@ -269,12 +443,22 @@ const DashboardPage: React.FC = observer(() => {
             )}
 
             <Paper sx={cardStyle}>
-              <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>Moj Profil</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 900, letterSpacing: '0.08em' }}>
+                Moj profil
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 900, mb: 1.4 }}>Uredite javni profil</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2.6, lineHeight: 1.6 }}>
                 Vas profil je javan i vidljiv drugim korisnicima.
               </Typography>
-              <BaseButton fullWidth variant="outlined" onClick={() => navigate('/profil/uredi')}>
-                Uredi Profil
+              <BaseButton
+                fullWidth
+                variant="outlined"
+                onClick={() =>
+                  navigate('/profil/uredi', { state: { returnTo: '/dashboard', returnLabel: 'Povratak na dashboard' } })
+                }
+                sx={{ borderRadius: 999, minHeight: 42, fontWeight: 800 }}
+              >
+                Uredi profil
               </BaseButton>
             </Paper>
           </Stack>

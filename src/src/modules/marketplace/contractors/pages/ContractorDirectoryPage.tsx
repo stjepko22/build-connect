@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Alert,
@@ -15,21 +15,26 @@ import {
   useTheme,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
-import { useSearchParams } from 'react-router-dom';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import { useRootStore } from '@/core/hooks/useRootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
+import debounce from 'lodash/debounce';
 
 const ContractorDirectoryPage: React.FC = observer(() => {
   const theme = useTheme();
   const { userStore, reviewStore } = useRootStore();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const debouncedSearch = useMemo(
+    () => debounce((value: string) => userStore.setContractorSearchQuery(value), 300),
+    [userStore]
+  );
 
   useEffect(() => {
     const categoryFilters = Array.from(
@@ -41,51 +46,73 @@ const ContractorDirectoryPage: React.FC = observer(() => {
     );
     const queryFilter = searchParams.get('q')?.trim() ?? '';
     const legalTypeFilter = searchParams.get('legalType');
-    const hasRouteFilters = searchParams.has('q') || searchParams.has('category') || searchParams.has('legalType');
+    const hasRouteFilters = searchParams.has('q') || searchParams.has('category') || searchParams.has('legalType') || searchParams.has('location');
 
     userStore.resetContractorFilters();
     userStore.initializeContractorFiltersForCurrentUser();
 
     if (hasRouteFilters) {
+      userStore.setContractorSearchInputValue(queryFilter);
       userStore.setContractorSearchQuery(queryFilter);
       userStore.setSelectedContractorCategories(categoryFilters);
       userStore.setSelectedContractorLegalType(
         legalTypeFilter === 'FIRMA' || legalTypeFilter === 'FIZICKA_OSOBA' ? legalTypeFilter : 'ALL'
       );
+      userStore.setSelectedContractorLocation(searchParams.get('location')?.trim() ?? '');
     }
 
-    void userStore.loadContractors();
     void reviewStore.loadReviews();
-  }, [reviewStore, searchParams, userStore]);
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch, reviewStore, searchParams, userStore]);
+
+  useEffect(() => {
+    void userStore.loadContractors({
+      q: userStore.contractorSearchQuery.trim() || undefined,
+      category: userStore.selectedContractorCategories.length > 0 ? userStore.selectedContractorCategories : undefined,
+      location: userStore.selectedContractorLocation.trim() || undefined,
+      legalType: userStore.selectedContractorLegalType === 'ALL' ? undefined : userStore.selectedContractorLegalType,
+    });
+  }, [
+    userStore,
+    userStore.contractorSearchQuery,
+    userStore.selectedContractorCategories,
+    userStore.selectedContractorLocation,
+    userStore.selectedContractorLegalType,
+  ]);
 
   return (
-    <BaseContainer maxWidth="lg" sx={{ pb: { xs: 2, md: 4 } }}>
+    <BaseContainer maxWidth={false} disableGutters animate={false} sx={{ pb: { xs: 2, md: 4 } }}>
       <Stack spacing={3}>
-        <Box
-          sx={{
-            p: { xs: 3, md: 4 },
-            borderRadius: 5,
-            color: 'common.white',
-            position: 'relative',
-            overflow: 'hidden',
-            background: BRAND_COLORS.heroGradient,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              background: `radial-gradient(circle at 15% 20%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 42%)`,
-            },
-          }}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'flex-end' }}
+          spacing={1.2}
+          sx={{ mt: { xs: 0.25, md: 0.5 } }}
         >
-          <Stack spacing={1} sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography variant="h3" sx={{ fontWeight: 900, color: 'primary.main', letterSpacing: '-1px' }}>
-              Directory izvodaca
+          <Stack spacing={0.55}>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: 'secondary.main', letterSpacing: '-1px' }}>
+              Izvodjaci
             </Typography>
-            <Typography sx={{ color: alpha(theme.palette.common.white, 0.82) }}>
-              Brzo pronadite majstore i firme po kategoriji, lokaciji, tipu i ocjeni.
+            <Typography sx={{ color: 'text.secondary' }}>
+              Pronadite majstore i firme po usluzi, lokaciji, tipu i ocjeni.
             </Typography>
           </Stack>
-        </Box>
+          <Chip
+            label={`${userStore.filteredContractors.length} izvodjaca`}
+            variant="outlined"
+            sx={{
+              height: 32,
+              borderRadius: 999,
+              fontWeight: 800,
+              bgcolor: alpha(theme.palette.background.paper, 0.8),
+              borderColor: alpha(theme.palette.primary.main, 0.14),
+            }}
+          />
+        </Stack>
 
         <Paper
           elevation={0}
@@ -98,11 +125,23 @@ const ContractorDirectoryPage: React.FC = observer(() => {
           }}
         >
           <Stack spacing={2.5}>
+            <Box>
+              <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1rem', md: '1.08rem' } }}>
+                Pretraga i filteri
+              </Typography>
+              <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.86rem', lineHeight: 1.55 }}>
+                Suzite prikaz i lakse pronadjite odgovarajuceg izvodjaca.
+              </Typography>
+            </Box>
+
             <BaseInput
               fullWidth
               placeholder="Pretrazite po imenu, usluzi ili lokaciji"
-              value={userStore.contractorSearchQuery}
-              onChange={(e) => userStore.setContractorSearchQuery(e.target.value)}
+              value={userStore.contractorSearchInputValue}
+              onChange={(e) => {
+                userStore.setContractorSearchInputValue(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
               slotProps={{ input: { startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.disabled' }} /> } }}
             />
 
@@ -176,17 +215,17 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                 variant="contained"
                 color="primary"
                 onClick={() => userStore.saveCurrentContractorFiltersAsDefault()}
-                sx={{ fontWeight: 800 }}
+                sx={{ fontWeight: 800, borderRadius: 999 }}
               >
-                Spremi kao zadano
+                Spremi postavke
               </BaseButton>
               <BaseButton
                 variant="outlined"
                 color="secondary"
                 onClick={() => userStore.resetContractorFilters()}
-                sx={{ fontWeight: 700 }}
+                sx={{ fontWeight: 700, borderRadius: 999 }}
               >
-                Resetiraj filtere
+                Reset
               </BaseButton>
             </Stack>
           </Stack>
@@ -197,10 +236,6 @@ const ContractorDirectoryPage: React.FC = observer(() => {
             {userStore.userListError}
           </Alert>
         )}
-
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 700 }}>
-          Pronadeno izvodaca: {userStore.filteredContractors.length}
-        </Typography>
 
         {userStore.isLoadingUsers && userStore.contractorProfiles.length === 0 ? (
           <Box sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
@@ -219,15 +254,21 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                     sx={{
                       p: 3,
                       height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
                       borderRadius: 4,
                       border: '1px solid',
                       borderColor: alpha(theme.palette.divider, 0.12),
                       bgcolor: 'background.paper',
-                      transition: 'transform 0.2s ease',
-                      '&:hover': { transform: { md: 'translateY(-2px)' } },
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+                      '&:hover': {
+                        transform: { md: 'translateY(-2px)' },
+                        boxShadow: `0 14px 28px ${alpha(theme.palette.common.black, 0.06)}`,
+                        borderColor: alpha(theme.palette.primary.main, 0.16),
+                      },
                     }}
                   >
-                    <Stack spacing={2}>
+                    <Stack spacing={2} sx={{ height: '100%' }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="h6" sx={{ fontWeight: 900 }}>
                           {contractor.displayName}
@@ -252,9 +293,9 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                       </Stack>
 
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <VerifiedUserIcon sx={{ fontSize: 18, color: 'success.main' }} />
+                        <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                         <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                          Lokacija: {contractor.location}
+                          {contractor.location}
                         </Typography>
                       </Stack>
 
@@ -262,6 +303,17 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                         {(contractor.serviceCategories || []).map((category) => (
                           <Chip key={category} label={category} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
                         ))}
+                      </Box>
+
+                      <Box sx={{ pt: 0.4, mt: 'auto' }}>
+                        <BaseButton
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() => navigate(`/profil/${contractor.id}`)}
+                          sx={{ minHeight: 40, borderRadius: 999, fontWeight: 800 }}
+                        >
+                          Otvori profil
+                        </BaseButton>
                       </Box>
                     </Stack>
                   </Paper>

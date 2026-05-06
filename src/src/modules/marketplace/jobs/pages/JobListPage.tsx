@@ -20,6 +20,7 @@ import {
 import debounce from 'lodash/debounce';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSearchParams } from 'react-router-dom';
 
@@ -29,7 +30,6 @@ import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import JobCard from '@/core/components/molecules/cards/JobCard';
 import { useRootStore } from '@/core/hooks/useRootStore';
 import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constants/jobCategories';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const MARKET_MOBILE_CONTENT_WIDTH = { xs: 440, sm: 460 };
 const MARKET_MOBILE_CONTENT_PADDING = { xs: 1.5, sm: 2 };
@@ -53,6 +53,17 @@ const JobListPage: React.FC = observer(() => {
     debouncedSearch(val);
   };
 
+  const focusDesktopFilters = () => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.getElementById('market-filter-section')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
   useEffect(() => {
     const categoryFilters = Array.from(
       new Set(
@@ -73,7 +84,6 @@ const JobListPage: React.FC = observer(() => {
       jobStore.setJobSearchQuery(queryFilter);
     }
 
-    void jobStore.loadJobs();
     void bidStore.loadBids();
 
     return () => {
@@ -81,26 +91,101 @@ const JobListPage: React.FC = observer(() => {
     };
   }, [bidStore, jobStore, debouncedSearch, searchParams]);
 
+  useEffect(() => {
+    void jobStore.loadJobs({
+      q: jobStore.jobSearchQuery.trim() || undefined,
+      category: jobStore.selectedJobCategories.length > 0 ? jobStore.selectedJobCategories : undefined,
+    });
+  }, [jobStore, jobStore.jobSearchQuery, jobStore.selectedJobCategories]);
+
   const filteredJobs = jobStore.filteredJobs;
   const roleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'izvodjaca' : 'investitora';
   const selectedFiltersCount = jobStore.selectedJobCategories.length;
+  const selectedRoleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'Izvodjac' : 'Investitor';
+  const desktopHeaderChips = [
+    `${filteredJobs.length} oglasa`,
+    selectedFiltersCount > 0 ? `${selectedFiltersCount} aktivna filtera` : 'Bez aktivnih filtera',
+    `Prikaz za ${selectedRoleLabel.toLowerCase()}`,
+  ];
 
   const desktopFilterPanel = (
-    <Paper
-      elevation={0}
+    <Box
+      id="market-filter-section"
       sx={{
-        mb: 4,
-        p: 3,
-        borderRadius: 4,
-        border: '1px solid',
-        borderColor: alpha(theme.palette.divider, 0.1),
-        bgcolor: 'background.paper',
+        mb: 4.25,
+        px: { md: 0.2, lg: 0.3 },
+        pt: { md: 1.35, lg: 1.6 },
+        pb: { md: 0.4, lg: 0.5 },
+        borderTop: '1px solid',
+        borderColor: alpha(theme.palette.primary.main, 0.09),
       }}
     >
-      <Stack spacing={2}>
-        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-          Zadani filter za ulogu {roleLabel}: odaberite kategorije koje zelite vidjeti odmah.
-        </Typography>
+      <Stack spacing={1.3}>
+        <Stack
+          direction={{ md: 'row' }}
+          spacing={1.5}
+          justifyContent="space-between"
+          alignItems={{ md: 'center' }}
+          sx={{ gap: 1.2 }}
+        >
+          <Box>
+            <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: '1rem', letterSpacing: '-0.02em' }}>
+              Filteri marketa
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 0.25, color: 'text.secondary', fontWeight: 500, maxWidth: 720 }}>
+              Prikaz prilagodjen za ulogu {roleLabel}. Odaberi kategorije koje zelis vidjeti odmah.
+            </Typography>
+          </Box>
+
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Chip
+              icon={<TuneRoundedIcon sx={{ fontSize: 17 }} />}
+              label={selectedFiltersCount > 0 ? `${selectedFiltersCount} aktivno` : 'Bez filtera'}
+              color={selectedFiltersCount > 0 ? 'primary' : 'default'}
+              variant={selectedFiltersCount > 0 ? 'filled' : 'outlined'}
+              sx={{
+                height: 32,
+                fontWeight: 800,
+                borderRadius: 999,
+                bgcolor: selectedFiltersCount > 0 ? undefined : alpha(theme.palette.background.paper, 0.78),
+                borderColor: alpha(theme.palette.primary.main, 0.14),
+                '& .MuiChip-label': {
+                  px: 1.05,
+                  fontSize: '0.74rem',
+                },
+              }}
+            />
+            <BaseButton
+              variant="contained"
+              color="primary"
+              onClick={() => jobStore.saveCurrentJobFiltersAsDefault()}
+              sx={{
+                minHeight: 38,
+                borderRadius: 999,
+                px: 1.8,
+                fontWeight: 800,
+                whiteSpace: 'nowrap',
+                boxShadow: `0 12px 26px ${alpha(theme.palette.primary.main, 0.16)}`,
+              }}
+            >
+              Spremi postavke
+            </BaseButton>
+            <BaseButton
+              variant="outlined"
+              color="secondary"
+              onClick={() => jobStore.resetAllJobFilters()}
+              sx={{
+                minHeight: 38,
+                borderRadius: 999,
+                px: 1.8,
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Reset
+            </BaseButton>
+          </Stack>
+        </Stack>
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {JOB_CATEGORIES.map((category) => {
@@ -113,32 +198,26 @@ const JobListPage: React.FC = observer(() => {
                 color={isActive ? 'primary' : 'default'}
                 variant={isActive ? 'filled' : 'outlined'}
                 onClick={() => jobStore.toggleSelectedJobCategory(category)}
-                sx={{ fontWeight: 700 }}
+                sx={{
+                  fontWeight: 700,
+                  height: 34,
+                  borderRadius: 999,
+                  bgcolor: isActive ? undefined : alpha(theme.palette.background.paper, 0.72),
+                  borderColor: isActive ? undefined : alpha(theme.palette.divider, 0.75),
+                  boxShadow: isActive
+                    ? `0 10px 22px ${alpha(theme.palette.primary.main, 0.12)}`
+                    : 'none',
+                  '& .MuiChip-label': {
+                    px: 1.35,
+                    fontSize: '0.77rem',
+                  },
+                }}
               />
             );
           })}
         </Box>
-
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-          <BaseButton
-            variant="contained"
-            color="primary"
-            onClick={() => jobStore.saveCurrentJobFiltersAsDefault()}
-            sx={{ fontWeight: 800 }}
-          >
-            Spremi kao zadano
-          </BaseButton>
-          <BaseButton
-            variant="outlined"
-            color="secondary"
-            onClick={() => jobStore.resetAllJobFilters()}
-            sx={{ fontWeight: 700 }}
-          >
-            Resetiraj filtere
-          </BaseButton>
-        </Stack>
       </Stack>
-    </Paper>
+    </Box>
   );
 
   return (
@@ -217,115 +296,157 @@ const JobListPage: React.FC = observer(() => {
           </BaseContainer>
         </Box>
       ) : (
-        <Box
-          sx={{
-            color: 'white',
-            pt: { xs: 6, md: 9 },
-            pb: { xs: 7, md: 12 },
-            mb: { xs: 4, md: 6 },
-            borderRadius: { xs: '0 0 30px 30px', md: '0 0 60px 60px' },
-            boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.22)}`,
-            position: 'relative',
-            zIndex: 1,
-            mx: { xs: -2, sm: 0 },
-            overflow: 'hidden',
-            background: BRAND_COLORS.heroGradient,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              background: `radial-gradient(circle at 15% 18%, ${alpha(theme.palette.primary.main, 0.16)}, transparent 36%), radial-gradient(circle at 80% 70%, ${alpha(theme.palette.primary.main, 0.14)}, transparent 35%)`,
-            },
-          }}
-        >
-          <BaseContainer maxWidth="lg">
-            <Grid container spacing={4} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <Chip
-                  label="Aktivni oglasi za gradjevinu"
-                  sx={{
-                    mb: 2,
-                    px: 0.8,
-                    py: 0.2,
-                    bgcolor: alpha(theme.palette.common.white, 0.1),
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.common.white, 0.18),
-                    color: 'primary.main',
-                    fontWeight: 800,
-                    fontSize: '0.76rem',
-                    letterSpacing: '0.03em',
-                    textTransform: 'uppercase',
-                  }}
-                />
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 900,
-                    mb: 2,
-                    letterSpacing: '-0.03em',
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.75rem' },
-                    textAlign: { xs: 'center', md: 'left' },
-                  }}
-                >
-                  Pronadite sljedeci projekt
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    color: alpha(theme.palette.common.white, 0.82),
-                    mb: 4,
-                    fontWeight: 400,
-                    maxWidth: { xs: '100%', md: '90%' },
-                    textAlign: { xs: 'center', md: 'left' },
-                    fontSize: { xs: '1rem', md: '1.25rem' },
-                  }}
-                >
-                  Povezite se s investitorima direktno i bez posrednika.
-                </Typography>
-
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 0.5,
-                    borderRadius: 3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    maxWidth: 650,
-                    bgcolor: 'background.paper',
-                    boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.2)}`,
-                    mx: { xs: 'auto', md: '0' },
-                  }}
-                >
-                  <TextField
-                    fullWidth
-                    placeholder="Pretrazite po zanimanju, gradu..."
-                    variant="outlined"
-                    value={jobStore.jobSearchInputValue}
-                    onChange={handleSearchChange}
+        <BaseContainer maxWidth={false} disableGutters animate={false}>
+          <Stack spacing={2.25} sx={{ width: '100%', mt: { xs: 0.25, md: 0.35 }, mb: { xs: 3, md: 3.4 } }}>
+            <Box
+              sx={{
+                width: '100%',
+                px: { md: 0.1, lg: 0.2 },
+                py: { md: 0.72, lg: 0.9 },
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 34%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                borderBottom: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.07),
+              }}
+            >
+              <Stack
+                direction={{ md: 'row' }}
+                alignItems={{ md: 'flex-end' }}
+                justifyContent="space-between"
+                spacing={1.6}
+                sx={{ gap: 1.5 }}
+              >
+                <Box sx={{ maxWidth: 760 }}>
+                  <Chip
+                    label="Marketplace poslova"
+                    color="primary"
                     sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                      '& .MuiInputBase-input': { fontWeight: 500, py: 1.5 },
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: 'primary.main', ml: 1 }} />
-                        </InputAdornment>
-                      ),
+                      mb: 1,
+                      height: 28,
+                      fontWeight: 900,
+                      borderRadius: 999,
+                      boxShadow: `0 10px 22px ${alpha(theme.palette.primary.main, 0.11)}`,
+                      '& .MuiChip-label': {
+                        px: 1.1,
+                        letterSpacing: '0.03em',
+                        textTransform: 'uppercase',
+                        fontSize: '0.7rem',
+                      },
                     }}
                   />
-                  <BaseButton variant="contained" color="primary" sx={{ px: 4, borderRadius: 2.5, height: 48, fontWeight: 800 }}>
-                    Pretrazi
-                  </BaseButton>
-                </Paper>
-              </Grid>
-            </Grid>
-          </BaseContainer>
-        </Box>
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      fontWeight: 900,
+                      letterSpacing: '-0.04em',
+                      color: 'secondary.main',
+                      fontSize: { xs: '2rem', sm: '2.5rem', md: '2.5rem', lg: '2.78rem' },
+                      lineHeight: 1.03,
+                      maxWidth: 820,
+                    }}
+                  >
+                    Pronadji posao koji odgovara tvom timu
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mt: 0.9,
+                      color: 'text.secondary',
+                      fontWeight: 400,
+                      maxWidth: { xs: '100%', md: 700 },
+                      fontSize: { xs: '1rem', md: '1rem', lg: '1.04rem' },
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    Pretrazi aktivne oglase, suzi rezultate po kategorijama i brzo dodji do sljedeceg projekta bez
+                    suvisnih koraka.
+                  </Typography>
+                </Box>
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent={{ md: 'flex-end' }}
+                  flexWrap="wrap"
+                  useFlexGap
+                  sx={{ minWidth: { md: 300 }, pb: { md: 0.2 } }}
+                >
+                  {desktopHeaderChips.map((label) => (
+                    <Chip
+                      key={label}
+                      label={label}
+                      variant="outlined"
+                      sx={{
+                        height: 32,
+                        borderRadius: 999,
+                        fontWeight: 800,
+                        bgcolor: alpha(theme.palette.background.paper, 0.8),
+                        borderColor: alpha(theme.palette.primary.main, 0.14),
+                        backdropFilter: 'blur(10px)',
+                        '& .MuiChip-label': {
+                          px: 1.05,
+                          fontSize: '0.74rem',
+                        },
+                      }}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+            </Box>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: 0.65,
+                borderRadius: 3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.7,
+                width: '100%',
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.12),
+                boxShadow: `0 18px 40px ${alpha(theme.palette.common.black, 0.045)}`,
+              }}
+            >
+              <TextField
+                fullWidth
+                placeholder="Pretrazite po zanimanju, gradu..."
+                variant="outlined"
+                value={jobStore.jobSearchInputValue}
+                onChange={handleSearchChange}
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '& .MuiInputBase-input': { fontWeight: 500, py: 1.56, fontSize: '0.98rem' },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'text.secondary', ml: 1 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <BaseButton
+                variant="contained"
+                color="primary"
+                onClick={() => jobStore.setJobSearchQuery(jobStore.jobSearchInputValue)}
+                sx={{
+                  px: 3.5,
+                  borderRadius: 2.5,
+                  height: 48,
+                  fontWeight: 800,
+                  boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.18)}`,
+                }}
+              >
+                Pretrazi
+              </BaseButton>
+            </Paper>
+          </Stack>
+        </BaseContainer>
       )}
 
-      <BaseContainer maxWidth="lg">
+        <BaseContainer maxWidth={false} disableGutters animate={false}>
           <Box
             sx={{
               width: '100%',
@@ -341,7 +462,7 @@ const JobListPage: React.FC = observer(() => {
             </Alert>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 2 : 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: isMobile ? 2 : 3.35 }}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography
                 variant="h5"
@@ -372,6 +493,22 @@ const JobListPage: React.FC = observer(() => {
                   }}
                 />
               )}
+              {!isMobile && (
+                <Chip
+                  label={`${filteredJobs.length} oglasa`}
+                  variant="outlined"
+                  sx={{
+                    height: 30,
+                    fontWeight: 800,
+                    borderRadius: 999,
+                    borderColor: alpha(theme.palette.primary.main, 0.16),
+                    '& .MuiChip-label': {
+                      px: 1.1,
+                      fontSize: '0.74rem',
+                    },
+                  }}
+                />
+              )}
             </Stack>
 
             {isMobile ? (
@@ -392,12 +529,21 @@ const JobListPage: React.FC = observer(() => {
                 Filteri
               </BaseButton>
             ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <FilterListIcon fontSize="small" sx={{ color: 'text.disabled', fontSize: 20 }} />
-                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                  {filteredJobs.length} oglasa
-                </Typography>
-              </Box>
+              <BaseButton
+                variant="outlined"
+                color="secondary"
+                startIcon={<FilterListIcon />}
+                onClick={focusDesktopFilters}
+                sx={{
+                  minHeight: 38,
+                  borderRadius: 999,
+                  px: 1.9,
+                  fontWeight: 800,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Uredi filtere
+              </BaseButton>
             )}
           </Box>
 
@@ -438,9 +584,9 @@ const JobListPage: React.FC = observer(() => {
               </Paper>
             </Fade>
           ) : (
-            <Grid container spacing={{ xs: 1.5, md: 3 }}>
+            <Grid container spacing={{ xs: 1.5, md: 2.5, xl: 3 }}>
               {filteredJobs.map((job, index) => (
-                <Grid key={job.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid key={job.id} size={{ xs: 12, sm: 6, md: 6, lg: 4, xl: 3 }}>
                   <Fade in timeout={index * 50}>
                     <Box sx={{ height: '100%' }}>
                       <JobCard job={job} />
