@@ -101,6 +101,39 @@ const desktopHighlights: DesktopHighlight[] = [
   },
 ];
 
+const guestDesktopFeatures: DesktopFeature[] = [
+  {
+    title: 'Otvorite projekt',
+    description: 'Investitori brzo objavljuju potrebu i usmjeravaju projekt prema pravim timovima.',
+    icon: <StorefrontRoundedIcon />,
+  },
+  {
+    title: 'Pronadjite izvodjace',
+    description: 'Direktorij ostaje jasan, pregledan i odmah spreman za filtriranje po usluzi.',
+    icon: <EngineeringRoundedIcon />,
+  },
+  {
+    title: 'Usporedite suradnje',
+    description: 'Ponude, profili i daljnji dogovor dolaze tek kad imate pravi kontekst posla.',
+    icon: <HandshakeRoundedIcon />,
+  },
+];
+
+const guestDesktopHighlights: DesktopHighlight[] = [
+  {
+    value: 'Investitori',
+    label: 'objavljuju projekte',
+    icon: <AssignmentTurnedInRoundedIcon />,
+  },
+  {
+    value: 'Izvodjaci',
+    label: 'grade vidljiv profil',
+    icon: <EngineeringRoundedIcon />,
+  },
+];
+
+const guestDesktopBadges = ['Za investitore', 'Za izvodjace', 'Javni pregled platforme'];
+
 const Home: React.FC = observer(() => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -216,16 +249,19 @@ const Home: React.FC = observer(() => {
     }
 
     return {
-      eyebrow: 'BuildConnect mreza',
-      title: 'Povezite projekte, firme i izvodjace kroz modernu gradjevinsku platformu',
-      description: 'Desktop pocetna treba izgledati kao pravi komandni centar, a na mobitelu ostati brza i jasna. Ovdje korisnik odmah vidi gdje poceti i kamo dalje.',
-      primaryLabel: 'Otvori registraciju',
+      eyebrow: 'Javna platforma',
+      title: 'Jedno mjesto za projekte, izvodjace i ozbiljne gradjevinske suradnje',
+      description: 'Pregledajte marketplace i direktorij bez zatvorenog app iskustva, a registracijom otkljucajte objave, ponude i puni BuildConnect workspace.',
+      primaryLabel: 'Registriraj se',
       primaryAction: () => navigateWithScroll('/register'),
       secondaryLabel: 'Prijava',
       secondaryAction: openLogin,
       secondaryIcon: <LoginRoundedIcon sx={{ fontSize: 18 }} />,
     };
   }, [navigateWithScroll, openLogin, user]);
+
+  const desktopFeatureItems = user ? desktopFeatures : guestDesktopFeatures;
+  const desktopHighlightItems = user ? desktopHighlights : guestDesktopHighlights;
 
   const desktopRoleLabel = user
     ? user.role === 'INVESTITOR'
@@ -284,7 +320,7 @@ const Home: React.FC = observer(() => {
           <Stack spacing={{ xs: 1.45, md: 2.2 }}>
             <Box
               sx={{
-                display: { xs: 'none', md: 'block' },
+                display: { xs: 'none', md: user ? 'block' : 'none' },
                 mx: { md: -2.25, lg: -2.75 },
                 px: { md: 2.25, lg: 2.75 },
                 py: { md: 0.9, lg: 1.05 },
@@ -403,6 +439,83 @@ const Home: React.FC = observer(() => {
               }}
             >
               <Stack spacing={{ xs: 1.45, md: 1.6 }} sx={{ height: '100%' }}>
+                {!user && (
+                  <Stack
+                    spacing={0.9}
+                    sx={{
+                      display: { xs: 'none', md: 'flex' },
+                      pb: 0.35,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.6,
+                        alignSelf: 'flex-start',
+                        px: 1.1,
+                        py: 0.42,
+                        borderRadius: 999,
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                        color: 'primary.main',
+                        fontWeight: 900,
+                        fontSize: '0.72rem',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      <VerifiedUserRoundedIcon sx={{ fontSize: 15 }} />
+                      Pregled platforme
+                    </Box>
+
+                    <Typography
+                      sx={{
+                        color: 'secondary.main',
+                        fontWeight: 900,
+                        fontSize: { md: '1.5rem', lg: '1.76rem' },
+                        lineHeight: 1.05,
+                        letterSpacing: '-0.035em',
+                        maxWidth: 720,
+                      }}
+                    >
+                      Pronadjite pravi tim ili otvorite put do nove suradnje bez lutanja kroz nepregledne imenike.
+                    </Typography>
+
+                    <Typography
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: { md: '0.92rem', lg: '0.98rem' },
+                        lineHeight: 1.65,
+                        maxWidth: 760,
+                      }}
+                    >
+                      Gosti mogu pregledati izvodjace, marketplace poslova i specijalizirane kategorije, a prijavom otkljucavaju objave, ponude i puni radni prostor za daljnji dogovor.
+                    </Typography>
+
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                      {guestDesktopBadges.map((badge) => (
+                        <Box
+                          key={badge}
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            px: 0.95,
+                            py: 0.48,
+                            borderRadius: 999,
+                            bgcolor: alpha(theme.palette.background.paper, 0.8),
+                            boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.78)}`,
+                            color: 'secondary.main',
+                            fontSize: '0.76rem',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {badge}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Stack>
+                )}
+
                 <Paper
                   elevation={0}
                   sx={{
@@ -623,7 +736,7 @@ const Home: React.FC = observer(() => {
                     </Box>
 
                     <Stack direction="row" spacing={0.85} sx={{ mt: 1.2, mb: 0.15 }}>
-                      {desktopHighlights.map((highlight) => (
+                      {desktopHighlightItems.map((highlight) => (
                         <Box
                           key={highlight.label}
                           sx={{
@@ -685,7 +798,7 @@ const Home: React.FC = observer(() => {
                       gap: 0.95,
                     }}
                   >
-                    {desktopFeatures.map((feature) => (
+                    {desktopFeatureItems.map((feature) => (
                       <Paper
                         key={feature.title}
                         elevation={0}
