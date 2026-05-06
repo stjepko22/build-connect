@@ -107,6 +107,8 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
         label="Broj telefona"
         value={registrationStore.phone}
         onChange={(e) => registrationStore.setPhone(e.target.value)}
+        required
+        helperText="Obavezno. Broj treba imati barem 6 znakova."
         slotProps={{ input: { startAdornment: <PhoneTwoToneIcon sx={{ mr: 1, color: 'text.disabled', fontSize: 20 }} /> } }}
       />
 

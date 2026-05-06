@@ -6,4 +6,6 @@ export interface IUser {
   displayName: string;
   role: 'INVESTITOR' | 'IZVODJAC';
   legalType: LegalType;
+  phone?: string;
+  isPhoneVisible?: boolean;
 }

@@ -8,4 +8,5 @@ export interface IJobResponse {
   deadline: string;
   investitorId: string;
   createdAt: string;
+  status: 'OPEN' | 'CLOSED' | 'IN_PROGRESS' | 'COMPLETED';
 }

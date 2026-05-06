@@ -155,17 +155,25 @@ export default class AuthenticationStore {
     this.pendingUnauthorizedLoginPrompt = false;
   };
 
-  updateCurrentUserProfile = (profile: { displayName: string; legalType: LegalType; email: string }) => {
+  updateCurrentUserProfile = (profile: {
+    displayName: string;
+    legalType: LegalType;
+    email: string;
+    phone?: string;
+    isPhoneVisible?: boolean;
+  }) => {
     if (!this.user) {
       return;
     }
 
     this.user = {
       ...this.user,
-      displayName: profile.displayName,
-      legalType: profile.legalType,
-      email: profile.email,
-    };
+        displayName: profile.displayName,
+        legalType: profile.legalType,
+        email: profile.email,
+        phone: profile.phone,
+        isPhoneVisible: profile.isPhoneVisible,
+      };
 
     localStorage.setItem(authUserStorageKey, JSON.stringify(this.user));
   };

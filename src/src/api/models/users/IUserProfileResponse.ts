@@ -7,6 +7,8 @@ export interface IUserProfileResponse {
   role: 'INVESTITOR' | 'IZVODJAC';
   legalType: LegalType;
   email: string;
+  phone?: string;
+  isPhoneVisible?: boolean;
   bio: string;
   location: string;
   joinedAt: string;
