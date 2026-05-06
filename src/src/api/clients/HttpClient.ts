@@ -52,6 +52,14 @@ export default class HttpClient {
     return axios.put<TResponse>(this.buildUrl(this.joinSegments(id, optionalUrl)), model, requestConfiguration);
   };
 
+  deleteAsync = async <TResponse>(
+    id: string,
+    optionalUrl = '',
+    requestConfiguration: RequestConfiguration = {}
+  ): Promise<AxiosResponse<TResponse>> => {
+    return axios.delete<TResponse>(this.buildUrl(this.joinSegments(id, optionalUrl)), requestConfiguration);
+  };
+
   private buildUrl(path = '') {
     const normalizedEndpoint = this.normalizeSegment(this.endpoint);
     const normalizedPath = this.normalizeSegment(path);

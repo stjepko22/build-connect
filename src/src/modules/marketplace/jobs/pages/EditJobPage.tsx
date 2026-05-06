@@ -5,8 +5,6 @@ import {
   Box,
   Grid,
   MenuItem,
-  alpha,
-  useTheme,
   Divider,
   InputAdornment,
   CircularProgress,
@@ -28,7 +26,6 @@ import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constant
 const EditJobPage: React.FC = observer(() => {
   const { id } = useParams<{ id: string }>();
   const { authenticationStore, jobStore } = useRootStore();
-  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 

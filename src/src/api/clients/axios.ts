@@ -4,6 +4,9 @@ import { authTokenStorageKey, authUnauthorizedEventName, authUserStorageKey } fr
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:56602/api',
   withCredentials: false,
+  paramsSerializer: {
+    indexes: null,
+  },
   headers: {
     'Content-Type': 'application/json; charset=utf-8',
     'Accept-Language': 'hr',

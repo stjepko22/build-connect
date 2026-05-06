@@ -5,8 +5,6 @@ import {
   Box,
   Grid,
   MenuItem,
-  alpha,
-  useTheme,
   Divider,
   InputAdornment,
   Stack,
@@ -26,7 +24,6 @@ import { JOB_CATEGORIES, JobCategory } from '@/modules/marketplace/jobs/constant
 
 const CreateJobPage: React.FC = observer(() => {
   const { jobStore } = useRootStore();
-  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const navigationState = location.state as { returnTo?: string; returnLabel?: string; afterSaveTo?: string } | null;

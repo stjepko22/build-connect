@@ -53,11 +53,15 @@ export default class RegistrationStore {
   };
 
   get isFormValid() {
+    const normalizedPhone = this.phone.trim();
+    const isPhoneValid = normalizedPhone.length >= 6;
+
     return (
       this.firstName.trim().length > 0 &&
       this.lastName.trim().length > 0 &&
       this.email.includes('@') &&
-      this.password.length >= 6
+      this.password.length >= 6 &&
+      isPhoneValid
     );
   }
 

@@ -84,11 +84,6 @@ const ProfilePage: React.FC = observer(() => {
     boxShadow: `0 16px 36px ${alpha(theme.palette.common.black, 0.035)}`,
   };
 
-  const headerTitle = isOwnProfile
-    ? 'Uredite dojam koji ostavljate drugim korisnicima'
-    : isContractor
-      ? 'Pogledajte reputaciju i usluge ovog izvodjaca'
-      : 'Pregledajte objave i osnovne podatke investitora';
   const headerSubtitle = isOwnProfile
     ? 'Na jednom mjestu vidite kako vaš profil izgleda javno i brzo pristupate uređivanju.'
     : isContractor
@@ -105,7 +100,7 @@ const ProfilePage: React.FC = observer(() => {
     : isContractor
       ? 'Lokacija, usluge i recenzije koje investitorima pomazu pri odabiru.'
       : 'Osnovni podaci i aktivni oglasi investitora na jednom mjestu.';
-
+  void headerSubtitle;
   return (
     <BaseContainer maxWidth={false} disableGutters animate={false}>
       <Box sx={{ width: '100%' }}>

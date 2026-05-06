@@ -30,7 +30,6 @@ import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import { useRootStore } from '@/core/hooks/useRootStore';
-import { BRAND_COLORS } from '@/ui/themes/default/theme';
 
 const JobDetailsPage: React.FC = observer(() => {
   const { id } = useParams<{ id: string }>();
@@ -100,7 +99,10 @@ const JobDetailsPage: React.FC = observer(() => {
 
   const handleAcceptBid = async (bidId: string) => {
     if (window.confirm('Jeste li sigurni da zelite prihvatiti ovu ponudu?')) {
-      await bidStore.acceptBid(bidId);
+      const isAccepted = await bidStore.acceptBid(bidId);
+      if (isAccepted) {
+        await jobStore.loadJobById(job.id);
+      }
     }
   };
 

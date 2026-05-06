@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,13 +15,19 @@ import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRound
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedInRounded';
 import BusinessRoundedIcon from '@mui/icons-material/BusinessRounded';
+import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import ElectricBoltRoundedIcon from '@mui/icons-material/ElectricBoltRounded';
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded';
+import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded';
+import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
+import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import PlumbingRoundedIcon from '@mui/icons-material/PlumbingRounded';
 import RoofingRoundedIcon from '@mui/icons-material/RoofingRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import ViewInArRoundedIcon from '@mui/icons-material/ViewInArRounded';
+import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
@@ -40,8 +46,20 @@ type ContractorShortcut = {
   icon: React.ReactNode;
 };
 
-const HOME_CONTENT_WIDTH = { xs: 412, sm: 428, md: 456 };
-const HOME_CONTENT_PADDING = { xs: 1.5, sm: 2 };
+type DesktopFeature = {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+};
+
+type DesktopHighlight = {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+};
+
+const HOME_CONTENT_WIDTH = { xs: 412, sm: 440, md: '100%' };
+const HOME_CONTENT_PADDING = { xs: 1.5, sm: 2, md: 2.25, lg: 2.75 };
 
 const contractorShortcuts: ContractorShortcut[] = [
   { label: 'Gradnja', category: 'Gradnja', icon: <EngineeringRoundedIcon /> },
@@ -52,6 +70,37 @@ const contractorShortcuts: ContractorShortcut[] = [
   { label: 'Voda', category: 'Vodoinstalacije', icon: <PlumbingRoundedIcon /> },
 ];
 
+const desktopFeatures: DesktopFeature[] = [
+  {
+    title: 'Marketplace poslova',
+    description: 'Otvorite aktivne projekte i filtrirajte oglase u par klikova.',
+    icon: <StorefrontRoundedIcon />,
+  },
+  {
+    title: 'Provjereni izvodjaci',
+    description: 'Brze do specijaliziranih firmi, timova i kooperanata.',
+    icon: <EngineeringRoundedIcon />,
+  },
+  {
+    title: 'Suradnje i ponude',
+    description: 'Sve komunikacije, ponude i profili ostaju na jednom mjestu.',
+    icon: <HandshakeRoundedIcon />,
+  },
+];
+
+const desktopHighlights: DesktopHighlight[] = [
+  {
+    value: '6',
+    label: 'brzih ulaza',
+    icon: <InsightsRoundedIcon />,
+  },
+  {
+    value: '1 klik',
+    label: 'do usluge',
+    icon: <SearchRoundedIcon />,
+  },
+];
+
 const Home: React.FC = observer(() => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -59,14 +108,14 @@ const Home: React.FC = observer(() => {
   const user = authenticationStore.user;
   const [searchValue, setSearchValue] = useState('');
 
-  const openLogin = () => {
+  const openLogin = useCallback(() => {
     authenticationStore.setLoginDialogOpen(true);
-  };
+  }, [authenticationStore]);
 
-  const navigateWithScroll = (path: string) => {
+  const navigateWithScroll = useCallback((path: string) => {
     navigate(path);
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  };
+  }, [navigate]);
 
   const buildPathWithParams = (basePath: string, params: Record<string, string | undefined>) => {
     const query = new URLSearchParams();
@@ -146,7 +195,64 @@ const Home: React.FC = observer(() => {
         },
       },
     ];
-  }, [user]);
+  }, [navigateWithScroll, openLogin, user]);
+
+  const desktopPanelContent = useMemo(() => {
+    if (user) {
+      return {
+        eyebrow: 'Radni prostor',
+        title: user.role === 'INVESTITOR'
+          ? 'Kontrolirajte objave, ponude i suradnje iz jednog pregleda'
+          : 'Pratite poslove, ponude i profil kroz jedan profesionalni workspace',
+        description: user.role === 'INVESTITOR'
+          ? 'Brzo objavite novi posao, vratite se na aktivne projekte ili otvorite svoj profil investitora.'
+          : 'Otvorite dashboard, pronadjite nove prilike i odrzavajte profil izvodjaca uvijek spremnim za sljedeci posao.',
+        primaryLabel: user.role === 'INVESTITOR' ? 'Objavi posao' : 'Otvori dashboard',
+        primaryAction: () => navigateWithScroll(user.role === 'INVESTITOR' ? '/objavi-posao' : '/dashboard'),
+        secondaryLabel: 'Moj profil',
+        secondaryAction: () => navigateWithScroll(`/profil/${user.id}`),
+        secondaryIcon: <PersonRoundedIcon sx={{ fontSize: 18 }} />,
+      };
+    }
+
+    return {
+      eyebrow: 'BuildConnect mreza',
+      title: 'Povezite projekte, firme i izvodjace kroz modernu gradjevinsku platformu',
+      description: 'Desktop pocetna treba izgledati kao pravi komandni centar, a na mobitelu ostati brza i jasna. Ovdje korisnik odmah vidi gdje poceti i kamo dalje.',
+      primaryLabel: 'Otvori registraciju',
+      primaryAction: () => navigateWithScroll('/register'),
+      secondaryLabel: 'Prijava',
+      secondaryAction: openLogin,
+      secondaryIcon: <LoginRoundedIcon sx={{ fontSize: 18 }} />,
+    };
+  }, [navigateWithScroll, openLogin, user]);
+
+  const desktopRoleLabel = user
+    ? user.role === 'INVESTITOR'
+      ? 'Investitor'
+      : 'Izvodjac'
+    : 'Javni pregled';
+
+  const desktopHeaderPrimaryAction = useMemo(() => {
+    if (!user) {
+      return {
+        label: 'Registriraj se',
+        onClick: () => navigateWithScroll('/register'),
+      };
+    }
+
+    if (user.role === 'INVESTITOR') {
+      return {
+        label: 'Objavi posao',
+        onClick: () => navigateWithScroll('/objavi-posao'),
+      };
+    }
+
+    return {
+      label: 'Otvori dashboard',
+      onClick: () => navigateWithScroll('/dashboard'),
+    };
+  }, [navigateWithScroll, user]);
 
   return (
     <Box
@@ -154,7 +260,11 @@ const Home: React.FC = observer(() => {
         minHeight: '100%',
         bgcolor: 'background.default',
         pb: { xs: 2.5, md: 8 },
-        background: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.62)} 0%, ${theme.palette.background.default} 24%, ${theme.palette.background.default} 100%)`,
+        background: `
+          radial-gradient(circle at top right, ${alpha(theme.palette.primary.main, 0.08)} 0%, transparent 22%),
+          radial-gradient(circle at top left, ${alpha(theme.palette.primary.light, 0.85)} 0%, transparent 26%),
+          linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.62)} 0%, ${theme.palette.background.default} 24%, ${theme.palette.background.default} 100%)
+        `,
       }}
     >
       <BaseContainer maxWidth={false} disableGutters withPadding={false}>
@@ -162,173 +272,571 @@ const Home: React.FC = observer(() => {
           sx={{
             width: '100%',
             maxWidth: HOME_CONTENT_WIDTH,
-            mx: 'auto',
+            mx: { xs: 'auto', md: 0 },
             px: HOME_CONTENT_PADDING,
             pt: { xs: 1.15, sm: 1.5 },
             minHeight: { xs: 'calc(100svh - 146px)', md: 'auto' },
             display: 'flex',
             flexDirection: 'column',
+            boxSizing: 'border-box',
           }}
         >
           <Stack spacing={{ xs: 1.45, md: 2.2 }}>
-            <Paper
-              elevation={0}
+            <Box
               sx={{
-                p: 0.35,
-                borderRadius: 3,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: alpha(theme.palette.divider, 0.16),
-                boxShadow: `0 10px 24px ${alpha(theme.palette.common.black, 0.05)}`,
+                display: { xs: 'none', md: 'block' },
+                mx: { md: -2.25, lg: -2.75 },
+                px: { md: 2.25, lg: 2.75 },
+                py: { md: 0.9, lg: 1.05 },
+                bgcolor: alpha(theme.palette.primary.light, 0.76),
+                backgroundImage: `linear-gradient(90deg, ${alpha(theme.palette.primary.light, 0.92)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 68%, ${alpha(theme.palette.background.paper, 0.72)} 100%)`,
+                borderBottom: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.12),
               }}
             >
-              <BaseInput
-                placeholder="Pretrazi firme, projekte ili usluge..."
-                value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    handleSearch('jobs');
-                  }
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2.5,
-                    bgcolor: 'transparent',
-                    minHeight: { xs: 50, md: 54 },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'transparent',
-                    },
-                  },
-                  '& .MuiInputBase-input': {
-                    py: { xs: 0.88, md: 1 },
-                    fontSize: { xs: '0.89rem', md: '0.98rem' },
-                  },
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchRoundedIcon sx={{ color: 'text.secondary', ml: 0.35 }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => handleSearch('jobs')}
-                          sx={{
-                            width: 34,
-                            height: 34,
-                            bgcolor: 'primary.main',
-                            color: 'primary.contrastText',
-                            '&:hover': { bgcolor: 'primary.dark' },
-                          }}
-                        >
-                          <ArrowForwardIosRoundedIcon sx={{ fontSize: 12 }} />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-            </Paper>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                spacing={2.2}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    sx={{
+                      color: 'secondary.main',
+                      fontWeight: 900,
+                      fontSize: { md: '1.08rem', lg: '1.16rem' },
+                      lineHeight: 1.1,
+                      letterSpacing: '-0.03em',
+                    }}
+                  >
+                    BuildConnect workspace
+                  </Typography>
+                  <Typography
+                    sx={{
+                      mt: 0.25,
+                      color: 'text.secondary',
+                      fontSize: { md: '0.78rem', lg: '0.82rem' },
+                      lineHeight: 1.35,
+                      maxWidth: 500,
+                    }}
+                  >
+                    Upravljajte poslovima, ponudama i kontaktima iz jednog profesionalnog pregleda.
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={0.9} alignItems="center" sx={{ flexShrink: 0, minWidth: 0 }}>
+                  <BaseButton
+                    variant="contained"
+                    color="primary"
+                    onClick={desktopHeaderPrimaryAction.onClick}
+                    sx={{
+                      minHeight: 38,
+                      borderRadius: 2,
+                      px: 1.35,
+                      fontSize: '0.76rem',
+                      fontWeight: 900,
+                      boxShadow: `0 10px 22px ${alpha(theme.palette.primary.main, 0.16)}`,
+                    }}
+                  >
+                    {desktopHeaderPrimaryAction.label}
+                  </BaseButton>
+                  <IconButton
+                    sx={{
+                      position: 'relative',
+                      width: 38,
+                      height: 38,
+                      bgcolor: alpha(theme.palette.background.paper, 0.78),
+                      color: 'secondary.main',
+                      border: '1px solid',
+                      borderColor: alpha(theme.palette.divider, 0.12),
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 7,
+                        right: 7,
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                        boxShadow: `0 0 0 2px ${alpha(theme.palette.background.paper, 0.95)}`,
+                      },
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.light, 0.28),
+                      },
+                    }}
+                    title="Poruke uskoro"
+                    aria-label="Poruke uskoro"
+                  >
+                    <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.65,
+                      px: 1,
+                      py: 0.55,
+                      borderRadius: 999,
+                      bgcolor: alpha(theme.palette.background.paper, 0.72),
+                      color: 'secondary.main',
+                    }}
+                  >
+                    <VerifiedUserRoundedIcon sx={{ fontSize: 17, color: 'primary.main' }} />
+                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, lineHeight: 1.2 }}>
+                      {desktopRoleLabel}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.74rem', color: 'text.secondary', lineHeight: 1.2 }}>
+                      {user ? user.displayName : 'Javni pregled'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            </Box>
 
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                gap: { xs: 0.85, sm: 1, md: 1.25 },
-                width: '100%',
+                gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.55fr) minmax(320px, 0.95fr)' },
+                gap: { xs: 1.45, md: 1.9, lg: 2.2 },
+                alignItems: 'stretch',
               }}
             >
-              {quickActions.map((action) => (
+              <Stack spacing={{ xs: 1.45, md: 1.6 }} sx={{ height: '100%' }}>
                 <Paper
-                  key={action.label}
                   elevation={0}
-                  onClick={action.onClick}
                   sx={{
-                    width: '100%',
-                    boxSizing: 'border-box',
-                    p: { xs: 0.88, md: 1.02 },
-                    aspectRatio: '1 / 1',
-                    minHeight: { xs: 90, sm: 96, md: 102 },
-                    borderRadius: 1.45,
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.divider, 0.14),
-                    bgcolor: alpha(theme.palette.background.paper, 0.98),
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                    boxShadow: `0 8px 18px ${alpha(theme.palette.common.black, 0.04)}`,
-                    transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                    '&:hover': {
-                      transform: { md: 'translateY(-3px)' },
-                      boxShadow: `0 18px 30px ${alpha(theme.palette.common.black, 0.08)}`,
-                      borderColor: alpha(theme.palette.primary.main, 0.36),
-                    },
+                    p: 0.35,
+                    borderRadius: { xs: 3, md: 3.2 },
+                    bgcolor: 'background.paper',
+                    boxShadow: `0 16px 30px ${alpha(theme.palette.common.black, 0.05)}`,
                   }}
                 >
-                  <Stack spacing={0.7} alignItems="center" justifyContent="center">
-                    <Box
+                  <BaseInput
+                    placeholder="Pretrazi firme, projekte ili usluge..."
+                    value={searchValue}
+                    onChange={(event) => setSearchValue(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleSearch('jobs');
+                      }
+                    }}
+                    sx={{
+                      width: '100%',
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2.5,
+                        bgcolor: alpha(theme.palette.background.paper, 0.7),
+                        minHeight: { xs: 50, md: 56 },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'transparent',
+                        },
+                      },
+                      '& .MuiInputBase-input': {
+                        py: { xs: 0.88, md: 1.02 },
+                        fontSize: { xs: '0.89rem', md: '1rem' },
+                      },
+                    }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchRoundedIcon sx={{ color: 'text.secondary', ml: 0.35 }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => handleSearch('jobs')}
+                              sx={{
+                                width: 36,
+                                height: 36,
+                                bgcolor: 'primary.main',
+                                color: 'primary.contrastText',
+                                '&:hover': { bgcolor: 'primary.dark' },
+                              }}
+                            >
+                              <ArrowForwardIosRoundedIcon sx={{ fontSize: 12 }} />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                </Paper>
+
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gap: { xs: 0.85, sm: 1, md: 1.2, lg: 1.35 },
+                    width: '100%',
+                    alignItems: 'stretch',
+                    flexGrow: { md: 1 },
+                  }}
+                >
+                  {quickActions.map((action) => (
+                    <Paper
+                      key={action.label}
+                      elevation={0}
+                      onClick={action.onClick}
                       sx={{
-                        width: { xs: 34, sm: 36, md: 40 },
-                        height: { xs: 34, sm: 36, md: 40 },
-                        display: 'inline-flex',
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        p: { xs: 0.88, md: 1.22, lg: 1.35 },
+                        aspectRatio: { xs: '1 / 1', md: '1 / 0.9' },
+                        minHeight: { xs: 90, sm: 96, md: 136, lg: 146 },
+                        borderRadius: { xs: 1.45, md: 2.05 },
+                        bgcolor: alpha(theme.palette.background.paper, 0.96),
+                        backgroundImage: {
+                          md: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.22)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 55%, ${theme.palette.background.paper} 100%)`,
+                        },
+                        cursor: 'pointer',
+                        display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: 1.2,
-                        bgcolor: alpha(theme.palette.primary.main, 0.12),
-                        color: 'primary.main',
-                        '& .MuiSvgIcon-root': {
-                          fontSize: { xs: 18, md: 20 },
+                        textAlign: 'center',
+                        boxShadow: `0 12px 24px ${alpha(theme.palette.common.black, 0.04)}`,
+                        transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: -24,
+                          right: -18,
+                          width: { md: 74, lg: 82 },
+                          height: { md: 74, lg: 82 },
+                          borderRadius: '50%',
+                          bgcolor: alpha(theme.palette.primary.main, 0.07),
+                        },
+                        '&:hover': {
+                          transform: { md: 'translateY(-3px)' },
+                          boxShadow: `0 22px 34px ${alpha(theme.palette.common.black, 0.08)}`,
                         },
                       }}
                     >
-                      {action.icon}
-                    </Box>
-                    <Typography
+                      <Stack
+                        spacing={{ xs: 0.7, md: 0.7, lg: 0.8 }}
+                        alignItems="center"
+                        justifyContent="center"
+                        sx={{
+                          position: 'relative',
+                          zIndex: 1,
+                          width: '100%',
+                          height: '100%',
+                          py: { md: 0.1, lg: 0.2 },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: { xs: 34, sm: 36, md: 72, lg: 82 },
+                            height: { xs: 34, sm: 36, md: 72, lg: 82 },
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: { xs: 1.2, md: '50%' },
+                            bgcolor: { xs: alpha(theme.palette.primary.main, 0.1), md: alpha(theme.palette.primary.main, 0.1) },
+                            boxShadow: {
+                              md: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.75)}, 0 10px 20px ${alpha(theme.palette.primary.main, 0.08)}`,
+                            },
+                            color: 'primary.main',
+                            '& .MuiSvgIcon-root': {
+                              fontSize: { xs: 18, md: 36, lg: 40 },
+                            },
+                          }}
+                        >
+                          {action.icon}
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontWeight: 900,
+                            lineHeight: 1.18,
+                            minHeight: { xs: 28, sm: 30, md: 40 },
+                            fontSize: { xs: '0.7rem', sm: '0.74rem', md: '0.84rem', lg: '0.9rem' },
+                            letterSpacing: '-0.01em',
+                            width: 'auto',
+                          }}
+                        >
+                          {action.label}
+                        </Typography>
+                      </Stack>
+                    </Paper>
+                  ))}
+                </Box>
+              </Stack>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  display: { xs: 'none', md: 'flex' },
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minHeight: { md: 370, lg: 394 },
+                  p: { md: 2.15, lg: 2.55 },
+                  borderRadius: 3.4,
+                  bgcolor: alpha(theme.palette.background.paper, 0.98),
+                  backgroundImage: `linear-gradient(165deg, ${alpha(theme.palette.primary.light, 0.34)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 46%, ${theme.palette.background.paper} 100%)`,
+                  boxShadow: `0 26px 54px ${alpha(theme.palette.common.black, 0.07)}`,
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: -72,
+                    right: -58,
+                    width: 180,
+                    height: 180,
+                    borderRadius: '50%',
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: -56,
+                    left: -34,
+                    width: 138,
+                    height: 138,
+                    borderRadius: '50%',
+                    bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                  },
+                }}
+              >
+                <Stack spacing={1.5} sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
+                  <Box>
+                    <Box
                       sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.7,
+                        px: 1.1,
+                        py: 0.42,
+                        borderRadius: 999,
+                        bgcolor: alpha(theme.palette.primary.main, 0.12),
+                        color: 'primary.main',
                         fontWeight: 900,
-                        lineHeight: 1.18,
-                        minHeight: { xs: 28, sm: 30 },
-                        fontSize: { xs: '0.7rem', sm: '0.74rem', md: '0.78rem' },
-                        letterSpacing: '-0.01em',
+                        fontSize: '0.72rem',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
                       }}
                     >
-                      {action.label}
+                    <InsightsRoundedIcon sx={{ fontSize: 16 }} />
+                      {desktopPanelContent.eyebrow}
+                    </Box>
+
+                    <Stack direction="row" spacing={0.85} sx={{ mt: 1.2, mb: 0.15 }}>
+                      {desktopHighlights.map((highlight) => (
+                        <Box
+                          key={highlight.label}
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.55,
+                            px: 0.9,
+                            py: 0.52,
+                            borderRadius: 999,
+                            bgcolor: alpha(theme.palette.background.paper, 0.74),
+                            color: 'text.secondary',
+                            '& .MuiSvgIcon-root': {
+                              fontSize: 14,
+                              color: 'primary.main',
+                            },
+                          }}
+                        >
+                          {highlight.icon}
+                          <Typography component="span" sx={{ fontWeight: 800, fontSize: '0.72rem', color: 'secondary.main' }}>
+                            {highlight.value}
+                          </Typography>
+                          <Typography component="span" sx={{ fontSize: '0.72rem' }}>
+                            {highlight.label}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+
+                    <Typography
+                      sx={{
+                        mt: 1.15,
+                        color: 'secondary.main',
+                        fontWeight: 900,
+                        fontSize: { md: '1.42rem', lg: '1.6rem' },
+                        lineHeight: 1.08,
+                        letterSpacing: '-0.03em',
+                        maxWidth: 420,
+                      }}
+                    >
+                      {desktopPanelContent.title}
                     </Typography>
+                    <Typography
+                      sx={{
+                        mt: 0.9,
+                        color: 'text.secondary',
+                        fontSize: { md: '0.92rem', lg: '0.98rem' },
+                        lineHeight: 1.65,
+                        maxWidth: 430,
+                      }}
+                    >
+                      {desktopPanelContent.description}
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr',
+                      gap: 0.95,
+                    }}
+                  >
+                    {desktopFeatures.map((feature) => (
+                      <Paper
+                        key={feature.title}
+                        elevation={0}
+                        sx={{
+                          p: 1.15,
+                          borderRadius: 2.25,
+                          bgcolor: alpha(theme.palette.background.paper, 0.78),
+                          backdropFilter: 'blur(8px)',
+                          boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.78)}`,
+                        }}
+                      >
+                        <Stack direction="row" spacing={1.05} alignItems="flex-start">
+                          <Box
+                            sx={{
+                              width: 34,
+                              height: 34,
+                              flexShrink: 0,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: 1.2,
+                              bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              color: 'primary.main',
+                              '& .MuiSvgIcon-root': {
+                                fontSize: 18,
+                              },
+                            }}
+                          >
+                            {feature.icon}
+                          </Box>
+                          <Box>
+                            <Typography sx={{ fontWeight: 800, color: 'secondary.main', fontSize: '0.9rem', lineHeight: 1.2 }}>
+                              {feature.title}
+                            </Typography>
+                            <Typography sx={{ mt: 0.35, color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.5 }}>
+                              {feature.description}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Box>
+
+                  <Stack direction={{ md: 'column', lg: 'row' }} spacing={1}>
+                    <BaseButton
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={desktopPanelContent.primaryAction}
+                      sx={{
+                        minHeight: 48,
+                        borderRadius: 2.2,
+                        px: 1.5,
+                        fontSize: '0.82rem',
+                        fontWeight: 900,
+                        boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.2)}`,
+                      }}
+                    >
+                      {desktopPanelContent.primaryLabel}
+                    </BaseButton>
+                    <BaseButton
+                      variant="outlined"
+                      color="primary"
+                      fullWidth
+                      onClick={desktopPanelContent.secondaryAction}
+                      startIcon={desktopPanelContent.secondaryIcon}
+                      sx={{
+                        minHeight: 48,
+                        borderRadius: 2.2,
+                        px: 1.5,
+                        fontSize: '0.82rem',
+                        fontWeight: 800,
+                        bgcolor: alpha(theme.palette.background.paper, 0.66),
+                        borderWidth: 1.5,
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.primary.light, 0.18),
+                          borderWidth: 1.5,
+                        },
+                      }}
+                    >
+                      {desktopPanelContent.secondaryLabel}
+                    </BaseButton>
                   </Stack>
-                </Paper>
-              ))}
+                </Stack>
+              </Paper>
             </Box>
 
-            <Box sx={{ pt: { xs: 0.45, md: 0.6 } }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.1 }}>
-                <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1rem', md: '1.12rem' } }}>
-                  Specijalizirani izvodjaci
-                </Typography>
-                <IconButton
-                  onClick={() => navigateWithScroll('/izvodjaci')}
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    bgcolor: alpha(theme.palette.primary.main, 0.12),
-                    color: 'primary.main',
-                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18) },
-                  }}
-                >
-                  <ArrowForwardIosRoundedIcon sx={{ fontSize: 11 }} />
-                </IconButton>
+            <Box
+              sx={{
+                position: 'relative',
+                pt: { xs: 0.45, md: 0.9 },
+                pb: { xs: 0, md: 0.45 },
+              }}
+            >
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.1, md: 0.95 } }}>
+                <Box>
+                  <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1rem', md: '1.14rem' } }}>
+                    Specijalizirani izvodjaci
+                  </Typography>
+                  <Typography
+                    sx={{
+                      display: { xs: 'none', md: 'block' },
+                      mt: 0.22,
+                      color: 'text.secondary',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Otvorite provjerene kategorije i dodjite do pravih timova bez lutanja kroz cijeli direktorij.
+                  </Typography>
+                </Box>
+
+                <Stack direction="row" spacing={0.85} alignItems="center">
+                  <Box
+                    sx={{
+                      display: { xs: 'none', md: 'inline-flex' },
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 0.9,
+                      py: 0.38,
+                      borderRadius: 999,
+                      bgcolor: alpha(theme.palette.primary.main, 0.12),
+                      color: 'primary.main',
+                      fontSize: '0.68rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.03em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                      <InsightsRoundedIcon sx={{ fontSize: 14 }} />
+                    Brzi pristup
+                  </Box>
+                  <IconButton
+                    onClick={() => navigateWithScroll('/izvodjaci')}
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      bgcolor: alpha(theme.palette.primary.main, 0.12),
+                      color: 'primary.main',
+                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.18) },
+                    }}
+                  >
+                    <ArrowForwardIosRoundedIcon sx={{ fontSize: 11 }} />
+                  </IconButton>
+                </Stack>
               </Stack>
 
               <Box
                 sx={{
                   position: 'relative',
                   '&::after': {
-                    content: '""',
+                    content: { xs: '""', md: 'none' },
                     position: 'absolute',
                     top: 0,
                     right: 0,
@@ -341,12 +849,13 @@ const Home: React.FC = observer(() => {
               >
                 <Box
                   sx={{
-                    display: 'flex',
-                    gap: 0.85,
-                    overflowX: 'auto',
-                    pb: 0.6,
-                    pr: { xs: 6, sm: 4 },
-                    scrollSnapType: 'x mandatory',
+                    display: { xs: 'flex', md: 'grid' },
+                    gridTemplateColumns: { md: 'repeat(6, minmax(0, 1fr))' },
+                    gap: { xs: 0.85, md: 1.2, lg: 1.35 },
+                    overflowX: { xs: 'auto', md: 'visible' },
+                    pb: { xs: 0.6, md: 0 },
+                    pr: { xs: 6, sm: 4, md: 0 },
+                    scrollSnapType: { xs: 'x mandatory', md: 'none' },
                     scrollbarWidth: 'none',
                     '&::-webkit-scrollbar': {
                       display: 'none',
@@ -359,44 +868,41 @@ const Home: React.FC = observer(() => {
                       elevation={0}
                       onClick={() => navigateWithScroll(`/izvodjaci?category=${encodeURIComponent(shortcut.category)}`)}
                       sx={{
-                        flex: { xs: '0 0 calc((100% - 10px) / 3.18)', sm: '0 0 120px' },
-                        minWidth: { xs: 'calc((100% - 10px) / 3.18)', sm: 120 },
-                        maxWidth: { xs: 'calc((100% - 10px) / 3.18)', sm: 120 },
-                        p: { xs: 0.74, sm: 0.86 },
-                        minHeight: { xs: 82, sm: 92 },
-                        borderRadius: 1.5,
-                        border: '1px solid',
-                        borderColor: alpha(theme.palette.divider, 0.14),
+                        flex: { xs: '0 0 calc((100% - 10px) / 3.18)', sm: '0 0 120px', md: 'unset' },
+                        minWidth: { xs: 'calc((100% - 10px) / 3.18)', sm: 120, md: 0 },
+                        maxWidth: { xs: 'calc((100% - 10px) / 3.18)', sm: 120, md: 'none' },
+                        p: { xs: 0.74, sm: 0.86, md: 1.05, lg: 1.15 },
+                        minHeight: { xs: 82, sm: 92, md: 110, lg: 116 },
+                        borderRadius: { xs: 1.5, md: 2.05 },
                         bgcolor: alpha(theme.palette.background.paper, 0.98),
-                        backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.14)} 0%, ${theme.palette.background.paper} 100%)`,
+                        backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.18)} 0%, ${theme.palette.background.paper} 100%)`,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         textAlign: 'center',
-                        scrollSnapAlign: 'start',
-                        boxShadow: `0 8px 18px ${alpha(theme.palette.common.black, 0.04)}`,
+                        scrollSnapAlign: { xs: 'start', md: 'none' },
+                        boxShadow: `0 10px 22px ${alpha(theme.palette.common.black, 0.04)}`,
                         transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
                         '&:hover': {
                           transform: { md: 'translateY(-2px)' },
-                          borderColor: alpha(theme.palette.primary.main, 0.36),
-                          boxShadow: `0 16px 28px ${alpha(theme.palette.common.black, 0.08)}`,
+                          boxShadow: `0 18px 30px ${alpha(theme.palette.common.black, 0.08)}`,
                         },
                       }}
                     >
                       <Stack spacing={0.82} alignItems="center" justifyContent="center">
                         <Box
                           sx={{
-                            width: { xs: 30, sm: 34 },
-                            height: { xs: 30, sm: 34 },
+                            width: { xs: 30, sm: 34, md: 40, lg: 44 },
+                            height: { xs: 30, sm: 34, md: 40, lg: 44 },
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             borderRadius: 1.15,
-                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
                             color: 'primary.main',
                             '& .MuiSvgIcon-root': {
-                              fontSize: { xs: 16, sm: 18 },
+                              fontSize: { xs: 16, sm: 18, md: 20, lg: 22 },
                             },
                           }}
                         >
@@ -405,7 +911,7 @@ const Home: React.FC = observer(() => {
                         <Typography
                           sx={{
                             fontWeight: 800,
-                            fontSize: { xs: '0.66rem', sm: '0.74rem' },
+                            fontSize: { xs: '0.66rem', sm: '0.74rem', md: '0.8rem', lg: '0.84rem' },
                             lineHeight: 1.15,
                             letterSpacing: '-0.01em',
                           }}
@@ -426,7 +932,7 @@ const Home: React.FC = observer(() => {
                     width: 22,
                     height: 22,
                     borderRadius: '50%',
-                    display: 'flex',
+                    display: { xs: 'flex', md: 'none' },
                     alignItems: 'center',
                     justifyContent: 'center',
                     bgcolor: alpha(theme.palette.primary.main, 0.14),
@@ -442,7 +948,7 @@ const Home: React.FC = observer(() => {
           </Stack>
 
           {!user && (
-            <Box sx={{ mt: 'auto', pt: { xs: 2.3, md: 3 } }}>
+            <Box sx={{ mt: 'auto', pt: { xs: 2.3, md: 3 }, display: { xs: 'block', md: 'none' } }}>
               <Paper
                 elevation={0}
                 sx={{
@@ -450,8 +956,6 @@ const Home: React.FC = observer(() => {
                   overflow: 'hidden',
                   p: { xs: 1.35, sm: 1.55 },
                   borderRadius: 2.6,
-                  border: '1px solid',
-                  borderColor: alpha(theme.palette.primary.main, 0.18),
                   bgcolor: alpha(theme.palette.background.paper, 0.98),
                   backgroundImage: `linear-gradient(165deg, ${alpha(theme.palette.primary.light, 0.42)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 50%, ${theme.palette.background.paper} 100%)`,
                   boxShadow: `0 16px 34px ${alpha(theme.palette.common.black, 0.06)}`,

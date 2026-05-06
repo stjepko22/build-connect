@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Stack, Typography, alpha, useTheme } from '@mui/material';
+import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
@@ -11,7 +11,6 @@ import OwnProfileEditor from '@/modules/user/components/OwnProfileEditor';
 const EditProfilePage: React.FC = observer(() => {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
   const { authenticationStore, userStore } = useRootStore();
   const authenticatedUser = authenticationStore.user;
   const currentUser = authenticatedUser ? userStore.getUserById(authenticatedUser.id) : null;

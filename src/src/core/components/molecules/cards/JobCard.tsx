@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import {
   Badge,
@@ -29,22 +29,35 @@ interface JobCardProps {
 
 const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { bidStore, authenticationStore } = useRootStore();
+  const { bidStore, authenticationStore, jobStore } = useRootStore();
 
   const bidsCount = bidStore.getBidsByJobId(job.id).length;
   const isOwner = authenticationStore.user?.id === job.investitorId;
+  const statusLabel = jobStore.getJobStatusLabel(job.status);
+  const statusColor = jobStore.getJobStatusColor(job.status);
+  const currentPath = location.pathname;
+  const returnState = currentPath.startsWith('/moji-poslovi')
+    ? { returnTo: '/moji-poslovi', returnLabel: 'Povratak na moje poslove' }
+    : currentPath.startsWith('/dashboard')
+      ? { returnTo: '/dashboard', returnLabel: 'Povratak na dashboard' }
+      : currentPath.startsWith('/profil/')
+        ? { returnTo: currentPath, returnLabel: 'Povratak na profil' }
+        : currentPath.startsWith('/marketplace')
+          ? { returnTo: '/marketplace', returnLabel: 'Povratak na marketplace' }
+          : { returnTo: '/marketplace', returnLabel: 'Povratak na marketplace' };
 
   return (
     <Card
       role="link"
       tabIndex={0}
-      onClick={() => navigate(`/marketplace/${job.id}`)}
+      onClick={() => navigate(`/marketplace/${job.id}`, { state: returnState })}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          navigate(`/marketplace/${job.id}`);
+          navigate(`/marketplace/${job.id}`, { state: returnState });
         }
       }}
       sx={{
@@ -79,26 +92,40 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
       <CardContent sx={{ flexGrow: 1, p: { xs: 1.55, md: 3 } }}>
         <Stack spacing={{ xs: 1.1, md: 1.6 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-            <Chip
-              label={job.category}
-              size="small"
-              sx={{
-                fontWeight: 800,
-                borderRadius: 999,
-                bgcolor: alpha(theme.palette.primary.main, 0.12),
-                backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.96)} 0%, ${alpha(theme.palette.primary.light, 0.68)} 52%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                color: 'primary.main',
-                fontSize: '0.7rem',
-                height: { xs: 30, md: 34 },
-                border: '1px solid',
-                borderColor: alpha(theme.palette.primary.main, 0.16),
-                boxShadow: `0 10px 22px ${alpha(theme.palette.primary.main, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.78)}`,
-                '& .MuiChip-label': {
-                  px: { xs: 1.1, md: 1.35 },
-                  letterSpacing: '0.012em',
-                },
-              }}
-            />
+            <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
+              <Chip
+                label={job.category}
+                size="small"
+                sx={{
+                  fontWeight: 800,
+                  borderRadius: 999,
+                  bgcolor: alpha(theme.palette.primary.main, 0.12),
+                  backgroundImage: `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.96)} 0%, ${alpha(theme.palette.primary.light, 0.68)} 52%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  color: 'primary.main',
+                  fontSize: '0.7rem',
+                  height: { xs: 30, md: 34 },
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.primary.main, 0.16),
+                  boxShadow: `0 10px 22px ${alpha(theme.palette.primary.main, 0.08)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.78)}`,
+                  '& .MuiChip-label': {
+                    px: { xs: 1.1, md: 1.35 },
+                    letterSpacing: '0.012em',
+                  },
+                }}
+              />
+              <Chip
+                label={statusLabel}
+                size="small"
+                color={statusColor}
+                variant={job.status === 'OPEN' ? 'outlined' : 'filled'}
+                sx={{
+                  fontWeight: 800,
+                  borderRadius: 999,
+                  fontSize: '0.68rem',
+                  height: { xs: 30, md: 34 },
+                }}
+              />
+            </Stack>
 
             <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: 'text.disabled', flexShrink: 0 }}>
               <AccessTimeIcon sx={{ fontSize: 14 }} />
@@ -144,8 +171,8 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
 
           <Divider sx={{ opacity: 0.45 }} />
 
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" spacing={1.2}>
-            <Stack spacing={0.55} sx={{ minWidth: 0 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" spacing={1.1}>
+            <Stack spacing={0.5} sx={{ minWidth: 0, flex: '1 1 auto', pr: 0.2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                 <LocationOnIcon sx={{ fontSize: 16, color: 'secondary.main' }} />
                 <Typography
@@ -178,12 +205,13 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                 <Box
                   sx={{
                     mt: 0.35,
-                    px: 0.95,
-                    py: 0.68,
+                    px: { xs: 0.78, md: 0.95 },
+                    py: { xs: 0.56, md: 0.68 },
                     borderRadius: 2.2,
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 0.7,
+                    gap: { xs: 0.5, md: 0.7 },
+                    maxWidth: '100%',
                     bgcolor: job.budget
                       ? alpha(theme.palette.success.main, 0.11)
                       : alpha(theme.palette.secondary.main, 0.07),
@@ -201,8 +229,8 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                 >
                   <Box
                     sx={{
-                      width: 28,
-                      height: 28,
+                      width: { xs: 24, md: 28 },
+                      height: { xs: 24, md: 28 },
                       borderRadius: 999,
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -214,17 +242,17 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                       flexShrink: 0,
                     }}
                   >
-                    <PaidOutlinedIcon sx={{ fontSize: 15 }} />
-                  </Box>
-                  <Typography
-                    sx={{
-                      fontWeight: 900,
-                      color: job.budget ? 'success.dark' : 'secondary.main',
-                      lineHeight: 1.05,
-                      fontSize: { xs: '1.02rem', md: '1.18rem' },
-                      letterSpacing: '-0.02em',
-                      whiteSpace: 'nowrap',
-                    }}
+                      <PaidOutlinedIcon sx={{ fontSize: { xs: 13, md: 15 } }} />
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontWeight: 900,
+                        color: job.budget ? 'success.dark' : 'secondary.main',
+                        lineHeight: 1.05,
+                        fontSize: { xs: '0.94rem', md: '1.12rem' },
+                        letterSpacing: '-0.02em',
+                        whiteSpace: 'nowrap',
+                      }}
                   >
                      {job.budget ? `${job.budget.toLocaleString()} EUR` : 'Po dogovoru'}
                   </Typography>
@@ -232,7 +260,7 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
               </Box>
             </Stack>
 
-            <Stack spacing={0.7} alignItems="flex-end" sx={{ flexShrink: 0 }}>
+            <Stack spacing={0.55} alignItems="flex-end" sx={{ flexShrink: 0, minWidth: { xs: 112, md: 134 } }}>
               {isOwner && (
                 <Badge badgeContent={bidsCount} color="error" sx={{ mr: 0.2 }}>
                   <ChatBubbleOutlineIcon color="action" />
@@ -243,10 +271,10 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 0.75,
-                  pl: 1,
-                  pr: 0.45,
-                  py: 0.42,
+                  gap: { xs: 0.55, md: 0.72 },
+                  pl: { xs: 0.82, md: 1 },
+                  pr: { xs: 0.36, md: 0.45 },
+                  py: { xs: 0.34, md: 0.42 },
                   borderRadius: 999,
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   border: '1px solid',
@@ -259,7 +287,7 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                 <Typography
                   component="span"
                   sx={{
-                    fontSize: { xs: '0.77rem', md: '0.8rem' },
+                    fontSize: { xs: '0.7rem', md: '0.8rem' },
                     fontWeight: 800,
                     letterSpacing: '-0.01em',
                     color: 'inherit',
@@ -270,8 +298,8 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                 </Typography>
                 <Box
                   sx={{
-                    width: { xs: 24, md: 26 },
-                    height: { xs: 24, md: 26 },
+                    width: { xs: 22, md: 26 },
+                    height: { xs: 22, md: 26 },
                     borderRadius: 999,
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -282,7 +310,7 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                     flexShrink: 0,
                   }}
                 >
-                  <ArrowForwardIosRoundedIcon sx={{ fontSize: { xs: 11, md: 12 } }} />
+                  <ArrowForwardIosRoundedIcon sx={{ fontSize: { xs: 10, md: 12 } }} />
                 </Box>
               </Box>
             </Stack>
