@@ -29,7 +29,7 @@ const LoginPage: React.FC = observer(() => {
           borderRadius: 6,
           border: '1px solid',
           borderColor: alpha(theme.palette.divider, 0.1),
-          boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+          boxShadow: 2,
           bgcolor: 'background.paper',
           width: '100%',
         }}

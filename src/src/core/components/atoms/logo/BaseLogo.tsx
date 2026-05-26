@@ -29,7 +29,7 @@ const BaseLogo: React.FC = () => {
           alignItems: 'center'
         }}
       >
-        BUILD<span style={{ color: '#FFB300' }}>CONNECT</span>
+        BUILD<Box component="span" sx={{ color: 'primary.main' }}>CONNECT</Box>
       </Typography>
     </Box>
   );

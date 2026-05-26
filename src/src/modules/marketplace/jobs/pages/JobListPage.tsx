@@ -103,7 +103,7 @@ const JobListPage: React.FC = observer(() => {
   const roleLabel = !isAuthenticated
     ? 'gosta'
     : authenticationStore.user?.role === 'IZVODJAC'
-      ? 'izvodjaca'
+      ? 'izvođača'
       : 'investitora';
   const selectedFiltersCount = jobStore.selectedJobCategories.length;
   const selectedRoleLabel = !isAuthenticated
@@ -254,11 +254,11 @@ const JobListPage: React.FC = observer(() => {
               <Stack spacing={1.1}>
                 <Box>
                   <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: '1.02rem' }}>
-                    Pronadji posao
+                    Pronađi posao
                   </Typography>
                   <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.8rem' }}>
                     {isAuthenticated
-                      ? 'Pretrazi aktivne oglase i kreni prema sljedecem projektu.'
+                      ? 'Pretraži aktivne oglase i kreni prema sljedećem projektu.'
                       : 'Pregledaj aktivne oglase i stekni dojam kako BuildConnect povezuje projekte i timove.'}
                   </Typography>
                 </Box>
@@ -275,7 +275,7 @@ const JobListPage: React.FC = observer(() => {
                   }}
                 >
                   <BaseInput
-                    placeholder="Pretrazi po zanimanju, gradu..."
+                    placeholder="Pretraži po zanimanju, gradu..."
                     value={jobStore.jobSearchInputValue}
                     onChange={handleSearchChange}
                     sx={{
@@ -358,7 +358,7 @@ const JobListPage: React.FC = observer(() => {
                     }}
                   >
                     {isAuthenticated
-                      ? 'Pronadji posao koji odgovara tvom timu'
+                      ? 'Pronađi posao koji odgovara tvom timu'
                       : 'Pregledaj otvorene projekte i vidi kako izgleda stvarni BuildConnect marketplace'}
                   </Typography>
                   <Typography
@@ -373,8 +373,8 @@ const JobListPage: React.FC = observer(() => {
                     }}
                   >
                     {isAuthenticated
-                      ? 'Pretrazi aktivne oglase, suzi rezultate po kategorijama i brzo dodji do sljedeceg projekta bez suvisnih koraka.'
-                      : 'Gosti mogu slobodno pregledavati aktivne oglase, dok registrirani korisnici otkljucavaju prijavu na poslove, ponude i puni radni tok unutar platforme.'}
+                      ? 'Pretraži aktivne oglase, suzi rezultate po kategorijama i brzo dođi do sljedećeg projekta bez suvišnih koraka.'
+                      : 'Gosti mogu slobodno pregledavati aktivne oglase, dok registrirani korisnici otključavaju prijavu na poslove, ponude i puni radni tok unutar platforme.'}
                   </Typography>
                 </Box>
 
@@ -427,7 +427,7 @@ const JobListPage: React.FC = observer(() => {
             >
               <TextField
                 fullWidth
-                placeholder="Pretrazite po zanimanju, gradu..."
+                placeholder="Pretražite po zanimanju, gradu..."
                 variant="outlined"
                 value={jobStore.jobSearchInputValue}
                 onChange={handleSearchChange}
@@ -455,7 +455,7 @@ const JobListPage: React.FC = observer(() => {
                   boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.18)}`,
                 }}
               >
-                Pretrazi
+                Pretraži
               </BaseButton>
             </Paper>
           </Stack>

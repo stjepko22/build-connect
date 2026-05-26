@@ -21,7 +21,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose, authentication
         sx: { 
           borderRadius: 6, 
           p: 1,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.15)' 
+          boxShadow: 8,
         }
       }}
     >

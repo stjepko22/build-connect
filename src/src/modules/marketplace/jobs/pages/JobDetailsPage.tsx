@@ -98,7 +98,7 @@ const JobDetailsPage: React.FC = observer(() => {
   };
 
   const handleAcceptBid = async (bidId: string) => {
-    if (window.confirm('Jeste li sigurni da zelite prihvatiti ovu ponudu?')) {
+    if (window.confirm('Jeste li sigurni da želite prihvatiti ovu ponudu?')) {
       const isAccepted = await bidStore.acceptBid(bidId);
       if (isAccepted) {
         await jobStore.loadJobById(job.id);
@@ -112,7 +112,7 @@ const JobDetailsPage: React.FC = observer(() => {
   };
 
   const handleCloseJob = async () => {
-    if (!window.confirm('Jeste li sigurni da zelite zatvoriti ovaj oglas za nove ponude?')) {
+    if (!window.confirm('Jeste li sigurni da želite zatvoriti ovaj oglas za nove ponude?')) {
       return;
     }
 
@@ -120,7 +120,7 @@ const JobDetailsPage: React.FC = observer(() => {
   };
 
   const handleCompleteJob = async () => {
-    if (!window.confirm('Jeste li sigurni da zelite oznaciti posao zavrsenim?')) {
+    if (!window.confirm('Jeste li sigurni da želite označiti posao završenim?')) {
       return;
     }
 
@@ -337,7 +337,7 @@ const JobDetailsPage: React.FC = observer(() => {
                     letterSpacing: '0.06em',
                   }}
                 >
-                  Budzet projekta
+                  Budžet projekta
                 </Typography>
                 <Typography
                   sx={{
@@ -552,7 +552,7 @@ const JobDetailsPage: React.FC = observer(() => {
                     lineHeight: 1.55,
                   }}
                 >
-                  Pregledaj zainteresirane izvodjace i odaberi najbolju ponudu.
+                  Pregledaj zainteresirane izvođače i odaberi najbolju ponudu.
                 </Typography>
               </Box>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -571,7 +571,7 @@ const JobDetailsPage: React.FC = observer(() => {
                 />
                 {!isMobile && (
                   <Chip
-                    label={acceptedBid ? 'Odabir u tijeku' : 'Ceka odabir'}
+                    label={acceptedBid ? 'Odabir u tijeku' : 'Čeka odabir'}
                     variant="outlined"
                     sx={{
                       height: 30,
@@ -630,10 +630,10 @@ const JobDetailsPage: React.FC = observer(() => {
                   <EngineeringIcon sx={{ fontSize: 28 }} />
                 </Box>
                 <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1.02rem', md: '1.15rem' }, mb: 0.7 }}>
-                  Jos nema ponuda
+                  Još nema ponuda
                 </Typography>
                 <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
-                  Jos nema ponuda. Budite prvi!
+                  Još nema ponuda. Budite prvi!
                 </Typography>
               </Paper>
             ) : (
@@ -908,7 +908,7 @@ const JobDetailsPage: React.FC = observer(() => {
                 }}
               >
                 <Chip
-                  label="Zavrsni korak"
+                  label="Završni korak"
                   sx={{
                     mb: 1.25,
                     height: 28,
@@ -925,10 +925,10 @@ const JobDetailsPage: React.FC = observer(() => {
                   }}
                 />
                 <Typography variant="h5" sx={{ fontWeight: 900, mb: 1.5 }}>
-                  Zavrsi projekt
+                  Završi projekt
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 4, opacity: 0.9 }}>
-                  Ocijenite izvodaca <strong>{acceptedBid.contractorName}</strong>.
+                  Ocijenite izvođača <strong>{acceptedBid.contractorName}</strong>.
                 </Typography>
                 <form onSubmit={handleSubmitReview}>
                   <Box
@@ -1013,7 +1013,7 @@ const JobDetailsPage: React.FC = observer(() => {
                 {jobStore.canCompleteJob(job, acceptedBid?.contractorId, currentUserId) ? (
                   <Stack spacing={1.4}>
                     <Chip
-                      label="Vas projekt"
+                      label="Vaš projekt"
                       color="success"
                       sx={{
                         alignSelf: 'flex-start',
@@ -1029,10 +1029,10 @@ const JobDetailsPage: React.FC = observer(() => {
                       }}
                     />
                     <Typography variant="h5" sx={{ fontWeight: 900, color: 'secondary.main' }}>
-                      Zavrsite posao
+                      Završite posao
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                      Kada ste dovrsili dogovorene radove, oznacite posao zavrsenim. Nakon toga investitor moze ostaviti recenziju.
+                      Kada ste dovršili dogovorene radove, označite posao završenim. Nakon toga investitor može ostaviti recenziju.
                     </Typography>
                     {jobStore.jobsError && (
                       <Alert severity="error" sx={{ borderRadius: 3 }}>
@@ -1052,7 +1052,7 @@ const JobDetailsPage: React.FC = observer(() => {
                         boxShadow: `0 14px 30px ${alpha(theme.palette.success.main, 0.2)}`,
                       }}
                     >
-                      Oznaci posao zavrsenim
+                      Označi posao završenim
                     </BaseButton>
                   </Stack>
                 ) : job.status !== 'OPEN' ? (
@@ -1080,10 +1080,10 @@ const JobDetailsPage: React.FC = observer(() => {
                     </Typography>
                     <Alert severity="info" sx={{ borderRadius: 4, fontWeight: 600 }}>
                       {job.status === 'CLOSED'
-                        ? 'Investitor je zatvorio oglas i vise ne prima nove ponude.'
+                        ? 'Investitor je zatvorio oglas i više ne prima nove ponude.'
                         : isAcceptedContractor
-                          ? 'Posao je oznacen zavrsenim i ceka zakljucak investitora.'
-                        : 'Ovaj oglas vise ne prima nove ponude.'}
+                          ? 'Posao je označen završenim i čeka zaključak investitora.'
+                        : 'Ovaj oglas više ne prima nove ponude.'}
                     </Alert>
                   </Stack>
                 ) : (
@@ -1105,14 +1105,14 @@ const JobDetailsPage: React.FC = observer(() => {
                       }}
                     />
                     <Typography variant="h5" sx={{ fontWeight: 900, mb: 1 }}>
-                      Posaljite ponudu
+                      Pošaljite ponudu
                     </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 2.6, maxWidth: 320, lineHeight: 1.55 }}>
-                        Investitor ce primiti vasu ponudu odmah.
+                        Investitor će primiti vašu ponudu odmah.
                       </Typography>
                       {currentUserId === job.investitorId && (
                         <Alert severity="info" sx={{ mb: 2.4, borderRadius: 3 }}>
-                          Ne mozete poslati ponudu na vlastiti oglas.
+                          Ne možete poslati ponudu na vlastiti oglas.
                         </Alert>
                       )}
                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
@@ -1188,7 +1188,7 @@ const JobDetailsPage: React.FC = observer(() => {
                         />
                       </Stack>
                       <BaseInput
-                        label="Vasa poruka"
+                        label="Vaša poruka"
                         multiline
                         rows={5}
                         value={bidStore.bidMessage}
@@ -1219,7 +1219,7 @@ const JobDetailsPage: React.FC = observer(() => {
                           boxShadow: `0 14px 30px ${alpha(theme.palette.primary.main, 0.2)}`,
                         }}
                       >
-                        Posalji ponudu
+                        Pošalji ponudu
                       </BaseButton>
                     </form>
                   </>

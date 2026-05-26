@@ -70,7 +70,7 @@ const MyJobsPage: React.FC = observer(() => {
   };
 
   const handleCloseJob = async (jobId: string) => {
-    if (!window.confirm('Jeste li sigurni da zelite zatvoriti ovaj oglas za nove ponude?')) {
+    if (!window.confirm('Jeste li sigurni da želite zatvoriti ovaj oglas za nove ponude?')) {
       return;
     }
 
@@ -78,7 +78,7 @@ const MyJobsPage: React.FC = observer(() => {
   };
 
   const handleCompleteJob = async (jobId: string) => {
-    if (!window.confirm('Jeste li sigurni da zelite oznaciti posao zavrsenim?')) {
+    if (!window.confirm('Jeste li sigurni da želite označiti posao završenim?')) {
       return;
     }
 
@@ -107,7 +107,7 @@ const MyJobsPage: React.FC = observer(() => {
 
   const isInvestor = user.role === 'INVESTITOR';
   const tabSummaryLabel = isInvestor
-    ? `${activeJobs.length} aktivnih i ${completedJobs.length} zavrsenih`
+    ? `${activeJobs.length} aktivnih i ${completedJobs.length} završenih`
     : `${jobsIAppliedTo.length} aktivnih i ${jobsIWon.length} prihvacenih`;
   const emptyStateSx = {
     borderRadius: 4,
@@ -201,11 +201,11 @@ const MyJobsPage: React.FC = observer(() => {
               {isInvestor
                 ? [
                     <Tab key={0} icon={<HourglassEmptyIcon />} iconPosition="start" label={`Aktivni oglasi (${activeJobs.length})`} />,
-                    <Tab key={1} icon={<CheckCircleIcon />} iconPosition="start" label={`Zavrseni projekti (${completedJobs.length})`} />,
+                    <Tab key={1} icon={<CheckCircleIcon />} iconPosition="start" label={`Završeni projekti (${completedJobs.length})`} />,
                   ]
                 : [
                     <Tab key={0} icon={<AssignmentIcon />} iconPosition="start" label={`Moje ponude (${jobsIAppliedTo.length})`} />,
-                    <Tab key={1} icon={<CheckCircleIcon />} iconPosition="start" label={`Prihvaceni poslovi (${jobsIWon.length})`} />,
+                    <Tab key={1} icon={<CheckCircleIcon />} iconPosition="start" label={`Prihvaćeni poslovi (${jobsIWon.length})`} />,
                   ]}
             </Tabs>
             </Box>
@@ -228,7 +228,7 @@ const MyJobsPage: React.FC = observer(() => {
                 boxShadow: `0 14px 28px ${alpha(theme.palette.primary.main, 0.18)}`,
               }}
             >
-              {isInvestor ? 'Objavi posao' : 'Pronadji posao'}
+              {isInvestor ? 'Objavi posao' : 'Pronađi posao'}
             </BaseButton>
           </Stack>
 
@@ -237,12 +237,12 @@ const MyJobsPage: React.FC = observer(() => {
               <CustomTabPanel value={jobStore.myJobsTabValue} index={0}>
                 {renderPanelHeader(
                   'Aktivni oglasi',
-                  'Oglasi koji su i dalje otvoreni za ponude i trebaju vasu paznju.',
+                  'Oglasi koji su i dalje otvoreni za ponude i trebaju vašu pažnju.',
                   tabSummaryLabel
                 )}
                 {activeJobs.length === 0 ? (
                   <Alert severity="info" variant="outlined" sx={emptyStateSx}>
-                    Trenutno nemate aktivnih oglasa koji cekaju majstore.
+                    Trenutno nemate aktivnih oglasa koji čekaju majstore.
                   </Alert>
                 ) : (
                   <Grid container spacing={{ xs: 2, md: 2.6 }}>
@@ -294,13 +294,13 @@ const MyJobsPage: React.FC = observer(() => {
 
               <CustomTabPanel value={jobStore.myJobsTabValue} index={1}>
                 {renderPanelHeader(
-                  'Zavrseni projekti',
-                  'Arhiva projekata koji su zavrseni i vise ne traze nove aktivnosti.',
+                  'Završeni projekti',
+                  'Arhiva projekata koji su završeni i više ne traže nove aktivnosti.',
                   tabSummaryLabel
                 )}
                 {completedJobs.length === 0 ? (
                   <Alert severity="info" variant="outlined" sx={emptyStateSx}>
-                    Nema zavrsenih projekata u vasoj arhivi.
+                    Nema završenih projekata u vašoj arhivi.
                   </Alert>
                 ) : (
                   <Grid container spacing={{ xs: 2, md: 2.6 }}>
@@ -339,13 +339,13 @@ const MyJobsPage: React.FC = observer(() => {
             <>
               <CustomTabPanel value={jobStore.myJobsTabValue} index={0}>
                 {renderPanelHeader(
-                  'Ponude na cekanju',
-                  'Ponude koje su poslane investitorima i trenutno cekaju odgovor ili odabir.',
-                  `${jobsIAppliedTo.length} na cekanju`
+                  'Ponude na čekanju',
+                  'Ponude koje su poslane investitorima i trenutno čekaju odgovor ili odabir.',
+                  `${jobsIAppliedTo.length} na čekanju`
                 )}
                 {jobsIAppliedTo.length === 0 ? (
                   <Alert severity="info" variant="outlined" sx={emptyStateSx}>
-                    Niste poslali nijednu ponudu koja je trenutno u statusu cekanja.
+                    Niste poslali nijednu ponudu koja je trenutno u statusu čekanja.
                   </Alert>
                 ) : (
                   <Grid container spacing={{ xs: 2, md: 2.6 }}>
@@ -380,8 +380,8 @@ const MyJobsPage: React.FC = observer(() => {
 
               <CustomTabPanel value={jobStore.myJobsTabValue} index={1}>
                 {renderPanelHeader(
-                  'Prihvaceni poslovi',
-                  'Projekti na kojima ste vec odabrani i gdje suradnja moze ici prema izvedbi.',
+                  'Prihvaćeni poslovi',
+                  'Projekti na kojima ste već odabrani i gdje suradnja može ići prema izvedbi.',
                   `${jobsIWon.length} prihvaceno`
                 )}
                 {jobsIWon.length === 0 ? (
@@ -420,7 +420,7 @@ const MyJobsPage: React.FC = observer(() => {
                           onClick={() => void handleCompleteJob(job.id)}
                           sx={{ fontWeight: 800, borderRadius: 999, minHeight: 40 }}
                         >
-                          Oznaci zavrsenim
+                          Označi završenim
                         </BaseButton>
                         </Stack>
                       </Grid>

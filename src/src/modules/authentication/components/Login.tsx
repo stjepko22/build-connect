@@ -15,18 +15,19 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }) => {
   const auth = authenticationStore;
 
-  // Jednostavna validacija emaila
   const isEmailFormatValid = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const emailError = auth.loginEmail.length > 0 && !isEmailFormatValid(auth.loginEmail);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (auth.isLoginFormValid && !emailError) {
       const isLoggedIn = await auth.login();
-      if (isLoggedIn && onSuccess) onSuccess();
+      if (isLoggedIn && onSuccess) {
+        onSuccess();
+      }
     }
   };
 
@@ -46,12 +47,12 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
           Molimo prijavite se kako biste nastavili.
         </Typography>
 
-        <Box sx={{ width: '100%', display: "flex", flexDirection: "column", gap: 3, mb: 4 }}>
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
           <BaseInput
             select
             label="Prijavi me kao"
             value={auth.loginRole}
-            onChange={(e) => auth.setLoginRole(e.target.value as 'INVESTITOR' | 'IZVODJAC')}
+            onChange={(event) => auth.setLoginRole(event.target.value as 'INVESTITOR' | 'IZVODJAC')}
             fullWidth
           >
             <MenuItem value="INVESTITOR">Investitor (Tražim majstore)</MenuItem>
@@ -63,10 +64,10 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
             type="email"
             fullWidth
             value={auth.loginEmail}
-            onChange={(e) => auth.setLoginEmail(e.target.value)}
+            onChange={(event) => auth.setLoginEmail(event.target.value)}
             required
             error={emailError}
-            helperText={emailError ? "Unesite ispravnu email adresu (npr. ime@domena.com)" : ""}
+            helperText={emailError ? 'Unesite ispravnu email adresu (npr. ime@domena.com)' : ''}
             slotProps={{
               input: {
                 startAdornment: <EmailIcon sx={{ mr: 1, color: emailError ? 'error.main' : 'text.disabled', fontSize: 20 }} />,
@@ -79,7 +80,7 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
             type="password"
             fullWidth
             value={auth.loginPassword}
-            onChange={(e) => auth.setLoginPassword(e.target.value)}
+            onChange={(event) => auth.setLoginPassword(event.target.value)}
             required
             slotProps={{
               input: {
@@ -111,5 +112,3 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
 });
 
 export default Login;
-
-

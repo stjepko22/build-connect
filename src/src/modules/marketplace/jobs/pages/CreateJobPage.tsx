@@ -130,7 +130,7 @@ const CreateJobPage: React.FC = observer(() => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <BaseInput
                     fullWidth
-                    label="Budzet (EUR)"
+                    label="Budžet (EUR)"
                     type="number"
                     value={jobStore.createJobBudget}
                     onChange={(e) => jobStore.setCreateJobBudget(e.target.value)}
@@ -149,7 +149,7 @@ const CreateJobPage: React.FC = observer(() => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <BaseInput
                     fullWidth
-                    label="Rok zavrsetka"
+                    label="Rok završetka"
                     placeholder="npr. Lipanj 2026."
                     value={jobStore.createJobDeadline}
                     onChange={(e) => jobStore.setCreateJobDeadline(e.target.value)}

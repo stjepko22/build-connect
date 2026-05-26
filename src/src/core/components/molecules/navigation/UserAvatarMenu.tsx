@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  Avatar, 
-  Menu, 
-  MenuItem, 
-  ListItemIcon, 
-  Typography, 
-  Divider, 
-  IconButton, 
+import {
+  Avatar,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Typography,
+  Divider,
+  IconButton,
   Tooltip,
   alpha,
-  Box 
+  Box,
 } from '@mui/material';
 import Logout from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
@@ -42,11 +42,16 @@ const UserAvatarMenu: React.FC = observer(() => {
 
   const handleProfile = () => {
     handleClose();
-    if (!user) return;
+    if (!user) {
+      return;
+    }
+
     navigate(`/profil/${user.id}`);
   };
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
   const initial = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
 
@@ -59,21 +64,21 @@ const UserAvatarMenu: React.FC = observer(() => {
           aria-controls={open ? 'account-menu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          sx={{ 
+          sx={{
             p: 0.5,
             border: '2px solid',
             borderColor: open ? 'primary.main' : 'transparent',
-            transition: '0.2s'
+            transition: '0.2s',
           }}
         >
-          <Avatar 
-            sx={{ 
-              width: 40, 
-              height: 40, 
-              bgcolor: 'secondary.main', 
+          <Avatar
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: 'secondary.main',
               color: 'primary.main',
               fontWeight: 800,
-              fontSize: '1.1rem'
+              fontSize: '1.1rem',
             }}
           >
             {initial}
@@ -86,13 +91,12 @@ const UserAvatarMenu: React.FC = observer(() => {
         open={open}
         onClose={handleClose}
         onClick={handleClose}
-        // ISPRAVLJENO: Umjesto PaperProps koristimo slotProps.paper
         slotProps={{
           paper: {
             elevation: 0,
             sx: {
               overflow: 'visible',
-              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+              boxShadow: 3,
               mt: 1.5,
               borderRadius: 3,
               minWidth: 200,
@@ -105,7 +109,7 @@ const UserAvatarMenu: React.FC = observer(() => {
                 mr: 1,
               },
             },
-          }
+          },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -123,7 +127,7 @@ const UserAvatarMenu: React.FC = observer(() => {
           <ListItemIcon>
             <PersonIcon fontSize="small" />
           </ListItemIcon>
-          Moj Profil
+          Moj profil
         </MenuItem>
         <MenuItem onClick={() => navigate('/moji-poslovi')} sx={{ py: 1.2 }}>
           <ListItemIcon>
@@ -132,13 +136,13 @@ const UserAvatarMenu: React.FC = observer(() => {
           Moji poslovi
         </MenuItem>
         <Divider />
-        <MenuItem 
-          onClick={handleLogout} 
-          sx={{ 
-            py: 1.2, 
+        <MenuItem
+          onClick={handleLogout}
+          sx={(theme) => ({
+            py: 1.2,
             color: 'error.main',
-            '&:hover': { bgcolor: alpha('#f44336', 0.04) } 
-          }}
+            '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.04) },
+          })}
         >
           <ListItemIcon>
             <Logout fontSize="small" color="error" />
@@ -151,4 +155,3 @@ const UserAvatarMenu: React.FC = observer(() => {
 });
 
 export default UserAvatarMenu;
-

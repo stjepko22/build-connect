@@ -50,7 +50,7 @@ const EditProfilePage: React.FC = observer(() => {
     return (
       <BaseContainer maxWidth="md" withPadding={false}>
         <Alert severity="error" sx={{ mt: 1, borderRadius: 3 }}>
-          {userStore.selectedUserError || 'Vas profil nije dostupan za uredjivanje.'}
+          {userStore.selectedUserError || 'Vaš profil nije dostupan za uređivanje.'}
         </Alert>
       </BaseContainer>
     );
@@ -88,7 +88,7 @@ const EditProfilePage: React.FC = observer(() => {
           Uredi profil
         </Typography>
         <Typography sx={{ color: 'text.secondary', maxWidth: 720, lineHeight: 1.6, fontSize: { xs: '0.92rem', md: '0.98rem' } }}>
-          Azurirajte podatke koji se prikazuju na vasem profilu.
+          Ažurirajte podatke koji se prikazuju na vašem profilu.
         </Typography>
       </Stack>
 

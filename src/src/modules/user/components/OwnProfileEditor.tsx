@@ -95,7 +95,7 @@ const OwnProfileEditor: React.FC<OwnProfileEditorProps> = observer(({ onCancel, 
             value={userStore.profilePhone}
             onChange={(event) => userStore.setProfilePhone(event.target.value)}
             required
-            helperText="Broj je obavezan. Javno se prikazuje samo ako ukljucite vidljivost."
+            helperText="Broj je obavezan. Javno se prikazuje samo ako uključite vidljivost."
           />
 
           <Box
@@ -124,8 +124,8 @@ const OwnProfileEditor: React.FC<OwnProfileEditorProps> = observer(({ onCancel, 
                     </Typography>
                     <Typography sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
                       {hasPhone
-                        ? 'Ako je iskljuceno, drugi korisnici nece vidjeti vas broj.'
-                        : 'Unesite broj telefona da biste mogli ukljuciti prikaz.'}
+                        ? 'Ako je isključeno, drugi korisnici neće vidjeti vaš broj.'
+                        : 'Unesite broj telefona da biste mogli uključiti prikaz.'}
                     </Typography>
                   </Box>
                 }
@@ -149,7 +149,7 @@ const OwnProfileEditor: React.FC<OwnProfileEditorProps> = observer(({ onCancel, 
                 Usluge
               </Typography>
               <Typography sx={{ mb: 1.25, color: 'text.secondary', fontSize: '0.83rem', lineHeight: 1.5 }}>
-                Odaberite usluge koje zelite isticati na profilu.
+                Odaberite usluge koje želite isticati na profilu.
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {userStore.availableServiceCategories.map((category) => {

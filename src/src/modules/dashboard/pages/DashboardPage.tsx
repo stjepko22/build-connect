@@ -72,13 +72,13 @@ const DashboardPage: React.FC = observer(() => {
   };
 
   const dashboardTitle =
-    user?.role === 'INVESTITOR' ? 'Kontrolirajte objave i odabir izvodjaca' : 'Pratite ponude i aktivne projekte';
+    user?.role === 'INVESTITOR' ? 'Kontrolirajte objave i odabir izvođača' : 'Pratite ponude i aktivne projekte';
   const dashboardSubtitle =
     user?.role === 'INVESTITOR'
-      ? 'Na jednom mjestu pratite svoje oglase, broj pristiglih ponuda i preporucene izvodjace za sljedece korake.'
+      ? 'Na jednom mjestu pratite svoje oglase, broj pristiglih ponuda i preporučene izvođače za sljedeće korake.'
       : 'Odmah vidite status poslanih ponuda, prihvacene projekte i reputaciju koju gradite kroz suradnje.';
   const dashboardRoleLabel = user?.role === 'INVESTITOR' ? 'Investitor workspace' : 'Izvodjac workspace';
-  const primaryActionLabel = user?.role === 'INVESTITOR' ? 'Novi oglas' : 'Pronadji posao';
+  const primaryActionLabel = user?.role === 'INVESTITOR' ? 'Novi oglas' : 'Pronađi posao';
   const summary = dashboard?.summary;
   const jobActivities = dashboard?.jobActivities ?? [];
   const bidActivities = dashboard?.bidActivities ?? [];
@@ -213,7 +213,7 @@ const DashboardPage: React.FC = observer(() => {
               <StatCard label="Poslane ponude" value={summary?.sentBidsCount ?? 0} icon={<SendIcon />} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <StatCard label="Prihvaceni poslovi" value={summary?.acceptedBidsCount ?? 0} icon={<AssignmentIcon />} color={theme.palette.success.main} />
+              <StatCard label="Prihvaćeni poslovi" value={summary?.acceptedBidsCount ?? 0} icon={<AssignmentIcon />} color={theme.palette.success.main} />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <StatCard label="Prosjecna ocjena" value={(summary?.averageRating ?? 0).toFixed(1)} icon={<StarRateIcon />} color={theme.palette.warning.main} />
@@ -299,7 +299,7 @@ const DashboardPage: React.FC = observer(() => {
                           <Stack direction="row" spacing={0.9} alignItems="center" flexWrap="wrap" useFlexGap>
                             <Chip label={`${job.bidsCount} ponuda`} size="small" sx={{ fontWeight: 800, height: 24, fontSize: 11 }} />
                             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                              Budzet: {job.budget ? `${job.budget} EUR` : 'Po dogovoru'}
+                              Budžet: {job.budget ? `${job.budget} EUR` : 'Po dogovoru'}
                             </Typography>
                           </Stack>
                         </Box>
@@ -387,17 +387,17 @@ const DashboardPage: React.FC = observer(() => {
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 1 }}>
                       <PeopleAltIcon color="secondary" />
-                      Preporuceni izvodaci
+                      Preporučeni izvođači
                     </Typography>
                   </Box>
                   <BaseButton size="small" variant="text" onClick={() => navigate('/izvodjaci')}>
-                    Svi izvodaci
+                    Svi izvođači
                   </BaseButton>
                 </Stack>
 
                 {recommendedContractors.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
-                    Objavite prvi posao ili odaberite kategorije kako biste dobili preporuke izvodaca.
+                    Objavite prvi posao ili odaberite kategorije kako biste dobili preporuke izvođača.
                   </Typography>
                 ) : (
                   <Stack spacing={1.6}>
@@ -448,7 +448,7 @@ const DashboardPage: React.FC = observer(() => {
               </Typography>
               <Typography variant="h6" sx={{ fontWeight: 900, mb: 1.4 }}>Uredite javni profil</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2.6, lineHeight: 1.6 }}>
-                Vas profil je javan i vidljiv drugim korisnicima.
+                Vaš profil je javan i vidljiv drugim korisnicima.
               </Typography>
               <BaseButton
                 fullWidth

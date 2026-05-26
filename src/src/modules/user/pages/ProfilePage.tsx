@@ -93,12 +93,12 @@ const ProfilePage: React.FC = observer(() => {
   const profilePageTitle = isOwnProfile
     ? 'Uredite svoj profil'
     : isContractor
-      ? 'Profil izvodjaca'
+      ? 'Profil izvođača'
       : 'Profil investitora';
   const profilePageSubtitle = isOwnProfile
     ? 'Pregledajte svoje javne podatke i uredite ih po potrebi.'
     : isContractor
-      ? 'Lokacija, usluge i recenzije koje investitorima pomazu pri odabiru.'
+      ? 'Lokacija, usluge i recenzije koje investitorima pomažu pri odabiru.'
       : 'Osnovni podaci i aktivni oglasi investitora na jednom mjestu.';
   void headerSubtitle;
   return (
@@ -255,7 +255,7 @@ const ProfilePage: React.FC = observer(() => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <VerifiedUserIcon sx={{ color: 'success.main', fontSize: 20 }} />
                       <Typography variant="body2" sx={{ fontWeight: 700, color: 'success.main' }}>
-                        Provjereni izvodjac
+                        Provjereni izvođač
                       </Typography>
                     </Box>
                   )}
@@ -310,7 +310,7 @@ const ProfilePage: React.FC = observer(() => {
                     Broj je trenutno skriven
                   </Typography>
                   <Typography sx={{ mt: 0.35, color: 'text.secondary', fontSize: '0.8rem', lineHeight: 1.5 }}>
-                    Samo vi vidite kontakt broj dok je opcija prikaza iskljucena.
+                    Samo vi vidite kontakt broj dok je opcija prikaza isključena.
                   </Typography>
                 </Box>
               )}

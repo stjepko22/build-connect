@@ -200,7 +200,7 @@ const JobCard: React.FC<JobCardProps> = observer(({ job }) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  Budzet
+                  Budžet
                 </Typography>
                 <Box
                   sx={{

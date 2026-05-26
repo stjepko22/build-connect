@@ -93,7 +93,7 @@ export default class JobStore {
     const user = this.rootStore.authenticationStore.user;
     if (!user) {
       runInAction(() => {
-        this.jobsError = 'Morate biti prijavljeni za azuriranje oglasa.';
+        this.jobsError = 'Morate biti prijavljeni za ažuriranje oglasa.';
       });
       return false;
     }
@@ -121,7 +121,7 @@ export default class JobStore {
       return true;
     } catch (error) {
       runInAction(() => {
-        this.jobsError = this.getApiErrorMessage(error, 'Azuriranje oglasa nije uspjelo.');
+        this.jobsError = this.getApiErrorMessage(error, 'Ažuriranje oglasa nije uspjelo.');
       });
       return false;
     } finally {
@@ -220,7 +220,7 @@ export default class JobStore {
       return completedJob;
     } catch (error) {
       runInAction(() => {
-        this.jobsError = this.getApiErrorMessage(error, 'Zavrsetak posla nije uspio.');
+        this.jobsError = this.getApiErrorMessage(error, 'Završetak posla nije uspio.');
       });
       return null;
     } finally {
@@ -400,7 +400,7 @@ export default class JobStore {
 
   submitEditJobForm = async () => {
     if (!this.editJobId.trim()) {
-      this.jobsError = 'Oglas nije dostupan za uredjivanje.';
+      this.jobsError = 'Oglas nije dostupan za uređivanje.';
       return false;
     }
 
@@ -411,7 +411,7 @@ export default class JobStore {
 
     const isCategoryValid = JOB_CATEGORIES.includes(this.editJobCategory as JobCategory);
     if (!isCategoryValid) {
-      this.jobsError = 'Odabrana kategorija nije podrzana.';
+      this.jobsError = 'Odabrana kategorija nije podržana.';
       return false;
     }
 
@@ -484,7 +484,7 @@ export default class JobStore {
       case 'IN_PROGRESS':
         return 'U radu';
       case 'COMPLETED':
-        return 'Zavrsen';
+        return 'Završen';
       default:
         return status;
     }

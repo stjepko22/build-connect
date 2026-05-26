@@ -70,7 +70,7 @@ const EditJobPage: React.FC = observer(() => {
     return (
       <BaseContainer maxWidth="md">
         <Alert severity="error" sx={{ mt: 1, borderRadius: 3 }}>
-          {jobStore.selectedJobError || 'Oglas nije dostupan za uredjivanje.'}
+          {jobStore.selectedJobError || 'Oglas nije dostupan za uređivanje.'}
         </Alert>
       </BaseContainer>
     );
@@ -80,7 +80,7 @@ const EditJobPage: React.FC = observer(() => {
     return (
       <BaseContainer maxWidth="md">
         <Alert severity="warning" sx={{ mt: 1, borderRadius: 3 }}>
-          Mozete uredjivati samo vlastite oglase.
+          Možete uređivati samo vlastite oglase.
         </Alert>
       </BaseContainer>
     );
@@ -99,7 +99,7 @@ const EditJobPage: React.FC = observer(() => {
           {backLabel}
         </BaseButton>
         <Alert severity="info" sx={{ borderRadius: 3 }}>
-          Oglas u trenutnom statusu vise nije moguce uredjivati.
+          Oglas u trenutnom statusu više nije moguće uređivati.
         </Alert>
       </BaseContainer>
     );
@@ -130,7 +130,7 @@ const EditJobPage: React.FC = observer(() => {
           Uredi oglas
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, maxWidth: 520, lineHeight: 1.55 }}>
-          Uredite nekoliko kljucnih podataka i brzo spremite promjene.
+          Uredite nekoliko ključnih podataka i brzo spremite promjene.
         </Typography>
 
         {jobStore.jobsError && (
@@ -150,7 +150,7 @@ const EditJobPage: React.FC = observer(() => {
                 Osnovni podaci
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2.25 }}>
-                Azurirajte naslov, kategoriju i osnovne uvjete oglasa.
+                Ažurirajte naslov, kategoriju i osnovne uvjete oglasa.
               </Typography>
 
               <Grid container spacing={2}>
@@ -201,7 +201,7 @@ const EditJobPage: React.FC = observer(() => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <BaseInput
                     fullWidth
-                    label="Budzet (EUR)"
+                    label="Budžet (EUR)"
                     type="number"
                     value={jobStore.editJobBudget}
                     onChange={(event) => jobStore.setEditJobBudget(event.target.value)}
@@ -220,7 +220,7 @@ const EditJobPage: React.FC = observer(() => {
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <BaseInput
                     fullWidth
-                    label="Rok zavrsetka"
+                    label="Rok završetka"
                     value={jobStore.editJobDeadline}
                     onChange={(event) => jobStore.setEditJobDeadline(event.target.value)}
                     required
@@ -247,7 +247,7 @@ const EditJobPage: React.FC = observer(() => {
                 Opis posla
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2.25 }}>
-                Osvjezite opis samo ako se promijenio opseg, rok ili vazni detalji.
+                Osvježite opis samo ako se promijenio opseg, rok ili važni detalji.
               </Typography>
 
               <BaseInput

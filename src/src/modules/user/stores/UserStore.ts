@@ -55,7 +55,6 @@ export default class UserStore {
         this.replaceUsers(response.data.map(this.mapUserResponseToModel), role);
       });
     } catch (error) {
-      console.error('Load users failed:', error);
       runInAction(() => {
         this.userListError = this.getApiErrorMessage(error, 'Dohvat korisnika nije uspio.');
       });
@@ -77,9 +76,8 @@ export default class UserStore {
         this.replaceUsers(response.data.map(this.mapUserResponseToModel), 'IZVODJAC');
       });
     } catch (error) {
-      console.error('Load contractors failed:', error);
       runInAction(() => {
-        this.userListError = this.getApiErrorMessage(error, 'Dohvat izvodaca nije uspio.');
+        this.userListError = this.getApiErrorMessage(error, 'Dohvat izvođača nije uspio.');
       });
     } finally {
       runInAction(() => {
@@ -106,7 +104,6 @@ export default class UserStore {
 
       return user;
     } catch (error) {
-      console.error('Load user failed:', error);
       runInAction(() => {
         this.selectedUserError = this.getApiErrorMessage(error, 'Dohvat korisnika nije uspio.');
       });
@@ -277,7 +274,7 @@ export default class UserStore {
   submitCurrentUserProfile = async () => {
     const authenticatedUser = this.rootStore.authenticationStore.user;
     if (!authenticatedUser) {
-      this.profileSaveError = 'Morate biti prijavljeni za azuriranje profila.';
+      this.profileSaveError = 'Morate biti prijavljeni za ažuriranje profila.';
       return false;
     }
 
@@ -318,7 +315,7 @@ export default class UserStore {
       return true;
     } catch (error) {
       runInAction(() => {
-        this.profileSaveError = this.getApiErrorMessage(error, 'Azuriranje profila nije uspjelo.');
+        this.profileSaveError = this.getApiErrorMessage(error, 'Ažuriranje profila nije uspjelo.');
       });
       return false;
     } finally {

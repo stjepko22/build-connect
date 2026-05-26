@@ -77,7 +77,7 @@ const desktopFeatures: DesktopFeature[] = [
     icon: <StorefrontRoundedIcon />,
   },
   {
-    title: 'Provjereni izvodjaci',
+    title: 'Provjereni izvođači',
     description: 'Brze do specijaliziranih firmi, timova i kooperanata.',
     icon: <EngineeringRoundedIcon />,
   },
@@ -108,7 +108,7 @@ const guestDesktopFeatures: DesktopFeature[] = [
     icon: <StorefrontRoundedIcon />,
   },
   {
-    title: 'Pronadjite izvodjace',
+    title: 'Pronađite izvođače',
     description: 'Direktorij ostaje jasan, pregledan i odmah spreman za filtriranje po usluzi.',
     icon: <EngineeringRoundedIcon />,
   },
@@ -126,13 +126,13 @@ const guestDesktopHighlights: DesktopHighlight[] = [
     icon: <AssignmentTurnedInRoundedIcon />,
   },
   {
-    value: 'Izvodjaci',
+    value: 'Izvođači',
     label: 'grade vidljiv profil',
     icon: <EngineeringRoundedIcon />,
   },
 ];
 
-const guestDesktopBadges = ['Za investitore', 'Za izvodjace', 'Javni pregled platforme'];
+const guestDesktopBadges = ['Za investitore', 'Za izvođače', 'Javni pregled platforme'];
 
 const Home: React.FC = observer(() => {
   const navigate = useNavigate();
@@ -177,7 +177,7 @@ const Home: React.FC = observer(() => {
 
     return [
       {
-        label: 'Glavni izvodjaci',
+        label: 'Glavni izvođači',
         icon: <BusinessRoundedIcon />,
         onClick: () => navigateWithScroll('/izvodjaci'),
       },
@@ -187,7 +187,7 @@ const Home: React.FC = observer(() => {
         onClick: () => navigateWithScroll('/izvodjaci?legalType=FIRMA'),
       },
       {
-        label: 'Pronadji posao',
+        label: 'Pronađi posao',
         icon: <SearchRoundedIcon />,
         onClick: () => navigateWithScroll('/marketplace'),
       },
@@ -239,7 +239,7 @@ const Home: React.FC = observer(() => {
           : 'Pratite poslove, ponude i profil kroz jedan profesionalni workspace',
         description: user.role === 'INVESTITOR'
           ? 'Brzo objavite novi posao, vratite se na aktivne projekte ili otvorite svoj profil investitora.'
-          : 'Otvorite dashboard, pronadjite nove prilike i odrzavajte profil izvodjaca uvijek spremnim za sljedeci posao.',
+          : 'Otvorite dashboard, pronađite nove prilike i održavajte profil izvođača uvijek spremnim za sljedeći posao.',
         primaryLabel: user.role === 'INVESTITOR' ? 'Objavi posao' : 'Otvori dashboard',
         primaryAction: () => navigateWithScroll(user.role === 'INVESTITOR' ? '/objavi-posao' : '/dashboard'),
         secondaryLabel: 'Moj profil',
@@ -250,8 +250,8 @@ const Home: React.FC = observer(() => {
 
     return {
       eyebrow: 'Javna platforma',
-      title: 'Jedno mjesto za projekte, izvodjace i ozbiljne gradjevinske suradnje',
-      description: 'Pregledajte marketplace i direktorij bez zatvorenog app iskustva, a registracijom otkljucajte objave, ponude i puni BuildConnect workspace.',
+      title: 'Jedno mjesto za projekte, izvođače i ozbiljne građevinske suradnje',
+      description: 'Pregledajte marketplace i direktorij bez zatvorenog app iskustva, a registracijom otključajte objave, ponude i puni BuildConnect workspace.',
       primaryLabel: 'Registriraj se',
       primaryAction: () => navigateWithScroll('/register'),
       secondaryLabel: 'Prijava',
@@ -478,7 +478,7 @@ const Home: React.FC = observer(() => {
                         maxWidth: 720,
                       }}
                     >
-                      Pronadjite pravi tim ili otvorite put do nove suradnje bez lutanja kroz nepregledne imenike.
+                      Pronađite pravi tim ili otvorite put do nove suradnje bez lutanja kroz nepregledne imenike.
                     </Typography>
 
                     <Typography
@@ -489,7 +489,7 @@ const Home: React.FC = observer(() => {
                         maxWidth: 760,
                       }}
                     >
-                      Gosti mogu pregledati izvodjace, marketplace poslova i specijalizirane kategorije, a prijavom otkljucavaju objave, ponude i puni radni prostor za daljnji dogovor.
+                      Gosti mogu pregledati izvođače, marketplace poslova i specijalizirane kategorije, a prijavom otključavaju objave, ponude i puni radni prostor za daljnji dogovor.
                     </Typography>
 
                     <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
@@ -526,7 +526,7 @@ const Home: React.FC = observer(() => {
                   }}
                 >
                   <BaseInput
-                    placeholder="Pretrazi firme, projekte ili usluge..."
+                    placeholder="Pretraži firme, projekte ili usluge..."
                     value={searchValue}
                     onChange={(event) => setSearchValue(event.target.value)}
                     onKeyDown={(event) => {
@@ -896,7 +896,7 @@ const Home: React.FC = observer(() => {
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: { xs: 1.1, md: 0.95 } }}>
                 <Box>
                   <Typography sx={{ fontWeight: 900, color: 'secondary.main', fontSize: { xs: '1rem', md: '1.14rem' } }}>
-                    Specijalizirani izvodjaci
+                    Specijalizirani izvođači
                   </Typography>
                   <Typography
                     sx={{
@@ -906,7 +906,7 @@ const Home: React.FC = observer(() => {
                       fontSize: '0.8rem',
                     }}
                   >
-                    Otvorite provjerene kategorije i dodjite do pravih timova bez lutanja kroz cijeli direktorij.
+                    Otvorite provjerene kategorije i dođite do pravih timova bez lutanja kroz cijeli direktorij.
                   </Typography>
                 </Box>
 
@@ -1118,7 +1118,7 @@ const Home: React.FC = observer(() => {
                       Otvori profil i kreni raditi u par klikova
                     </Typography>
                     <Typography sx={{ mt: 0.45, color: 'text.secondary', fontSize: { xs: '0.78rem', md: '0.85rem' }, lineHeight: 1.5, maxWidth: 320 }}>
-                      Registriraj se kao investitor ili izvodjac i odmah pristupi poslovima, suradnjama i kontaktima.
+                      Registriraj se kao investitor ili izvođač i odmah pristupi poslovima, suradnjama i kontaktima.
                     </Typography>
                   </Box>
 
@@ -1160,7 +1160,7 @@ const Home: React.FC = observer(() => {
                         },
                       }}
                     >
-                      Registriraj se kao izvodjac
+                      Registriraj se kao izvođač
                     </BaseButton>
                   </Stack>
                 </Stack>
