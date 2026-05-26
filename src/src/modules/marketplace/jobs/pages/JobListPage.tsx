@@ -99,9 +99,18 @@ const JobListPage: React.FC = observer(() => {
   }, [jobStore, jobStore.jobSearchQuery, jobStore.selectedJobCategories]);
 
   const filteredJobs = jobStore.filteredJobs;
-  const roleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'izvodjaca' : 'investitora';
+  const isAuthenticated = !!authenticationStore.user;
+  const roleLabel = !isAuthenticated
+    ? 'gosta'
+    : authenticationStore.user?.role === 'IZVODJAC'
+      ? 'izvodjaca'
+      : 'investitora';
   const selectedFiltersCount = jobStore.selectedJobCategories.length;
-  const selectedRoleLabel = authenticationStore.user?.role === 'IZVODJAC' ? 'Izvodjac' : 'Investitor';
+  const selectedRoleLabel = !isAuthenticated
+    ? 'Javni pregled'
+    : authenticationStore.user?.role === 'IZVODJAC'
+      ? 'Izvodjac'
+      : 'Investitor';
   const desktopHeaderChips = [
     `${filteredJobs.length} oglasa`,
     selectedFiltersCount > 0 ? `${selectedFiltersCount} aktivna filtera` : 'Bez aktivnih filtera',
@@ -133,7 +142,9 @@ const JobListPage: React.FC = observer(() => {
               Filteri marketa
             </Typography>
             <Typography variant="body2" sx={{ mt: 0.25, color: 'text.secondary', fontWeight: 500, maxWidth: 720 }}>
-              Prikaz prilagodjen za ulogu {roleLabel}. Odaberi kategorije koje zelis vidjeti odmah.
+              {isAuthenticated
+                ? `Prikaz prilagodjen za ulogu ${roleLabel}. Odaberi kategorije koje zelis vidjeti odmah.`
+                : 'Javni pregled marketa ostaje otvoren i jasan, a filtriranjem odmah dolazite do poslova koji vas zanimaju.'}
             </Typography>
           </Box>
 
@@ -246,7 +257,9 @@ const JobListPage: React.FC = observer(() => {
                     Pronadji posao
                   </Typography>
                   <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.8rem' }}>
-                    Pretrazi aktivne oglase i kreni prema sljedecem projektu.
+                    {isAuthenticated
+                      ? 'Pretrazi aktivne oglase i kreni prema sljedecem projektu.'
+                      : 'Pregledaj aktivne oglase i stekni dojam kako BuildConnect povezuje projekte i timove.'}
                   </Typography>
                 </Box>
 
@@ -317,7 +330,7 @@ const JobListPage: React.FC = observer(() => {
               >
                 <Box sx={{ maxWidth: 760 }}>
                   <Chip
-                    label="Marketplace poslova"
+                    label={isAuthenticated ? 'Marketplace poslova' : 'Javni marketplace'}
                     color="primary"
                     sx={{
                       mb: 1,
@@ -344,7 +357,9 @@ const JobListPage: React.FC = observer(() => {
                       maxWidth: 820,
                     }}
                   >
-                    Pronadji posao koji odgovara tvom timu
+                    {isAuthenticated
+                      ? 'Pronadji posao koji odgovara tvom timu'
+                      : 'Pregledaj otvorene projekte i vidi kako izgleda stvarni BuildConnect marketplace'}
                   </Typography>
                   <Typography
                     variant="h6"
@@ -357,8 +372,9 @@ const JobListPage: React.FC = observer(() => {
                       lineHeight: 1.45,
                     }}
                   >
-                    Pretrazi aktivne oglase, suzi rezultate po kategorijama i brzo dodji do sljedeceg projekta bez
-                    suvisnih koraka.
+                    {isAuthenticated
+                      ? 'Pretrazi aktivne oglase, suzi rezultate po kategorijama i brzo dodji do sljedeceg projekta bez suvisnih koraka.'
+                      : 'Gosti mogu slobodno pregledavati aktivne oglase, dok registrirani korisnici otkljucavaju prijavu na poslove, ponude i puni radni tok unutar platforme.'}
                   </Typography>
                 </Box>
 
