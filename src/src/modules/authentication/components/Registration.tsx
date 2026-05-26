@@ -65,7 +65,7 @@ const Registration: React.FC<RegistrationProps> = observer(({ registrationStore,
       {registrationStore.role === 'IZVODJAC' && (
         <Box>
           <Typography variant="caption" sx={{ fontWeight: 700, mb: 0.7, display: 'block', color: 'text.secondary', ml: 0.5 }}>
-            Vrsta izvodjaca:
+            Vrsta izvođača:
           </Typography>
           <BaseInput
             select

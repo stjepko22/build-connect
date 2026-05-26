@@ -115,13 +115,13 @@ const MainLayout: React.FC = observer(() => {
 
             <Stack direction="row" spacing={0.5} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1, justifyContent: 'center' }}>
               <BaseButton variant="text" color="secondary" onClick={() => navigate('/')} sx={{ fontWeight: 800 }}>
-                Pocetna
+                Početna
               </BaseButton>
               <BaseButton variant="text" color="secondary" onClick={() => navigate('/marketplace')} sx={{ fontWeight: 800 }}>
                 Marketplace
               </BaseButton>
               <BaseButton variant="text" color="secondary" onClick={() => navigate('/izvodjaci')} sx={{ fontWeight: 800 }}>
-                Izvodjaci
+                Izvođači
               </BaseButton>
             </Stack>
 

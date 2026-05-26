@@ -41,7 +41,6 @@ export default class BidStore {
         );
       });
     } catch (error) {
-      console.error('Load bids failed:', error);
       runInAction(() => {
         this.bidListError = this.getApiErrorMessage(error, 'Dohvat ponuda nije uspio.');
       });

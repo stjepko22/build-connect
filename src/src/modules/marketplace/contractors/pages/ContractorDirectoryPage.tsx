@@ -116,7 +116,7 @@ const ContractorDirectoryPage: React.FC = observer(() => {
             >
               <Stack spacing={0.65} sx={{ maxWidth: 820 }}>
                 <Chip
-                  label={isAuthenticated ? 'Direktorij izvodjaca' : 'Javni direktorij'}
+                  label={isAuthenticated ? 'Direktorij izvođača' : 'Javni direktorij'}
                   color="primary"
                   sx={{
                     alignSelf: 'flex-start',
@@ -144,18 +144,18 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                   }}
                 >
                   {isAuthenticated
-                    ? 'Pronadjite izvodjace, firme i specijalizirane timove za svaki projekt'
-                    : 'Pregledaj provjerene izvodjace i upoznaj javni BuildConnect direktorij'}
+                    ? 'Pronađite izvođače, firme i specijalizirane timove za svaki projekt'
+                    : 'Pregledaj provjerene izvođače i upoznaj javni BuildConnect direktorij'}
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', maxWidth: 740, fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.55 }}>
                   {isAuthenticated
-                    ? 'Pronadjite majstore i firme po usluzi, lokaciji, tipu i ocjeni bez gubljenja vremena na nepregledne popise.'
+                    ? 'Pronađite majstore i firme po usluzi, lokaciji, tipu i ocjeni bez gubljenja vremena na nepregledne popise.'
                     : 'Gosti mogu slobodno pregledavati profile, usluge i ocjene, a registrirani korisnici nastavljaju prema suradnjama, ponudama i punom radnom toku.'}
                 </Typography>
               </Stack>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
                 <Chip
-                  label={`${userStore.filteredContractors.length} izvodjaca`}
+                  label={`${userStore.filteredContractors.length} izvođača`}
                   variant="outlined"
                   sx={{
                     height: 32,
@@ -200,14 +200,14 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                 </Typography>
                 <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.86rem', lineHeight: 1.55 }}>
                   {isAuthenticated
-                    ? 'Suzite prikaz i lakse pronadjite odgovarajuceg izvodjaca.'
-                    : 'Pregled ostaje otvoren i brz, a filteri vam pomazu da odmah dodjete do prave usluge ili lokacije.'}
+                    ? 'Suzite prikaz i lakše pronađite odgovarajućeg izvođača.'
+                    : 'Pregled ostaje otvoren i brz, a filteri vam pomažu da odmah dođete do prave usluge ili lokacije.'}
                 </Typography>
               </Box>
 
               <BaseInput
                 fullWidth
-                placeholder="Pretrazite po imenu, usluzi ili lokaciji"
+                placeholder="Pretražite po imenu, usluzi ili lokaciji"
                 value={userStore.contractorSearchInputValue}
                 onChange={(e) => {
                   userStore.setContractorSearchInputValue(e.target.value);
@@ -265,7 +265,7 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                   <BaseInput
                     select
                     fullWidth
-                    label="Tip izvodaca"
+                    label="Tip izvođača"
                     value={userStore.selectedContractorLegalType}
                     onChange={(e) => userStore.setSelectedContractorLegalType(e.target.value as 'ALL' | 'FIZICKA_OSOBA' | 'FIRMA')}
                   >

@@ -87,8 +87,7 @@ export default class RegistrationStore {
       }
 
       return isRegistered;
-    } catch (error) {
-      console.error('Registration failed:', error);
+    } catch {
       this.submitError = 'Registracija nije uspjela.';
       return false;
     } finally {

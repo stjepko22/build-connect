@@ -40,7 +40,6 @@ export default class ReviewStore {
         );
       });
     } catch (error) {
-      console.error('Load reviews failed:', error);
       runInAction(() => {
         this.reviewListError = this.getApiErrorMessage(error, 'Dohvat recenzija nije uspio.');
       });

@@ -64,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = observer(({ onClose }) => {
     { label: 'Marketplace', icon: <StorefrontIcon />, path: '/marketplace' },
     ...(user ? [{ label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' }] : []),
     ...(user ? [{ label: 'Moji poslovi', icon: <WorkOutlineIcon />, path: '/moji-poslovi' }] : []),
-    ...(user?.role === 'INVESTITOR' ? [{ label: 'Izvodaci', icon: <EngineeringIcon />, path: '/izvodjaci' }] : []),
+    ...(user?.role === 'INVESTITOR' ? [{ label: 'Izvođači', icon: <EngineeringIcon />, path: '/izvodjaci' }] : []),
     ...(user ? [{ label: 'Moj Profil', icon: <AccountCircleIcon />, path: `/profil/${user.id}` }] : []),
   ];
 
@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = observer(({ onClose }) => {
               letterSpacing: 1.1,
             }}
           >
-            Premium mreza za gradjevinu
+            Premium mreža za građevinu
           </Typography>
         </Box>
       </Box>
