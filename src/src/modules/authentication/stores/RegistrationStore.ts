@@ -6,6 +6,9 @@ export default class RegistrationStore {
   rootStore: RootStore;
   isLoading = false;
   submitError: string | null = null;
+  isSubmitted = false;
+  registeredEmail = '';
+  isVerificationEmailSent = false;
   firstName = '';
   lastName = '';
   email = '';
@@ -44,6 +47,9 @@ export default class RegistrationStore {
         this.role = 'INVESTITOR';
         this.legalType = 'FIRMA';
         this.submitError = null;
+        this.isSubmitted = false;
+        this.registeredEmail = '';
+        this.isVerificationEmailSent = false;
       });
     }
   };
@@ -72,7 +78,7 @@ export default class RegistrationStore {
     this.submitError = null;
 
     try {
-      const isRegistered = await this.rootStore.authenticationStore.register({
+      const registration = await this.rootStore.authenticationStore.register({
         firstName: this.firstName,
         lastName: this.lastName,
         email: this.email,
@@ -82,11 +88,19 @@ export default class RegistrationStore {
         legalType: this.legalType,
       });
 
-      if (!isRegistered) {
+      if (!registration) {
         this.submitError = this.rootStore.authenticationStore.authError || 'Registracija nije uspjela.';
       }
 
-      return isRegistered;
+      runInAction(() => {
+        if (registration) {
+          this.isSubmitted = true;
+          this.registeredEmail = registration.email;
+          this.isVerificationEmailSent = registration.isVerificationEmailSent;
+        }
+      });
+
+      return !!registration;
     } catch {
       this.submitError = 'Registracija nije uspjela.';
       return false;

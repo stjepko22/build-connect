@@ -3,6 +3,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import { Alert, Box, Grid, MenuItem, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import BaseButton from '@/core/components/atoms/buttons/BaseButton';
 import BaseLoadingButton from '@/core/components/atoms/buttons/BaseLoadingButton';
 import BaseInput from '@/core/components/atoms/inputs/BaseInput';
 import AuthenticationStore from '../stores/AuthenticationStore';
@@ -31,6 +32,10 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
     }
   };
 
+  const handleResendVerificationEmail = () => {
+    void auth.resendVerificationEmail(auth.loginEmail);
+  };
+
   return (
     <form onSubmit={handleSubmit} style={{ width: '100%' }}>
       <Grid
@@ -43,7 +48,7 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
         <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: 'primary.main', letterSpacing: '-1px' }}>
           Prijavite se
         </Typography>
-        <Typography variant="body1" color="textSecondary" sx={{ mb: 4, textAlign: 'center' }}>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
           Molimo prijavite se kako biste nastavili.
         </Typography>
 
@@ -93,6 +98,24 @@ const Login: React.FC<LoginProps> = observer(({ authenticationStore, onSuccess }
             <Alert severity="error" sx={{ borderRadius: 3 }}>
               {auth.authError}
             </Alert>
+          )}
+
+          {auth.authInfoMessage && (
+            <Alert severity="success" sx={{ borderRadius: 3 }}>
+              {auth.authInfoMessage}
+            </Alert>
+          )}
+
+          {auth.canResendVerificationEmail && (
+            <BaseButton
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              loading={auth.isLoading}
+              onClick={handleResendVerificationEmail}
+            >
+              Pošalji novi verifikacijski link
+            </BaseButton>
           )}
         </Box>
 

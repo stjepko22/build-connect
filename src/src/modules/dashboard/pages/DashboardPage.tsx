@@ -421,7 +421,7 @@ const DashboardPage: React.FC = observer(() => {
                           {item.displayName}
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-                          {item.location} - {item.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                          {item.location} - {item.legalType === 'FIRMA' ? 'Firma' : 'Fizička osoba'}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           <StarRateIcon sx={{ fontSize: 16, color: 'secondary.main' }} />

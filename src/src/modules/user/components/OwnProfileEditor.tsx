@@ -79,7 +79,7 @@ const OwnProfileEditor: React.FC<OwnProfileEditorProps> = observer(({ onCancel, 
             onChange={(event) => userStore.setProfileLegalType(event.target.value as 'FIZICKA_OSOBA' | 'FIRMA')}
             required
           >
-            <MenuItem value="FIZICKA_OSOBA">Fizicka osoba</MenuItem>
+            <MenuItem value="FIZICKA_OSOBA">Fizička osoba</MenuItem>
             <MenuItem value="FIRMA">Firma</MenuItem>
           </BaseInput>
 

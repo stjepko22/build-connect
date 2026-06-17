@@ -270,7 +270,7 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                     onChange={(e) => userStore.setSelectedContractorLegalType(e.target.value as 'ALL' | 'FIZICKA_OSOBA' | 'FIRMA')}
                   >
                     <MenuItem value="ALL">Svi</MenuItem>
-                    <MenuItem value="FIZICKA_OSOBA">Fizicka osoba</MenuItem>
+                    <MenuItem value="FIZICKA_OSOBA">Fizička osoba</MenuItem>
                     <MenuItem value="FIRMA">Firma</MenuItem>
                   </BaseInput>
                 </Grid>
@@ -357,7 +357,7 @@ const ContractorDirectoryPage: React.FC = observer(() => {
                           </Typography>
                           <Chip
                             icon={contractor.legalType === 'FIRMA' ? <BusinessIcon /> : <PersonIcon />}
-                            label={contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizicka osoba'}
+                            label={contractor.legalType === 'FIRMA' ? 'Firma' : 'Fizička osoba'}
                             size="small"
                             sx={{ fontWeight: 700 }}
                           />

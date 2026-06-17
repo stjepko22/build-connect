@@ -1,5 +1,4 @@
-import React from 'react';
-import { observer } from "mobx-react-lite";
+import { observer } from 'mobx-react-lite';
 import { Box, Button, ButtonProps, CircularProgress, SxProps, Theme } from '@mui/material';
 
 interface BaseLoadingButtonProps extends ButtonProps {
@@ -7,16 +6,14 @@ interface BaseLoadingButtonProps extends ButtonProps {
   title: string;
 }
 
-const BaseLoadingButton = observer(({ 
-  isLoading, 
-  title, 
-  disabled, 
-  variant = "contained", 
+const BaseLoadingButton = observer(({
+  isLoading,
+  title,
+  disabled,
+  variant = 'contained',
   sx,
-  ...props 
+  ...props
 }: BaseLoadingButtonProps) => {
-  
-  // Spajamo proslijeđeni sx sa našim baznim stilovima
   const combinedSx: SxProps<Theme> = {
     position: 'relative',
     transition: 'all 0.2s ease-in-out',
@@ -24,11 +21,11 @@ const BaseLoadingButton = observer(({
   };
 
   return (
-    <Box 
-      sx={{ 
-        position: 'relative', 
+    <Box
+      sx={{
+        position: 'relative',
         display: props.fullWidth ? 'block' : 'inline-block',
-        width: props.fullWidth ? '100%' : 'auto' 
+        width: props.fullWidth ? '100%' : 'auto',
       }}
     >
       <Button
@@ -37,7 +34,6 @@ const BaseLoadingButton = observer(({
         disabled={disabled || isLoading}
         sx={combinedSx}
       >
-        {/* Koristimo Box sa opacity kako bi gumb zadržao dimenzije teksta dok se vrti loader */}
         <Box component="span" sx={{ opacity: isLoading ? 0 : 1, display: 'flex', alignItems: 'center' }}>
           {title}
         </Box>
@@ -53,7 +49,7 @@ const BaseLoadingButton = observer(({
             left: '50%',
             marginTop: '-12px',
             marginLeft: '-12px',
-            zIndex: 1
+            zIndex: 1,
           }}
         />
       )}
@@ -62,4 +58,3 @@ const BaseLoadingButton = observer(({
 });
 
 export default BaseLoadingButton;
-

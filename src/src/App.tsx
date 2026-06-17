@@ -23,6 +23,7 @@ const CreateJobPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/
 const EditJobPage = React.lazy(() => import('@/modules/marketplace/jobs/pages/EditJobPage'));
 const LoginPage = React.lazy(() => import('@/modules/authentication/pages/LoginPage'));
 const RegistrationPage = React.lazy(() => import('@/modules/authentication/pages/RegistrationPage'));
+const VerifyEmailPage = React.lazy(() => import('@/modules/authentication/pages/VerifyEmailPage'));
 
 type Role = 'INVESTITOR' | 'IZVODJAC';
 
@@ -115,6 +116,7 @@ const App: React.FC = () => {
 
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegistrationPage />} />
+                <Route path="/verify-email" element={<VerifyEmailPage />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

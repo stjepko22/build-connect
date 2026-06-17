@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import BaseContainer from '@/core/components/atoms/containers/BaseContainer';
 import { useRootStore } from '@/core/hooks/useRootStore';
+import AuthPageShell from '../components/AuthPageShell';
 import Registration from '../components/Registration';
 
 const RegistrationPage: React.FC = observer(() => {
@@ -21,22 +21,28 @@ const RegistrationPage: React.FC = observer(() => {
     return () => registrationStore.clearFormState();
   }, [registrationStore, searchParams]);
 
-  const handleRegistrationSubmit = async () => {
-    const success = await registrationStore.submit();
-    if (success) {
-      navigate('/');
+  const handleBack = () => {
+    if ((window.history.state?.idx ?? 0) > 0) {
+      navigate(-1);
+      return;
     }
+
+    navigate('/');
+  };
+
+  const handleRegistrationSubmit = async () => {
+    await registrationStore.submit();
   };
 
   return (
-    <BaseContainer maxWidth="xs" animate={true}>
+    <AuthPageShell onBack={handleBack}>
       <Registration
         registrationStore={registrationStore}
         onCustomSubmit={handleRegistrationSubmit}
+        onGoToLogin={() => navigate('/login')}
       />
-    </BaseContainer>
+    </AuthPageShell>
   );
 });
 
 export default RegistrationPage;
-

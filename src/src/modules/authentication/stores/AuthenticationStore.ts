@@ -14,6 +14,7 @@ export default class AuthenticationStore {
   user: IUser | null = null;
   isLoading = false;
   authError: string | null = null;
+  authInfoMessage: string | null = null;
   isLoginDialogOpen = false;
   pendingUnauthorizedLoginPrompt = false;
   loginEmail = '';
@@ -40,6 +41,7 @@ export default class AuthenticationStore {
     this.isLoginDialogOpen = value;
     if (value) {
       this.authError = null;
+      this.authInfoMessage = null;
       this.applyLoginRoleDefaults(this.loginRole);
     }
   };
@@ -47,21 +49,28 @@ export default class AuthenticationStore {
   setLoginEmail = (value: string) => {
     this.loginEmail = value;
     this.authError = null;
+    this.authInfoMessage = null;
   };
 
   setLoginPassword = (value: string) => {
     this.loginPassword = value;
     this.authError = null;
+    this.authInfoMessage = null;
   };
 
   setLoginRole = (value: 'INVESTITOR' | 'IZVODJAC') => {
     this.loginRole = value;
     this.authError = null;
+    this.authInfoMessage = null;
     this.applyLoginRoleDefaults(value);
   };
 
   setAuthError = (value: string | null) => {
     this.authError = value;
+  };
+
+  setAuthInfoMessage = (value: string | null) => {
+    this.authInfoMessage = value;
   };
 
   applyLoginRoleDefaults = (role: 'INVESTITOR' | 'IZVODJAC') => {
@@ -78,9 +87,14 @@ export default class AuthenticationStore {
     return this.loginEmail.includes('@') && this.loginPassword.length >= 6;
   }
 
+  get canResendVerificationEmail() {
+    return this.loginEmail.includes('@') && this.authError?.toLowerCase().includes('nije potvrd') === true;
+  }
+
   login = async () => {
     this.isLoading = true;
     this.authError = null;
+    this.authInfoMessage = null;
 
     try {
       const response = await this.authenticationService.loginAsync({
@@ -92,6 +106,7 @@ export default class AuthenticationStore {
         this.applyAuthenticatedSession(response.data);
         this.isLoginDialogOpen = false;
         this.authError = null;
+        this.authInfoMessage = null;
         this.loginEmail = '';
         this.loginPassword = '';
       });
@@ -112,16 +127,16 @@ export default class AuthenticationStore {
   register = async (request: IRegisterRequest) => {
     this.isLoading = true;
     this.authError = null;
+    this.authInfoMessage = null;
 
     try {
       const response = await this.authenticationService.registerAsync(request);
 
       runInAction(() => {
-        this.applyAuthenticatedSession(response.data);
         this.authError = null;
       });
 
-      return true;
+      return response.data;
     } catch (error) {
       runInAction(() => {
         this.authError = this.getApiErrorMessage(error, 'Registracija nije uspjela.');
@@ -134,9 +149,43 @@ export default class AuthenticationStore {
     }
   };
 
+  resendVerificationEmail = async (email: string) => {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      this.authError = 'Unesite email adresu za ponovno slanje linka.';
+      return false;
+    }
+
+    this.isLoading = true;
+    this.authError = null;
+    this.authInfoMessage = null;
+
+    try {
+      const response = await this.authenticationService.resendVerificationEmailAsync({ email: normalizedEmail });
+
+      runInAction(() => {
+        this.authInfoMessage = response.data.isVerificationEmailSent
+          ? 'Poslali smo novi verifikacijski link.'
+          : 'Nismo uspjeli poslati email. Provjerite Resend postavke.';
+      });
+
+      return response.data.isVerificationEmailSent;
+    } catch (error) {
+      runInAction(() => {
+        this.authError = this.getApiErrorMessage(error, 'Ponovno slanje verifikacijskog emaila nije uspjelo.');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  };
+
   logout = () => {
     this.user = null;
     this.authError = null;
+    this.authInfoMessage = null;
     this.pendingUnauthorizedLoginPrompt = false;
     localStorage.removeItem(authUserStorageKey);
     localStorage.removeItem(authTokenStorageKey);
@@ -145,6 +194,7 @@ export default class AuthenticationStore {
   handleUnauthorizedLogout = () => {
     this.user = null;
     this.authError = 'Sesija je istekla. Prijavite se ponovno.';
+    this.authInfoMessage = null;
     this.isLoginDialogOpen = false;
     this.pendingUnauthorizedLoginPrompt = true;
     localStorage.removeItem(authUserStorageKey);
@@ -153,6 +203,26 @@ export default class AuthenticationStore {
 
   clearUnauthorizedLoginPrompt = () => {
     this.pendingUnauthorizedLoginPrompt = false;
+  };
+
+  verifyEmail = async (email: string, token: string) => {
+    this.isLoading = true;
+    this.authError = null;
+    this.authInfoMessage = null;
+
+    try {
+      await this.authenticationService.verifyEmailAsync({ email, token });
+      return true;
+    } catch (error) {
+      runInAction(() => {
+        this.authError = this.getApiErrorMessage(error, 'Potvrda email adrese nije uspjela.');
+      });
+      return false;
+    } finally {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
   };
 
   updateCurrentUserProfile = (profile: {
@@ -168,12 +238,12 @@ export default class AuthenticationStore {
 
     this.user = {
       ...this.user,
-        displayName: profile.displayName,
-        legalType: profile.legalType,
-        email: profile.email,
-        phone: profile.phone,
-        isPhoneVisible: profile.isPhoneVisible,
-      };
+      displayName: profile.displayName,
+      legalType: profile.legalType,
+      email: profile.email,
+      phone: profile.phone,
+      isPhoneVisible: profile.isPhoneVisible,
+    };
 
     localStorage.setItem(authUserStorageKey, JSON.stringify(this.user));
   };
